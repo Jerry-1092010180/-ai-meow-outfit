@@ -14,7 +14,7 @@
 
 ## 🚀 在线体验
 
-> **Demo 链接**：[https://ai-meow-outfit.vercel.app](https://ai-meow-outfit.vercel.app) *(部署后生效)*
+> **Demo 链接**：[https://ai-meow-outfit.vercel.app](https://ai-meow-outfit.vercel.app)
 
 扫码或点击上方链接，建议使用手机模式浏览（Chrome DevTools → iPhone 14 Pro）。
 
