@@ -14,13 +14,14 @@
 
 ## 🚀 在线体验
 
-| 平台 | 链接 | 国内手机访问 |
-|------|------|:---:|
-| **Cloudflare** | [ai-meow-outfit.jerry1092010180.workers.dev](https://ai-meow-outfit.jerry1092010180.workers.dev) | ✅ 推荐 |
-| **Vercel** | [ai-meow-outfit.vercel.app](https://ai-meow-outfit.vercel.app) | ⚠️ 较慢 |
-| **GitHub Pages** | [jerry1092010180.github.io/-ai-meow-outfit](https://jerry1092010180.github.io/-ai-meow-outfit) | ❌ 可能被墙 |
+> **主链接**：[https://c3c21dc7.ai-meow-outfit.pages.dev](https://c3c21dc7.ai-meow-outfit.pages.dev) ← 评委扫码入口
 
-> 评委如在手机端遇到网络问题，请优先使用 **Cloudflare** 链接。建议使用手机模式浏览（Chrome DevTools → iPhone 14 Pro）。
+| 备用平台 | 链接 |
+|----------|------|
+| Vercel | [ai-meow-outfit.vercel.app](https://ai-meow-outfit.vercel.app) |
+| GitHub Pages | [jerry1092010180.github.io/-ai-meow-outfit](https://jerry1092010180.github.io/-ai-meow-outfit) |
+
+> 建议使用手机模式浏览（Chrome DevTools → iPhone 14 Pro）。
 
 ---
 
