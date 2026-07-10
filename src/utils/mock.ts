@@ -19,23 +19,25 @@ async function loadJSON<T>(path: string): Promise<T> {
   return response.json();
 }
 
+const BASE = import.meta.env.BASE_URL;
+
 export async function getMockItems(): Promise<StoreItem[]> {
   if (!itemsCache) {
-    itemsCache = await loadJSON<StoreItem[]>('/mock/data/items.json');
+    itemsCache = await loadJSON<StoreItem[]>(`${BASE}mock/data/items.json`);
   }
   return itemsCache;
 }
 
 export async function getMockOutfits(): Promise<GeneratedOutfit[]> {
   if (!outfitsCache) {
-    outfitsCache = await loadJSON<GeneratedOutfit[]>('/mock/data/outfits.json');
+    outfitsCache = await loadJSON<GeneratedOutfit[]>(`${BASE}mock/data/outfits.json`);
   }
   return outfitsCache;
 }
 
 export async function getMockChallenges(): Promise<Challenge[]> {
   if (!challengesCache) {
-    challengesCache = await loadJSON<Challenge[]>('/mock/data/challenges.json');
+    challengesCache = await loadJSON<Challenge[]>(`${BASE}mock/data/challenges.json`);
   }
   return challengesCache;
 }
