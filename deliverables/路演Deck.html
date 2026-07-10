@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI喵搭 · 路演Deck</title>
+<style>
+  @page { size: 16in 9in landscape; margin: 0; }
+  @media print {
+    .slide { page-break-after: always; width: 16in; height: 9in; }
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: #111; color: #fff;
+    display: flex; flex-direction: column; align-items: center;
+  }
+
+  .slide {
+    width: 1280px; height: 720px;
+    position: relative; overflow: hidden;
+    flex-shrink: 0; margin-bottom: 12px;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 60px 80px;
+    box-shadow: 0 2px 20px rgba(0,0,0,.5);
+  }
+
+  /* ── Slide Themes ── */
+  .slide-cover   { background: linear-gradient(135deg, #1A1A2E 0%, #16213E 50%, #0F3460 100%); }
+  .slide-light   { background: #FAFAFA; color: #2D2D2D; }
+  .slide-dark    { background: #1A1A2E; }
+  .slide-accent  { background: linear-gradient(135deg, #FF6B8A, #FF416C); }
+  .slide-gradient{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+
+  h1 { font-size: 52px; line-height: 1.2; }
+  h2 { font-size: 36px; margin-bottom: 24px; }
+  h3 { font-size: 22px; margin-bottom: 12px; color: #888; }
+  p { font-size: 18px; line-height: 1.7; opacity: 0.85; }
+  .big { font-size: 72px; font-weight: 900; }
+  .small { font-size: 14px; opacity: 0.5; }
+
+  .row { display: flex; gap: 40px; }
+  .col { flex: 1; }
+  .card {
+    background: rgba(255,255,255,.08); border-radius: 16px; padding: 30px;
+    border: 1px solid rgba(255,255,255,.1);
+  }
+  .card-light {
+    background: #FFF; border-radius: 16px; padding: 30px;
+    box-shadow: 0 4px 20px rgba(0,0,0,.06); border: 1px solid #EEE;
+  }
+  .card-number {
+    width: 48px; height: 48px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 900; margin-bottom: 16px;
+    background: linear-gradient(135deg, #FF6B8A, #FF416C);
+  }
+  .tag {
+    display: inline-block; padding: 4px 12px; border-radius: 20px;
+    font-size: 13px; font-weight: 600;
+  }
+  .tag-pink { background: #FF6B8A20; color: #FF6B8A; }
+  .tag-blue { background: #4A90D920; color: #4A90D9; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  th { text-align: left; padding: 10px 16px; background: rgba(0,0,0,.05); font-weight: 700; }
+  td { padding: 10px 16px; border-bottom: 1px solid rgba(0,0,0,.06); }
+  .slide-dark th { background: rgba(255,255,255,.05); }
+  .slide-dark td { border-color: rgba(255,255,255,.06); }
+
+  .footer { position: absolute; bottom: 30px; right: 60px; font-size: 12px; opacity: 0.3; }
+  .page-num { position: absolute; bottom: 30px; left: 60px; font-size: 12px; opacity: 0.3; }
+
+  .check-row { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; }
+  .check { color: #4CAF50; font-weight: 900; font-size: 20px; width: 24px; }
+  .cross { color: #F44336; font-weight: 900; font-size: 20px; width: 24px; }
+
+  .bar { height: 8px; border-radius: 4px; }
+  .bar-bg { background: rgba(0,0,0,.08); flex: 1; border-radius: 4px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #FF6B8A, #FF416C); }
+
+  .qr-box {
+    width: 180px; height: 180px; background: #FFF; border-radius: 16px;
+    display: flex; align-items: center; justify-content: center; margin: 0 auto;
+    font-size: 14px; color: #999; text-align: center; line-height: 1.5;
+  }
+
+  .fade-1 { opacity: 0.55; }
+  .fade-2 { opacity: 0.35; }
+
+  .arrow-down { text-align: center; font-size: 24px; opacity: 0.4; margin: 4px 0; }
+
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+</style>
+</head>
+<body>
+
+<!-- ═══ Page 1: 封面 ═══ -->
+<div class="slide slide-cover">
+  <div style="position:absolute;top:-100px;right:-100px;width:400px;height:400px;border-radius:50%;background:radial-gradient(#FF6B8A40,transparent 70%)"></div>
+  <div style="position:absolute;bottom:-80px;left:-60px;width:300px;height:300px;border-radius:50%;background:radial-gradient(#4A90D940,transparent 70%)"></div>
+  <div style="position:relative;z-index:1">
+    <p style="font-size:16px;opacity:.5;letter-spacing:4px;margin-bottom:20px">OPC 2026 · BOUNTY 03 · 银泰商业</p>
+    <h1 style="font-size:64px;margin-bottom:16px">AI喵搭</h1>
+    <p style="font-size:28px;opacity:.7;margin-bottom:40px">为 4500 万会员设计 AI 原生的喵街互动玩法</p>
+    <div style="display:flex;gap:12px">
+      <span class="tag tag-pink" style="font-size:15px;padding:8px 20px">AI 天气穿搭</span>
+      <span class="tag tag-pink" style="font-size:15px;padding:8px 20px">3D 虚拟试穿</span>
+      <span class="tag tag-pink" style="font-size:15px;padding:8px 20px">好友 PK 同框</span>
+      <span class="tag tag-pink" style="font-size:15px;padding:8px 20px">即看即买</span>
+    </div>
+  </div>
+  <div class="page-num">1 / 12</div>
+  <div class="footer">AI喵搭 · OPC 2026</div>
+</div>
+
+<!-- ═══ Page 2: 痛点 ═══ -->
+<div class="slide slide-light">
+  <h2 style="font-size:40px">4500 万会员，月均打开不足 5 次</h2>
+  <p style="color:#666;margin-bottom:40px">喵街 APP 缺少"每天必须打开"的理由</p>
+  <div class="row">
+    <div class="col">
+      <div class="card-light" style="margin-bottom:20px">
+        <p style="font-size:48px;font-weight:900;color:#FF6B8A;margin-bottom:8px">45%</p>
+        <p style="color:#888">会员月均打开 &lt; 5 次</p>
+      </div>
+      <div class="card-light">
+        <p style="font-size:48px;font-weight:900;color:#FF9800;margin-bottom:8px">&lt; 2 分钟</p>
+        <p style="color:#888">平均停留时长，买完即走</p>
+      </div>
+    </div>
+    <div class="col">
+      <div style="padding:20px">
+        <p style="font-weight:700;font-size:20px;margin-bottom:16px">三大断层</p>
+        <div style="margin-bottom:16px">
+          <p style="font-weight:700;font-size:18px;margin-bottom:4px">❌ 交易≠互动</p>
+          <p style="color:#888">APP 只做交易，没有互动钩子</p>
+        </div>
+        <div style="margin-bottom:16px">
+          <p style="font-weight:700;font-size:18px;margin-bottom:4px">❌ 穿搭刚需≠每日打开</p>
+          <p style="color:#888">每个人每天都要穿衣服，但和喵街没关系</p>
+        </div>
+        <div>
+          <p style="font-weight:700;font-size:18px;margin-bottom:4px">❌ 线上浏览≠线下体验</p>
+          <p style="color:#888">看到喜欢的，不知道门店有没有、在哪层</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="page-num">2 / 12</div>
+</div>
+
+<!-- ═══ Page 3: 解法 ═══ -->
+<div class="slide slide-dark">
+  <h2>把穿搭决策变成喵街的 DAU 引擎</h2>
+  <p style="opacity:.5;margin-bottom:40px">AI喵搭 = 天气 × AI穿搭 × 社交PK × 门店转化</p>
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-number">1</div>
+      <h3 style="color:#fff">每日驱动</h3>
+      <p>真实天气（温度/湿度/位置）→ AI 策划今日穿搭 → 推送钩子 → 打开查看</p>
+    </div>
+    <div class="card">
+      <div class="card-number">2</div>
+      <h3 style="color:#fff">社交裂变</h3>
+      <p>好友 PK 挑战 → 6位邀请码 → 双人3D同框 → 朋友圈投票 → 新用户回流</p>
+    </div>
+    <div class="card">
+      <div class="card-number">3</div>
+      <h3 style="color:#fff">O2O 闭环</h3>
+      <p>穿搭单品→门店库存→价格→楼层→一键导航到店→扫码购买→返图</p>
+    </div>
+  </div>
+  <div style="margin-top:50px;background:rgba(255,255,255,.05);border-radius:16px;padding:24px;text-align:center">
+    <p style="font-size:18px;opacity:.7">核心创新：<span style="color:#FF6B8A;font-weight:700">不是做一个好玩的游戏</span>，而是把穿搭决策这个<span style="color:#FF6B8A;font-weight:700">高频刚需</span>变成喵街的<span style="color:#FF6B8A;font-weight:700">每日打开理由</span></p>
+  </div>
+  <div class="page-num">3 / 12</div>
+</div>
+
+<!-- ═══ Page 4: 产品体验 ═══ -->
+<div class="slide slide-light">
+  <h2>3 步核心体验</h2>
+  <p style="color:#888;margin-bottom:36px">从打开到购买，全程 AI 驱动</p>
+  <div class="row">
+    <div class="col" style="text-align:center">
+      <div style="font-size:64px;margin-bottom:12px">🌤️</div>
+      <p style="font-weight:900;font-size:22px;margin-bottom:8px">发现</p>
+      <p style="color:#888;font-size:15px">实时天气 + 选择心情<br>AI 3秒生成今日穿搭<br>卡片翻转揭秘</p>
+    </div>
+    <div style="color:#CCC;font-size:28px;display:flex;align-items:center">→</div>
+    <div class="col" style="text-align:center">
+      <div style="font-size:64px;margin-bottom:12px">👗</div>
+      <p style="font-weight:900;font-size:22px;margin-bottom:8px">互动</p>
+      <p style="color:#888;font-size:15px">3D 虚拟试穿 360°旋转<br>穿搭日记连续打卡<br>好友 PK 双人同框</p>
+    </div>
+    <div style="color:#CCC;font-size:28px;display:flex;align-items:center">→</div>
+    <div class="col" style="text-align:center">
+      <div style="font-size:64px;margin-bottom:12px">🛍️</div>
+      <p style="font-weight:900;font-size:22px;margin-bottom:8px">转化</p>
+      <p style="color:#888;font-size:15px">单品标注门店库存<br>一键导航到店<br>即看即买 + 优惠券</p>
+    </div>
+  </div>
+  <div style="margin-top:40px;background:#F8F8F8;border-radius:16px;padding:20px">
+    <p style="font-size:15px;color:#888;text-align:center">穿插功能：穿搭日记 · 3D 同框 PK · 穿搭月报 · AI 海报分享 · 邀请码裂变</p>
+  </div>
+  <div class="page-num">4 / 12</div>
+</div>
+
+<!-- ═══ Page 5: AIGC 引擎 ═══ -->
+<div class="slide slide-dark">
+  <h2>AI 是核心引擎，不是概念包装</h2>
+  <p style="opacity:.5;margin-bottom:40px">拿掉 AI，产品不成立 — 不可能为 4500 万人每日人工搭配</p>
+  <div class="row">
+    <div class="col">
+      <div class="card" style="margin-bottom:20px">
+        <p style="font-weight:900;font-size:20px;margin-bottom:12px">🧠 LLM 风格策划</p>
+        <p style="opacity:.7;font-size:15px">天气+心情+用户风格+门店库存 → 结构化穿搭方案<br><br>
+        <span style="color:#FF6B8A">替代人类造型师</span>，完成穿搭决策的核心推理</p>
+      </div>
+      <div class="card">
+        <p style="font-weight:900;font-size:20px;margin-bottom:12px">🎨 Text-to-Image</p>
+        <p style="opacity:.7;font-size:15px">穿搭文案 → 杂志级穿搭效果图<br><br>
+        <span style="color:#FF6B8A">每日揭晓的核心视觉钩子</span></p>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card" style="margin-bottom:20px">
+        <p style="font-weight:900;font-size:20px;margin-bottom:12px">👗 3D 人体渲染</p>
+        <p style="opacity:.7;font-size:15px">5种身型 × 5种肤色参数化 → 个性化3D数字人<br><br>
+        <span style="color:#FF6B8A">原型为程序化建模，生产阶段升级为照片→AI真实3D建模</span></p>
+      </div>
+      <div class="card">
+        <p style="font-weight:900;font-size:20px;margin-bottom:12px">🌤️ 实时天气驱动</p>
+        <p style="opacity:.7;font-size:15px">GPS → Open-Meteo → 温湿度 → 场景化推荐<br><br>
+        <span style="color:#FF6B8A">不是随机推荐，是真实的"外面32°C穿什么"</span></p>
+      </div>
+    </div>
+  </div>
+  <div class="page-num">5 / 12</div>
+</div>
+
+<!-- ═══ Page 6: 3D 建模路径 ═══ -->
+<div class="slide slide-light">
+  <h2>3D 试穿：从参数化到真实建模</h2>
+  <p style="color:#888;margin-bottom:16px">原型验证体验 → 生产阶段照片生成真实数字分身</p>
+  <div class="row" style="margin-bottom:30px">
+    <div class="col">
+      <div class="card-light">
+        <p style="font-weight:900;font-size:18px;margin-bottom:8px">🏗️ 原型阶段（当前）</p>
+        <p style="color:#888;margin-bottom:8px">程序化人体建模</p>
+        <p style="font-size:15px;color:#666">• 17 个 Three.js 几何体实时拼合<br>• 根据 5 种身型参数变形<br>• 根据 5 种肤色偏好着色<br>• 零外部依赖，永远可用</p>
+      </div>
+    </div>
+    <div style="font-size:32px;display:flex;align-items:center;color:#CCC">→</div>
+    <div class="col">
+      <div class="card-light" style="border:2px solid #FF6B8A">
+        <p style="font-weight:900;font-size:18px;margin-bottom:8px">🎯 生产阶段（入围后）</p>
+        <p style="color:#888;margin-bottom:8px">用户真实 3D 重建</p>
+        <p style="font-size:15px;color:#666">• 用户上传全身照 → AI 3D 建模<br>• Ready Player Me API / 自研方案<br>• 真实服装 GLB 模型库（CLO3D / Style3D）<br>• 骨骼动画（走秀/pose）</p>
+      </div>
+    </div>
+  </div>
+  <div style="background:#F8F8F8;border-radius:16px;padding:20px;text-align:center">
+    <p style="font-size:15px;color:#666">原型阶段的程序化方案价值在于<span style="font-weight:700">验证"个性化试穿可行"</span>，不是最终答案</p>
+  </div>
+  <div class="page-num">6 / 12</div>
+</div>
+
+<!-- ═══ Page 7: 社交裂变 ═══ -->
+<div class="slide slide-dark">
+  <h2>朋友圈就是我们的增长引擎</h2>
+  <div class="row" style="margin-bottom:30px">
+    <div class="col">
+      <div style="font-size:56px;font-weight:900;color:#FF6B8A;margin-bottom:8px">25%</div>
+      <p style="opacity:.6">穿搭分享率</p>
+    </div>
+    <div class="col">
+      <div style="font-size:56px;font-weight:900;color:#4A90D9;margin-bottom:8px">k=0.3</div>
+      <p style="opacity:.6">病毒系数</p>
+    </div>
+    <div class="col">
+      <div style="font-size:56px;font-weight:900;color:#FFD700;margin-bottom:8px">20次</div>
+      <p style="opacity:.6">单次PK社交曝光</p>
+    </div>
+  </div>
+  <div class="card" style="text-align:center">
+    <p style="font-size:18px;line-height:2">
+      发起挑战 → <span style="color:#FF6B8A">6位邀请码</span> → 微信分享 → 好友点击加入<br>
+      两人 3D 模型同框 → <span style="color:#FFD700">朋友圈投票</span> → 胜者获门店优惠券<br>
+      投票人 → 好奇心 → 下载喵街 → <span style="color:#4A90D9">新用户</span>
+    </p>
+  </div>
+  <div class="page-num">7 / 12</div>
+</div>
+
+<!-- ═══ Page 8: O2O ═══ -->
+<div class="slide slide-light">
+  <h2>从"线上看"到"线下买"</h2>
+  <div class="row">
+    <div class="col">
+      <div style="font-size:64px;margin-bottom:16px">🔗</div>
+      <p style="font-weight:900;font-size:22px;margin-bottom:8px">每一件单品 = 一个门店入口</p>
+      <p style="color:#888;font-size:16px;line-height:1.8">
+        AI推荐穿搭（5件单品）<br>
+        → 每件标注"杭州武林银泰 2F 有货 ¥299"<br>
+        → 点击导航到店<br>
+        → 到店试穿 → 扫码购买<br>
+        → 穿搭返图 UGC 回流
+      </p>
+    </div>
+    <div class="col">
+      <div class="card-light" style="margin-bottom:16px">
+        <p style="font-weight:700;margin-bottom:4px">📍 门店导航</p>
+        <p style="color:#888;font-size:15px">用户知道哪家店、哪层楼有货</p>
+      </div>
+      <div class="card-light" style="margin-bottom:16px">
+        <p style="font-weight:700;margin-bottom:4px">🎫 优惠券核销</p>
+        <p style="color:#888;font-size:15px">PK 获胜 → 门店专属优惠券 → 到店消费</p>
+      </div>
+      <div class="card-light">
+        <p style="font-weight:700;margin-bottom:4px">🛡️ 银泰独有壁垒</p>
+        <p style="color:#888;font-size:15px">小红书只能看·得物只做潮鞋·银泰有 4500 万会员 × 真实门店库存 × 60 天无理由退换</p>
+      </div>
+    </div>
+  </div>
+  <div class="page-num">8 / 12</div>
+</div>
+
+<!-- ═══ Page 9: 商业价值 ═══ -->
+<div class="slide slide-dark">
+  <h2>商业价值测算</h2>
+  <div class="row" style="margin-bottom:30px">
+    <div class="col">
+      <p style="opacity:.5;margin-bottom:8px">保守假设</p>
+      <div style="font-size:15px;opacity:.7;line-height:2">
+        <p>· 渗透率 10% = 100 万活跃用户</p>
+        <p>· 穿搭→购买转化 10%</p>
+        <p>· 客单价 ¥400</p>
+        <p>· 月均购买 1.5 次</p>
+      </div>
+    </div>
+    <div class="col" style="text-align:center">
+      <p style="font-size:18px;opacity:.5;margin-bottom:8px">年 GMV</p>
+      <p style="font-size:80px;font-weight:900;color:#FF6B8A;line-height:1">¥14<small style="font-size:28px"> 亿</small></p>
+    </div>
+  </div>
+  <div class="grid-3">
+    <div class="card">
+      <p style="font-size:32px;font-weight:900;color:#4CAF50;margin-bottom:4px">+15-20%</p>
+      <p style="opacity:.6;font-size:15px">会员日活提升</p>
+    </div>
+    <div class="card">
+      <p style="font-size:32px;font-weight:900;color:#4A90D9;margin-bottom:4px">+5 分钟</p>
+      <p style="opacity:.6;font-size:15px">单日用户时长增长</p>
+    </div>
+    <div class="card">
+      <p style="font-size:32px;font-weight:900;color:#FF9800;margin-bottom:4px">+10%</p>
+      <p style="opacity:.6;font-size:15px">门店客流增长</p>
+    </div>
+  </div>
+  <div class="page-num">9 / 12</div>
+</div>
+
+<!-- ═══ Page 10: 竞品 ═══ -->
+<div class="slide slide-light">
+  <h2>唯一同时打通 5 个维度的产品</h2>
+  <table style="margin-bottom:20px">
+    <tr><th></th><th>穿搭内容</th><th>个性化AI</th><th>3D试穿</th><th>门店联动</th><th>社交PK</th></tr>
+    <tr><td>小红书</td><td><span class="check">✓</span></td><td><span class="cross">✗</span></td><td><span class="cross">✗</span></td><td><span class="cross">✗</span></td><td><span class="cross">✗</span></td></tr>
+    <tr><td>蘑菇街</td><td><span class="check">✓</span></td><td><span class="cross">✗</span></td><td><span class="cross">✗</span></td><td><span class="cross">✗</span></td><td><span class="cross">✗</span></td></tr>
+    <tr><td>得物</td><td><span class="check">✓</span></td><td><span class="cross">✗</span></td><td><span class="cross">✗</span></td><td><span class="cross">✗</span></td><td><span class="cross">✗</span></td></tr>
+    <tr><td>Whering</td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="cross">✗</span></td><td><span class="cross">✗</span></td><td><span class="cross">✗</span></td></tr>
+    <tr style="background:rgba(255,107,138,.08)"><td style="font-weight:900">AI喵搭</td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td></tr>
+  </table>
+  <div style="background:#F8F8F8;border-radius:16px;padding:20px;text-align:center">
+    <p style="font-size:16px;color:#666">核心壁垒：<span style="font-weight:700">银泰线下门店网络</span> + <span style="font-weight:700">喵街会员体系</span> + <span style="font-weight:700">真实库存联动</span> — 纯互联网产品无法复制</p>
+  </div>
+  <div class="page-num">10 / 12</div>
+</div>
+
+<!-- ═══ Page 11: 路线图 ═══ -->
+<div class="slide slide-dark">
+  <h2>实施路线图</h2>
+  <div class="row">
+    <div class="col">
+      <div class="card" style="margin-bottom:16px;border-left:4px solid #FF6B8A">
+        <p style="font-weight:900;font-size:18px;margin-bottom:4px">Q2 · 原型验证 ✅</p>
+        <p style="opacity:.6;font-size:14px">H5可运行原型 · 程序化3D · 天气驱动 · 本地全流程跑通</p>
+      </div>
+      <div class="card" style="margin-bottom:16px;border-left:4px solid #4A90D9">
+        <p style="font-weight:900;font-size:18px;margin-bottom:4px">Q3 · 真实AI接入</p>
+        <p style="opacity:.6;font-size:14px">公网部署 · 真实AI图像API · 喵街会员对接 · 武林店灰度</p>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card" style="margin-bottom:16px;border-left:4px solid #FFD700">
+        <p style="font-weight:900;font-size:18px;margin-bottom:4px">Q4 · 3D 升级</p>
+        <p style="opacity:.6;font-size:14px">照片→AI真实3D建模 · 真实GLB服装库 · 骨骼动画 · AR门店试穿</p>
+      </div>
+      <div class="card" style="border-left:4px solid #4CAF50">
+        <p style="font-weight:900;font-size:18px;margin-bottom:4px">2027 · 全量上线</p>
+        <p style="opacity:.6;font-size:14px">灰度测试→全量4500万会员 · 跨店穿搭 · AI衣橱管理</p>
+      </div>
+    </div>
+  </div>
+  <div class="page-num">11 / 12</div>
+</div>
+
+<!-- ═══ Page 12: 结尾 ═══ -->
+<div class="slide slide-cover" style="text-align:center">
+  <div style="position:absolute;top:-120px;left:50%;transform:translateX(-50%);width:500px;height:500px;border-radius:50%;background:radial-gradient(#FF6B8A30,transparent 70%)"></div>
+  <div style="position:relative;z-index:1">
+    <p style="font-size:48px;font-weight:900;margin-bottom:16px">谢谢</p>
+    <p style="font-size:22px;opacity:.6;margin-bottom:40px">AI喵搭 · 让每一位喵街会员每天都有理由打开APP</p>
+
+    <div class="row" style="justify-content:center;gap:60px;margin-bottom:40px">
+      <div>
+        <p style="font-size:14px;opacity:.4;margin-bottom:8px">代码仓库</p>
+        <p style="font-size:16px">github.com/Jerry-1092010180/-ai-meow-outfit</p>
+      </div>
+      <div>
+        <p style="font-size:14px;opacity:.4;margin-bottom:8px">在线体验</p>
+        <p style="font-size:16px">ai-meow-outfit.vercel.app</p>
+      </div>
+    </div>
+
+    <div class="qr-box">
+      <p>扫码体验Demo<br><br>← 部署后替换为<br>真实QR码</p>
+    </div>
+
+    <p style="margin-top:40px;opacity:.3;font-size:14px">OPC 2026 · Bounty 03 · 银泰商业 · 参赛方向：创想家</p>
+  </div>
+  <div class="page-num">12 / 12</div>
+</div>
+
+</body>
+</html>
