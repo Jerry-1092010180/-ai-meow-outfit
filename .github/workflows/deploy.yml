@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: Deploy
 
 on:
   push:
@@ -9,17 +9,26 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pages: write
-      id-token: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
       - run: npm ci
+
+      # 构建（GitHub Pages 用子路径）
       - run: npx vite build --base=/-ai-meow-outfit/
-      - name: Deploy to gh-pages
+      - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
+
+      # 构建（Cloudflare Pages 用根路径）
+      - run: npx vite build
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=ai-meow-outfit
