@@ -1,0 +1,1 @@
+var e=null,t=null;async function n(e){let t=await fetch(e);if(!t.ok)throw Error(`Failed to load ${e}: ${t.status}`);return t.json()}async function r(){return e||=await n(`/mock/data/items.json`),e}async function i(){return t||=await n(`/mock/data/outfits.json`),t}function a(e){return e[Math.floor(Math.random()*e.length)]}export{i as n,a as r,r as t};

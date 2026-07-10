@@ -1,0 +1,1 @@
+import{v as e,x as t}from"./proxy-BBnUdUYn.js";import{n,t as r}from"./useOutfitStore-BO92wCCG.js";var i=t(e(),1);function a(){let e=r(e=>e.streak),t=r(e=>e.lastOpenDate),a=r(e=>e.checkStreak),o=r(e=>e.loadTodayOutfit),s=t!==n();return(0,i.useEffect)(()=>{o(),a()},[]),{streak:e,isNewDay:s,lastOpenDate:t}}export{a as t};

@@ -1,0 +1,1 @@
+function e(e,t){try{let n=JSON.parse(localStorage.getItem(`aimm-analytics`)||`[]`);n.push({event:e,params:t,timestamp:Date.now()}),n.length>500&&n.shift(),localStorage.setItem(`aimm-analytics`,JSON.stringify(n))}catch{}}export{e as t};
