@@ -1,0 +1,143 @@
+{
+  "active": [
+    {
+      "id": "challenge-001",
+      "type": "1v1",
+      "theme": "夏日通勤PK",
+      "status": "voting",
+      "teamA": {
+        "id": "team-001a",
+        "members": [
+          { "userId": "user-mock-001", "name": "小雨", "avatar": "/mock/avatars/avatar-01.png" }
+        ],
+        "outfit": {
+          "id": "mock-outfit-001",
+          "date": "2026-07-09",
+          "name": "温柔通勤",
+          "mood": "calm",
+          "weather": { "temperature": 28, "condition": "sunny", "city": "杭州", "season": "summer" },
+          "pieces": [
+            { "type": "top", "name": "真丝飘带衬衫", "description": "柔软真丝面料", "color": "奶油白", "material": "真丝" },
+            { "type": "bottom", "name": "高腰直筒西裤", "description": "垂感面料", "color": "燕麦色", "material": "TR混纺" },
+            { "type": "shoes", "name": "尖头猫跟单鞋", "description": "舒适不累脚", "color": "裸色", "material": "羊皮" }
+          ],
+          "styleDescription": "温柔优雅的通勤穿搭",
+          "sceneImage": "/mock/outfits/scene-calm-001.jpg",
+          "linkedItems": [],
+          "styleScore": 92,
+          "tags": ["通勤", "优雅"],
+          "createdAt": "2026-07-09T08:00:00Z"
+        }
+      },
+      "teamB": {
+        "id": "team-001b",
+        "members": [
+          { "userId": "user-mock-002", "name": "Mia", "avatar": "/mock/avatars/avatar-02.png" }
+        ],
+        "outfit": {
+          "id": "mock-outfit-005",
+          "date": "2026-07-09",
+          "name": "自信职场",
+          "mood": "confident",
+          "weather": { "temperature": 27, "condition": "rainy", "city": "杭州", "season": "summer" },
+          "pieces": [
+            { "type": "top", "name": "系带真丝衬衫", "description": "领口系带设计", "color": "藏青色", "material": "桑蚕丝" },
+            { "type": "bottom", "name": "九分烟管裤", "description": "利落剪裁", "color": "黑色", "material": "西装面料" },
+            { "type": "outerwear", "name": "轻薄风衣", "description": "防泼水面料", "color": "卡其色", "material": "科技面料" }
+          ],
+          "styleDescription": "自信职场女性穿搭",
+          "sceneImage": "/mock/outfits/scene-confident-001.jpg",
+          "linkedItems": [],
+          "styleScore": 90,
+          "tags": ["职场", "干练"],
+          "createdAt": "2026-07-09T08:00:00Z"
+        }
+      },
+      "votesA": 128,
+      "votesB": 96,
+      "createdAt": "2026-07-08T10:00:00Z",
+      "votingEndsAt": "2026-07-10T10:00:00Z",
+      "reward": { "type": "coupon", "name": "满300减50优惠券", "description": "银泰百货服饰通用券", "value": 50, "code": "AIM50" }
+    },
+    {
+      "id": "challenge-002",
+      "type": "2v2",
+      "theme": "周末约会穿搭",
+      "status": "active",
+      "teamA": {
+        "id": "team-002a",
+        "members": [
+          { "userId": "user-mock-003", "name": "柠檬", "avatar": "/mock/avatars/avatar-03.png" },
+          { "userId": "user-mock-004", "name": "橙子", "avatar": "/mock/avatars/avatar-04.png" }
+        ],
+        "outfit": null
+      },
+      "teamB": {
+        "id": "team-002b",
+        "members": [
+          { "userId": "user-mock-005", "name": "CC", "avatar": "/mock/avatars/avatar-05.png" },
+          { "userId": "user-mock-006", "name": "小鹿", "avatar": "/mock/avatars/avatar-06.png" }
+        ],
+        "outfit": null
+      },
+      "votesA": 0,
+      "votesB": 0,
+      "createdAt": "2026-07-09T09:00:00Z",
+      "votingEndsAt": "2026-07-11T09:00:00Z"
+    }
+  ],
+  "completed": [
+    {
+      "id": "challenge-003",
+      "type": "1v1",
+      "theme": "韩系街头穿搭",
+      "status": "completed",
+      "teamA": {
+        "id": "team-003a",
+        "members": [
+          { "userId": "user-mock-001", "name": "小雨", "avatar": "/mock/avatars/avatar-01.png" }
+        ],
+        "outfit": null
+      },
+      "teamB": {
+        "id": "team-003b",
+        "members": [
+          { "userId": "user-mock-007", "name": "Yuki", "avatar": "/mock/avatars/avatar-07.png" }
+        ],
+        "outfit": null
+      },
+      "votesA": 245,
+      "votesB": 312,
+      "createdAt": "2026-07-05T12:00:00Z",
+      "votingEndsAt": "2026-07-07T12:00:00Z",
+      "winnerId": "team-003b",
+      "reward": { "type": "badge", "name": "穿搭达人", "description": "赢得一场穿搭PK挑战" }
+    },
+    {
+      "id": "challenge-004",
+      "type": "1v1",
+      "theme": "轻熟风职场",
+      "status": "completed",
+      "teamA": {
+        "id": "team-004a",
+        "members": [
+          { "userId": "user-mock-008", "name": "静静", "avatar": "/mock/avatars/avatar-08.png" }
+        ],
+        "outfit": null
+      },
+      "teamB": {
+        "id": "team-004b",
+        "members": [
+          { "userId": "user-mock-009", "name": "Luna", "avatar": "/mock/avatars/avatar-09.png" }
+        ],
+        "outfit": null
+      },
+      "votesA": 198,
+      "votesB": 167,
+      "createdAt": "2026-07-03T14:00:00Z",
+      "votingEndsAt": "2026-07-05T14:00:00Z",
+      "winnerId": "team-004a",
+      "reward": { "type": "coupon", "name": "品牌8折券", "description": "伊芙丽品牌折扣券", "value": 20, "code": "EIF20" }
+    }
+  ]
+}

@@ -1,0 +1,1532 @@
+[
+  {
+    "id": "outfit-01",
+    "date": "2026-07-01",
+    "name": "初夏微风通勤装",
+    "mood": "happy",
+    "weather": {
+      "temperature": 32,
+      "condition": "cloudy",
+      "city": "宁波",
+      "season": "summer",
+      "humidity": 61
+    },
+    "pieces": [
+      {
+        "type": "top",
+        "name": "雪纺印花衬衫",
+        "description": "轻盈雪纺面料，小碎花印花清新优雅，蝴蝶结领口设计甜美知性",
+        "color": "印花白",
+        "material": "精选面料",
+        "storeItemId": "item-023"
+      },
+      {
+        "type": "bottom",
+        "name": "一片式半身长裙",
+        "description": "一片式围裹设计，行走间自然开衩飘逸灵动，棉麻材质透气舒适",
+        "color": "黑色",
+        "material": "精选面料",
+        "storeItemId": "item-039"
+      },
+      {
+        "type": "dress",
+        "name": "缎面吊带裙",
+        "description": "丝滑缎面材质，简约吊带版型，单穿或搭配西装外套均精致动人",
+        "color": "香槟金",
+        "material": "精选面料",
+        "storeItemId": "item-012"
+      },
+      {
+        "type": "outerwear",
+        "name": "双面呢大衣",
+        "description": "100%羊毛双面呢手工缝制，廓形剪裁大气简约，可穿多年的经典款",
+        "color": "驼色",
+        "material": "精选面料",
+        "storeItemId": "item-034"
+      },
+      {
+        "type": "shoes",
+        "name": "玛丽珍平底鞋",
+        "description": "经典玛丽珍鞋型，搭扣设计复古甜美，平底款日常好走不累脚",
+        "color": "黑色",
+        "material": "精选面料",
+        "storeItemId": "item-018"
+      }
+    ],
+    "styleDescription": "这套穿搭用明亮的色彩传递愉悦心情，让你在每个转角都自带光芒。轻盈的面料与精致的剪裁相得益彰，就像阳光洒在银泰门店的橱窗上。",
+    "sceneImage": "https://picsum.photos/seed/outfit-1/600/800",
+    "linkedItems": [
+      {
+        "id": "item-023",
+        "name": "雪纺印花衬衫",
+        "brand": "Lily",
+        "price": 599,
+        "imageUrl": "https://picsum.photos/seed/chiffon-shirt/400/500",
+        "storeId": "store-nbty",
+        "storeName": "宁波天一银泰"
+      },
+      {
+        "id": "item-039",
+        "name": "一片式半身长裙",
+        "brand": "JNBY",
+        "price": 899,
+        "imageUrl": "https://picsum.photos/seed/wrap-skirt/400/500",
+        "storeId": "store-hzxh",
+        "storeName": "杭州西湖银泰"
+      },
+      {
+        "id": "item-012",
+        "name": "缎面吊带裙",
+        "brand": "Sandro",
+        "price": 1899,
+        "imageUrl": "https://picsum.photos/seed/satin-slip-dress/400/500",
+        "storeId": "store-hzxh",
+        "storeName": "杭州西湖银泰"
+      },
+      {
+        "id": "item-034",
+        "name": "双面呢大衣",
+        "brand": "鄂尔多斯",
+        "price": 2999,
+        "imageUrl": "https://picsum.photos/seed/wool-coat/400/500",
+        "storeId": "store-nbdm",
+        "storeName": "宁波东门银泰"
+      }
+    ],
+    "styleScore": 88,
+    "tags": [
+      "通勤",
+      "简约",
+      "初夏"
+    ],
+    "createdAt": "2026-06-30T16:00:00.000Z"
+  },
+  {
+    "id": "outfit-02",
+    "date": "2026-07-02",
+    "name": "浪漫约会晚装",
+    "mood": "romantic",
+    "weather": {
+      "temperature": 18,
+      "condition": "cloudy",
+      "city": "杭州",
+      "season": "spring",
+      "humidity": 69
+    },
+    "pieces": [
+      {
+        "type": "top",
+        "name": "雪纺印花衬衫",
+        "description": "轻盈雪纺面料，小碎花印花清新优雅，蝴蝶结领口设计甜美知性",
+        "color": "印花白",
+        "material": "精选面料",
+        "storeItemId": "item-023"
+      },
+      {
+        "type": "bottom",
+        "name": "一片式半身长裙",
+        "description": "一片式围裹设计，行走间自然开衩飘逸灵动，棉麻材质透气舒适",
+        "color": "黑色",
+        "material": "精选面料",
+        "storeItemId": "item-039"
+      },
+      {
+        "type": "dress",
+        "name": "缎面吊带裙",
+        "description": "丝滑缎面材质，简约吊带版型，单穿或搭配西装外套均精致动人",
+        "color": "香槟金",
+        "material": "精选面料",
+        "storeItemId": "item-012"
+      },
+      {
+        "type": "outerwear",
+        "name": "牛仔夹克",
+        "description": "经典牛仔夹克版型，做旧水洗工艺，春秋叠穿神器",
+        "color": "浅蓝",
+        "material": "精选面料",
+        "storeItemId": "item-022"
+      },
+      {
+        "type": "shoes",
+        "name": "尖头细跟高跟鞋",
+        "description": "8cm细跟拉长腿部线条，尖头设计时尚干练，羊皮内里舒适不磨脚",
+        "color": "裸色",
+        "material": "精选面料",
+        "storeItemId": "item-005"
+      }
+    ],
+    "styleDescription": "蕾丝、荷叶边、柔和色调……这套穿搭仿佛从韩剧里走出来。穿上它，每一步都是心动的感觉。",
+    "sceneImage": "https://picsum.photos/seed/outfit-2/600/800",
+    "linkedItems": [
+      {
+        "id": "item-023",
+        "name": "雪纺印花衬衫",
+        "brand": "Lily",
+        "price": 599,
+        "imageUrl": "https://picsum.photos/seed/chiffon-shirt/400/500",
+        "storeId": "store-nbty",
+        "storeName": "宁波天一银泰"
+      },
+      {
+        "id": "item-039",
+        "name": "一片式半身长裙",
+        "brand": "JNBY",
+        "price": 899,
+        "imageUrl": "https://picsum.photos/seed/wrap-skirt/400/500",
+        "storeId": "store-hzxh",
+        "storeName": "杭州西湖银泰"
+      },
+      {
+        "id": "item-012",
+        "name": "缎面吊带裙",
+        "brand": "Sandro",
+        "price": 1899,
+        "imageUrl": "https://picsum.photos/seed/satin-slip-dress/400/500",
+        "storeId": "store-hzxh",
+        "storeName": "杭州西湖银泰"
+      },
+      {
+        "id": "item-022",
+        "name": "牛仔夹克",
+        "brand": "Lee",
+        "price": 799,
+        "imageUrl": "https://picsum.photos/seed/denim-jacket/400/500",
+        "storeId": "store-nbdm",
+        "storeName": "宁波东门银泰"
+      }
+    ],
+    "styleScore": 94,
+    "tags": [
+      "约会",
+      "甜美",
+      "春日"
+    ],
+    "createdAt": "2026-07-01T16:00:00.000Z"
+  },
+  {
+    "id": "outfit-03",
+    "date": "2026-07-03",
+    "name": "街头潮人套装",
+    "mood": "confident",
+    "weather": {
+      "temperature": 18,
+      "condition": "snowy",
+      "city": "杭州",
+      "season": "autumn",
+      "humidity": 52
+    },
+    "pieces": [
+      {
+        "type": "top",
+        "name": "露肩针织衫",
+        "description": "一字肩设计优雅露肤，弹力针织面料贴合身型，约会聚会吸睛之选",
+        "color": "白色",
+        "material": "精选面料",
+        "storeItemId": "item-032"
+      },
+      {
+        "type": "bottom",
+        "name": "高腰直筒西裤",
+        "description": "高腰设计拉长腿部比例，垂感面料不易起皱，九分长度露出脚踝更显瘦",
+        "color": "黑色",
+        "material": "精选面料",
+        "storeItemId": "item-002"
+      },
+      {
+        "type": "dress",
+        "name": "V领针织连衣裙",
+        "description": "修身针织连衣裙，V领设计拉长颈部线条，单穿或搭外套均优雅",
+        "color": "黑色",
+        "material": "精选面料",
+        "storeItemId": "item-044"
+      },
+      {
+        "type": "outerwear",
+        "name": "羽绒马甲",
+        "description": "700蓬松度鹅绒填充，轻量保暖，可收纳设计方便携带",
+        "color": "黑色",
+        "material": "精选面料",
+        "storeItemId": "item-017"
+      },
+      {
+        "type": "shoes",
+        "name": "玛丽珍平底鞋",
+        "description": "经典玛丽珍鞋型，搭扣设计复古甜美，平底款日常好走不累脚",
+        "color": "黑色",
+        "material": "精选面料",
+        "storeItemId": "item-018"
+      }
+    ],
+    "styleDescription": "气场全开！利落的线条、挺括的版型、点睛的配饰，这套穿搭让你在人群中自带主角光环。",
+    "sceneImage": "https://picsum.photos/seed/outfit-3/600/800",
+    "linkedItems": [
+      {
+        "id": "item-032",
+        "name": "露肩针织衫",
+        "brand": "self-portrait",
+        "price": 1499,
+        "imageUrl": "https://picsum.photos/seed/off-shoulder/400/500",
+        "storeId": "store-hzxh",
+        "storeName": "杭州西湖银泰"
+      },
+      {
+        "id": "item-002",
+        "name": "高腰直筒西裤",
+        "brand": "Massimo Dutti",
+        "price": 899,
+        "imageUrl": "https://picsum.photos/seed/straight-pants/400/500",
+        "storeId": "store-hzwl",
+        "storeName": "杭州武林银泰"
+      },
+      {
+        "id": "item-044",
+        "name": "V领针织连衣裙",
+        "brand": "Massimo Dutti",
+        "price": 1099,
+        "imageUrl": "https://picsum.photos/seed/knit-dress/400/500",
+        "storeId": "store-nbty",
+        "storeName": "宁波天一银泰"
+      },
+      {
+        "id": "item-017",
+        "name": "羽绒马甲",
+        "brand": "The North Face",
+        "price": 1499,
+        "imageUrl": "https://picsum.photos/seed/vest/400/500",
+        "storeId": "store-hzcx",
+        "storeName": "杭州城西银泰"
+      }
+    ],
+    "styleScore": 82,
+    "tags": [
+      "街头",
+      "潮流",
+      "个性"
+    ],
+    "createdAt": "2026-07-02T16:00:00.000Z"
+  },
+  {
+    "id": "outfit-04",
+    "date": "2026-07-04",
+    "name": "慵懒周末休闲装",
+    "mood": "chill",
+    "weather": {
+      "temperature": 26,
+      "condition": "snowy",
+      "city": "杭州",
+      "season": "spring",
+      "humidity": 62
+    },
+    "pieces": [
+      {
+        "type": "top",
+        "name": "真丝吊带背心",
+        "description": "桑蚕丝面料丝滑亲肤，可调节肩带，四季必备基础内搭",
+        "color": "白色",
+        "material": "精选面料",
+        "storeItemId": "item-041"
+      },
+      {
+        "type": "bottom",
+        "name": "工装束脚裤",
+        "description": "工装风大口袋设计，束脚版型利落帅气，搭配运动鞋街头感十足",
+        "color": "军绿",
+        "material": "精选面料",
+        "storeItemId": "item-042"
+      },
+      {
+        "type": "dress",
+        "name": "缎面吊带裙",
+        "description": "丝滑缎面材质，简约吊带版型，单穿或搭配西装外套均精致动人",
+        "color": "香槟金",
+        "material": "精选面料",
+        "storeItemId": "item-012"
+      },
+      {
+        "type": "outerwear",
+        "name": "双面呢大衣",
+        "description": "100%羊毛双面呢手工缝制，廓形剪裁大气简约，可穿多年的经典款",
+        "color": "驼色",
+        "material": "精选面料",
+        "storeItemId": "item-034"
+      },
+      {
+        "type": "shoes",
+        "name": "尖头细跟高跟鞋",
+        "description": "8cm细跟拉长腿部线条，尖头设计时尚干练，羊皮内里舒适不磨脚",
+        "color": "裸色",
+        "material": "精选面料",
+        "storeItemId": "item-005"
+      }
+    ],
+    "styleDescription": "慵懒不等于随便。这套穿搭用宽松廓形和亲肤面料，打造出「刚刚好」的松弛感，周末就该这样穿。",
+    "sceneImage": "https://picsum.photos/seed/outfit-4/600/800",
+    "linkedItems": [
+      {
+        "id": "item-041",
+        "name": "真丝吊带背心",
+        "brand": "内外",
+        "price": 299,
+        "imageUrl": "https://picsum.photos/seed/silk-cami/400/500",
+        "storeId": "store-hzwl",
+        "storeName": "杭州武林银泰"
+      },
+      {
+        "id": "item-042",
+        "name": "工装束脚裤",
+        "brand": "太平鸟",
+        "price": 459,
+        "imageUrl": "https://picsum.photos/seed/cargo-pants/400/500",
+        "storeId": "store-nbdm",
+        "storeName": "宁波东门银泰"
+      },
+      {
+        "id": "item-012",
+        "name": "缎面吊带裙",
+        "brand": "Sandro",
+        "price": 1899,
+        "imageUrl": "https://picsum.photos/seed/satin-slip-dress/400/500",
+        "storeId": "store-hzxh",
+        "storeName": "杭州西湖银泰"
+      },
+      {
+        "id": "item-034",
+        "name": "双面呢大衣",
+        "brand": "鄂尔多斯",
+        "price": 2999,
+        "imageUrl": "https://picsum.photos/seed/wool-coat/400/500",
+        "storeId": "store-nbdm",
+        "storeName": "宁波东门银泰"
+      }
+    ],
+    "styleScore": 82,
+    "tags": [
+      "休闲",
+      "慵懒",
+      "周末"
+    ],
+    "createdAt": "2026-07-03T16:00:00.000Z"
+  },
+  {
+    "id": "outfit-05",
+    "date": "2026-07-05",
+    "name": "商务通勤精英范",
+    "mood": "calm",
+    "weather": {
+      "temperature": 17,
+      "condition": "cloudy",
+      "city": "杭州",
+      "season": "autumn",
+      "humidity": 84
+    },
+    "pieces": [
+      {
+        "type": "top",
+        "name": "蕾丝打底衫",
+        "description": "精致蕾丝领口设计，可内搭外穿两用，为简约搭配增添细节感",
+        "color": "白色",
+        "material": "精选面料",
+        "storeItemId": "item-037"
+      },
+      {
+        "type": "bottom",
+        "name": "阔腿牛仔裤",
+        "description": "复古阔腿版型，高腰设计修饰腰线，100%纯棉丹宁面料，四季可穿",
+        "color": "深蓝",
+        "material": "精选面料",
+        "storeItemId": "item-008"
+      },
+      {
+        "type": "dress",
+        "name": "缎面吊带裙",
+        "description": "丝滑缎面材质，简约吊带版型，单穿或搭配西装外套均精致动人",
+        "color": "香槟金",
+        "material": "精选面料",
+        "storeItemId": "item-012"
+      },
+      {
+        "type": "outerwear",
+        "name": "轻薄防晒外套",
+        "description": "UPF50+高效防晒，仅重150g超轻便携，可收纳至小袋随身携带",
+        "color": "白色",
+        "material": "精选面料",
+        "storeItemId": "item-049"
+      },
+      {
+        "type": "shoes",
+        "name": "乐福鞋",
+        "description": "意大利进口牛皮，经典马衔扣设计，舒适与优雅兼得的通勤利器",
+        "color": "黑色",
+        "material": "精选面料",
+        "storeItemId": "item-045"
+      }
+    ],
+    "styleDescription": "简约而不简单，这套穿搭以柔和色调和流畅线条，营造出令人心安的舒适感。在忙碌都市中，给自己留一份从容。",
+    "sceneImage": "https://picsum.photos/seed/outfit-5/600/800",
+    "linkedItems": [
+      {
+        "id": "item-037",
+        "name": "蕾丝打底衫",
+        "brand": "Ochirly",
+        "price": 369,
+        "imageUrl": "https://picsum.photos/seed/lace-top/400/500",
+        "storeId": "store-nbdm",
+        "storeName": "宁波东门银泰"
+      },
+      {
+        "id": "item-008",
+        "name": "阔腿牛仔裤",
+        "brand": "Levi's",
+        "price": 799,
+        "imageUrl": "https://picsum.photos/seed/wide-jeans/400/500",
+        "storeId": "store-nbty",
+        "storeName": "宁波天一银泰"
+      },
+      {
+        "id": "item-012",
+        "name": "缎面吊带裙",
+        "brand": "Sandro",
+        "price": 1899,
+        "imageUrl": "https://picsum.photos/seed/satin-slip-dress/400/500",
+        "storeId": "store-hzxh",
+        "storeName": "杭州西湖银泰"
+      },
+      {
+        "id": "item-049",
+        "name": "轻薄防晒外套",
+        "brand": "UNIQLO",
+        "price": 199,
+        "imageUrl": "https://picsum.photos/seed/uv-jacket/400/500",
+        "storeId": "store-hzxh",
+        "storeName": "杭州西湖银泰"
+      }
+    ],
+    "styleScore": 87,
+    "tags": [
+      "通勤",
+      "商务",
+      "极简"
+    ],
+    "createdAt": "2026-07-04T16:00:00.000Z"
+  },
+  {
+    "id": "outfit-06",
+    "date": "2026-07-06",
+    "name": "元气运动套装",
+    "mood": "energetic",
+    "weather": {
+      "temperature": 31,
+      "condition": "rainy",
+      "city": "杭州",
+      "season": "summer",
+      "humidity": 68
+    },
+    "pieces": [
+      {
+        "type": "top",
+        "name": "棉质条纹衬衫",
+        "description": "有机棉面料亲肤透气，宽松版型舒适自然，日系简约风格",
+        "color": "蓝白条纹",
+        "material": "精选面料",
+        "storeItemId": "item-013"
+      },
+      {
+        "type": "bottom",
+        "name": "格纹百褶短裙",
+        "description": "经典格纹百褶设计，学院风十足，内衬安全裤设计防走光",
+        "color": "格纹灰",
+        "material": "精选面料",
+        "storeItemId": "item-033"
+      },
+      {
+        "type": "dress",
+        "name": "缎面吊带裙",
+        "description": "丝滑缎面材质，简约吊带版型，单穿或搭配西装外套均精致动人",
+        "color": "香槟金",
+        "material": "精选面料",
+        "storeItemId": "item-012"
+      },
+      {
+        "type": "outerwear",
+        "name": "羊羔毛外套",
+        "description": "环保羊羔毛材质，温暖柔软，宽松版型叠穿不臃肿，冬日吸睛单品",
+        "color": "奶油白",
+        "material": "精选面料",
+        "storeItemId": "item-027"
+      },
+      {
+        "type": "shoes",
+        "name": "猫跟穆勒鞋",
+        "description": "3cm小猫跟舒适好走，穆勒鞋型慵懒精致兼具，春季通勤百搭",
+        "color": "米色",
+        "material": "精选面料",
+        "storeItemId": "item-030"
+      }
+    ],
+    "styleDescription": "充满活力的搭配让你随时准备出发！机能面料与动感设计碰撞，无论是逛街还是运动，都让你能量满满。",
+    "sceneImage": "https://picsum.photos/seed/outfit-6/600/800",
+    "linkedItems": [
+      {
+        "id": "item-013",
+        "name": "棉质条纹衬衫",
+        "brand": "MUJI",
+        "price": 299,
+        "imageUrl": "https://picsum.photos/seed/stripe-shirt/400/500",
+        "storeId": "store-hzcx",
+        "storeName": "杭州城西银泰"
+      },
+      {
+        "id": "item-033",
+        "name": "格纹百褶短裙",
+        "brand": "teenie weenie",
+        "price": 499,
+        "imageUrl": "https://picsum.photos/seed/pleated-skirt/400/500",
+        "storeId": "store-hzcx",
+        "storeName": "杭州城西银泰"
+      },
+      {
+        "id": "item-012",
+        "name": "缎面吊带裙",
+        "brand": "Sandro",
+        "price": 1899,
+        "imageUrl": "https://picsum.photos/seed/satin-slip-dress/400/500",
+        "storeId": "store-hzxh",
+        "storeName": "杭州西湖银泰"
+      },
+      {
+        "id": "item-027",
+        "name": "羊羔毛外套",
+        "brand": "MO&Co.",
+        "price": 2199,
+        "imageUrl": "https://picsum.photos/seed/shearling-coat/400/500",
+        "storeId": "store-hzcx",
+        "storeName": "杭州城西银泰"
+      }
+    ],
+    "styleScore": 95,
+    "tags": [
+      "运动",
+      "活力",
+      "夏日"
+    ],
+    "createdAt": "2026-07-05T16:00:00.000Z"
+  },
+  {
+    "id": "outfit-07",
+    "date": "2026-07-07",
+    "name": "韩系温柔风穿搭",
+    "mood": "calm",
+    "weather": {
+      "temperature": 24,
+      "condition": "cloudy",
+      "city": "宁波",
+      "season": "spring",
+      "humidity": 59
+    },
+    "pieces": [
+      {
+        "type": "top",
+        "name": "露肩针织衫",
+        "description": "一字肩设计优雅露肤，弹力针织面料贴合身型，约会聚会吸睛之选",
+        "color": "白色",
+        "material": "精选面料",
+        "storeItemId": "item-032"
+      },
+      {
+        "type": "bottom",
+        "name": "鱼尾半身长裙",
+        "description": "不规则鱼尾裙摆设计，走动间飘逸灵动，展现独特文艺气质",
+        "color": "米白",
+        "material": "精选面料",
+        "storeItemId": "item-016"
+      },
+      {
+        "type": "dress",
+        "name": "褶皱连衣裙",
+        "description": "标志性褶皱工艺，立体剪裁修饰身形，轻便易打理不需熨烫",
+        "color": "黑色",
+        "material": "精选面料",
+        "storeItemId": "item-026"
+      },
+      {
+        "type": "outerwear",
+        "name": "羽绒马甲",
+        "description": "700蓬松度鹅绒填充，轻量保暖，可收纳设计方便携带",
+        "color": "黑色",
+        "material": "精选面料",
+        "storeItemId": "item-017"
+      },
+      {
+        "type": "shoes",
+        "name": "白色厚底运动鞋",
+        "description": "经典574系列，厚底增高4cm，复古拼接设计，舒适又时髦",
+        "color": "白色",
+        "material": "精选面料",
+        "storeItemId": "item-009"
+      }
+    ],
+    "styleDescription": "简约而不简单，这套穿搭以柔和色调和流畅线条，营造出令人心安的舒适感。在忙碌都市中，给自己留一份从容。",
+    "sceneImage": "https://picsum.photos/seed/outfit-7/600/800",
+    "linkedItems": [
+      {
+        "id": "item-032",
+        "name": "露肩针织衫",
+        "brand": "self-portrait",
+        "price": 1499,
+        "imageUrl": "https://picsum.photos/seed/off-shoulder/400/500",
+        "storeId": "store-hzxh",
+        "storeName": "杭州西湖银泰"
+      },
+      {
+        "id": "item-016",
+        "name": "鱼尾半身长裙",
+        "brand": "JNBY",
+        "price": 1099,
+        "imageUrl": "https://picsum.photos/seed/mermaid-skirt/400/500",
+        "storeId": "store-hzxh",
+        "storeName": "杭州西湖银泰"
+      },
+      {
+        "id": "item-026",
+        "name": "褶皱连衣裙",
+        "brand": "三宅一生",
+        "price": 2899,
+        "imageUrl": "https://picsum.photos/seed/pleats-dress/400/500",
+        "storeId": "store-hzxh",
+        "storeName": "杭州西湖银泰"
+      },
+      {
+        "id": "item-017",
+        "name": "羽绒马甲",
+        "brand": "The North Face",
+        "price": 1499,
+        "imageUrl": "https://picsum.photos/seed/vest/400/500",
+        "storeId": "store-hzcx",
+        "storeName": "杭州城西银泰"
+      }
+    ],
+    "styleScore": 80,
+    "tags": [
+      "韩系",
+      "温柔",
+      "清新"
+    ],
+    "createdAt": "2026-07-06T16:00:00.000Z"
+  },
+  {
+    "id": "outfit-08",
+    "date": "2026-07-08",
+    "name": "复古文艺学院风",
+    "mood": "happy",
+    "weather": {
+      "temperature": 17,
+      "condition": "snowy",
+      "city": "杭州",
+      "season": "autumn",
+      "humidity": 66
+    },
+    "pieces": [
+      {
+        "type": "top",
+        "name": "条纹针织背心",
+        "description": "有机棉针织面料，经典条纹元素，可单穿亦可内搭衬衫叠穿",
+        "color": "黑白条纹",
+        "material": "精选面料",
+        "storeItemId": "item-028"
+      },
+      {
+        "type": "bottom",
+        "name": "弹力小脚裤",
+        "description": "高弹力面料贴合不紧绷，修身剪裁显瘦百搭，通勤基础款",
+        "color": "黑色",
+        "material": "精选面料",
+        "storeItemId": "item-024"
+      },
+      {
+        "type": "dress",
+        "name": "缎面吊带裙",
+        "description": "丝滑缎面材质，简约吊带版型，单穿或搭配西装外套均精致动人",
+        "color": "香槟金",
+        "material": "精选面料",
+        "storeItemId": "item-012"
+      },
+      {
+        "type": "outerwear",
+        "name": "双面呢大衣",
+        "description": "100%羊毛双面呢手工缝制，廓形剪裁大气简约，可穿多年的经典款",
+        "color": "驼色",
+        "material": "精选面料",
+        "storeItemId": "item-034"
+      },
+      {
+        "type": "shoes",
+        "name": "猫跟穆勒鞋",
+        "description": "3cm小猫跟舒适好走，穆勒鞋型慵懒精致兼具，春季通勤百搭",
+        "color": "米色",
+        "material": "精选面料",
+        "storeItemId": "item-030"
+      }
+    ],
+    "styleDescription": "这套穿搭用明亮的色彩传递愉悦心情，让你在每个转角都自带光芒。轻盈的面料与精致的剪裁相得益彰，就像阳光洒在银泰门店的橱窗上。",
+    "sceneImage": "https://picsum.photos/seed/outfit-8/600/800",
+    "linkedItems": [
+      {
+        "id": "item-028",
+        "name": "条纹针织背心",
+        "brand": "ICICLE",
+        "price": 899,
+        "imageUrl": "https://picsum.photos/seed/knit-vest/400/500",
+        "storeId": "store-nbdm",
+        "storeName": "宁波东门银泰"
+      },
+      {
+        "id": "item-024",
+        "name": "弹力小脚裤",
+        "brand": "太平鸟",
+        "price": 399,
+        "imageUrl": "https://picsum.photos/seed/skinny-pants/400/500",
+        "storeId": "store-hzcx",
+        "storeName": "杭州城西银泰"
+      },
+      {
+        "id": "item-012",
+        "name": "缎面吊带裙",
+        "brand": "Sandro",
+        "price": 1899,
+        "imageUrl": "https://picsum.photos/seed/satin-slip-dress/400/500",
+        "storeId": "store-hzxh",
+        "storeName": "杭州西湖银泰"
+      },
+      {
+        "id": "item-034",
+        "name": "双面呢大衣",
+        "brand": "鄂尔多斯",
+        "price": 2999,
+        "imageUrl": "https://picsum.photos/seed/wool-coat/400/500",
+        "storeId": "store-nbdm",
+        "storeName": "宁波东门银泰"
+      }
+    ],
+    "styleScore": 87,
+    "tags": [
+      "复古",
+      "学院",
+      "文艺"
+    ],
+    "createdAt": "2026-07-07T16:00:00.000Z"
+  },
+  {
+    "id": "outfit-09",
+    "date": "2026-07-09",
+    "name": "派对焦点闪亮装",
+    "mood": "confident",
+    "weather": {
+      "temperature": 7,
+      "condition": "windy",
+      "city": "宁波",
+      "season": "winter",
+      "humidity": 79
+    },
+    "pieces": [
+      {
+        "type": "top",
+        "name": "蕾丝打底衫",
+        "description": "精致蕾丝领口设计，可内搭外穿两用，为简约搭配增添细节感",
+        "color": "白色",
+        "material": "精选面料",
+        "storeItemId": "item-037"
+      },
+      {
+        "type": "bottom",
+        "name": "鱼尾半身长裙",
+        "description": "不规则鱼尾裙摆设计，走动间飘逸灵动，展现独特文艺气质",
+        "color": "米白",
+        "material": "精选面料",
+        "storeItemId": "item-016"
+      },
+      {
+        "type": "dress",
+        "name": "缎面吊带裙",
+        "description": "丝滑缎面材质，简约吊带版型，单穿或搭配西装外套均精致动人",
+        "color": "香槟金",
+        "material": "精选面料",
+        "storeItemId": "item-012"
+      },
+      {
+        "type": "outerwear",
+        "name": "牛仔夹克",
+        "description": "经典牛仔夹克版型，做旧水洗工艺，春秋叠穿神器",
+        "color": "浅蓝",
+        "material": "精选面料",
+        "storeItemId": "item-022"
+      },
+      {
+        "type": "shoes",
+        "name": "乐福鞋",
+        "description": "意大利进口牛皮，经典马衔扣设计，舒适与优雅兼得的通勤利器",
+        "color": "黑色",
+        "material": "精选面料",
+        "storeItemId": "item-045"
+      }
+    ],
+    "styleDescription": "气场全开！利落的线条、挺括的版型、点睛的配饰，这套穿搭让你在人群中自带主角光环。",
+    "sceneImage": "https://picsum.photos/seed/outfit-9/600/800",
+    "linkedItems": [
+      {
+        "id": "item-037",
+        "name": "蕾丝打底衫",
+        "brand": "Ochirly",
+        "price": 369,
+        "imageUrl": "https://picsum.photos/seed/lace-top/400/500",
+        "storeId": "store-nbdm",
+        "storeName": "宁波东门银泰"
+      },
+      {
+        "id": "item-016",
+        "name": "鱼尾半身长裙",
+        "brand": "JNBY",
+        "price": 1099,
+        "imageUrl": "https://picsum.photos/seed/mermaid-skirt/400/500",
+        "storeId": "store-hzxh",
+        "storeName": "杭州西湖银泰"
+      },
+      {
+        "id": "item-012",
+        "name": "缎面吊带裙",
+        "brand": "Sandro",
+        "price": 1899,
+        "imageUrl": "https://picsum.photos/seed/satin-slip-dress/400/500",
+        "storeId": "store-hzxh",
+        "storeName": "杭州西湖银泰"
+      },
+      {
+        "id": "item-022",
+        "name": "牛仔夹克",
+        "brand": "Lee",
+        "price": 799,
+        "imageUrl": "https://picsum.photos/seed/denim-jacket/400/500",
+        "storeId": "store-nbdm",
+        "storeName": "宁波东门银泰"
+      }
+    ],
+    "styleScore": 90,
+    "tags": [
+      "派对",
+      "闪耀",
+      "性感"
+    ],
+    "createdAt": "2026-07-08T16:00:00.000Z"
+  },
+  {
+    "id": "outfit-10",
+    "date": "2026-07-10",
+    "name": "冬日暖阳温馨装",
+    "mood": "calm",
+    "weather": {
+      "temperature": 1,
+      "condition": "windy",
+      "city": "杭州",
+      "season": "winter",
+      "humidity": 71
+    },
+    "pieces": [
+      {
+        "type": "top",
+        "name": "蕾丝打底衫",
+        "description": "精致蕾丝领口设计，可内搭外穿两用，为简约搭配增添细节感",
+        "color": "白色",
+        "material": "精选面料",
+        "storeItemId": "item-037"
+      },
+      {
+        "type": "bottom",
+        "name": "A字半身皮裙",
+        "description": "柔软羊皮面料，A字版型修饰胯部，拉链设计穿脱方便",
+        "color": "黑色",
+        "material": "精选面料",
+        "storeItemId": "item-014"
+      },
+      {
+        "type": "dress",
+        "name": "无袖连衣裙",
+        "description": "A字廓形无袖连衣裙，建筑感剪裁简约大气，搭配配饰即可出彩",
+        "color": "黑色",
+        "material": "精选面料",
+        "storeItemId": "item-050"
+      },
+      {
+        "type": "outerwear",
+        "name": "轻薄防晒外套",
+        "description": "UPF50+高效防晒，仅重150g超轻便携，可收纳至小袋随身携带",
+        "color": "白色",
+        "material": "精选面料",
+        "storeItemId": "item-049"
+      },
+      {
+        "type": "shoes",
+        "name": "厚底马丁靴",
+        "description": "经典1460八孔马丁靴，厚底增高5cm，帅气百搭秋冬必备",
+        "color": "黑色",
+        "material": "精选面料",
+        "storeItemId": "item-025"
+      }
+    ],
+    "styleDescription": "简约而不简单，这套穿搭以柔和色调和流畅线条，营造出令人心安的舒适感。在忙碌都市中，给自己留一份从容。",
+    "sceneImage": "https://picsum.photos/seed/outfit-10/600/800",
+    "linkedItems": [
+      {
+        "id": "item-037",
+        "name": "蕾丝打底衫",
+        "brand": "Ochirly",
+        "price": 369,
+        "imageUrl": "https://picsum.photos/seed/lace-top/400/500",
+        "storeId": "store-nbdm",
+        "storeName": "宁波东门银泰"
+      },
+      {
+        "id": "item-014",
+        "name": "A字半身皮裙",
+        "brand": "AllSaints",
+        "price": 1399,
+        "imageUrl": "https://picsum.photos/seed/leather-skirt/400/500",
+        "storeId": "store-nbty",
+        "storeName": "宁波天一银泰"
+      },
+      {
+        "id": "item-050",
+        "name": "无袖连衣裙",
+        "brand": "cos",
+        "price": 899,
+        "imageUrl": "https://picsum.photos/seed/sleeveless-dress/400/500",
+        "storeId": "store-nbdm",
+        "storeName": "宁波东门银泰"
+      },
+      {
+        "id": "item-049",
+        "name": "轻薄防晒外套",
+        "brand": "UNIQLO",
+        "price": 199,
+        "imageUrl": "https://picsum.photos/seed/uv-jacket/400/500",
+        "storeId": "store-hzxh",
+        "storeName": "杭州西湖银泰"
+      }
+    ],
+    "styleScore": 81,
+    "tags": [
+      "冬日",
+      "温暖",
+      "舒适"
+    ],
+    "createdAt": "2026-07-09T16:00:00.000Z"
+  },
+  {
+    "id": "outfit-11",
+    "date": "2026-07-11",
+    "name": "面试战袍精英装",
+    "mood": "confident",
+    "weather": {
+      "temperature": 23,
+      "condition": "rainy",
+      "city": "杭州",
+      "season": "spring",
+      "humidity": 82
+    },
+    "pieces": [
+      {
+        "type": "top",
+        "name": "雪纺印花衬衫",
+        "description": "轻盈雪纺面料，小碎花印花清新优雅，蝴蝶结领口设计甜美知性",
+        "color": "印花白",
+        "material": "精选面料",
+        "storeItemId": "item-023"
+      },
+      {
+        "type": "bottom",
+        "name": "格纹百褶短裙",
+        "description": "经典格纹百褶设计，学院风十足，内衬安全裤设计防走光",
+        "color": "格纹灰",
+        "material": "精选面料",
+        "storeItemId": "item-033"
+      },
+      {
+        "type": "dress",
+        "name": "褶皱连衣裙",
+        "description": "标志性褶皱工艺，立体剪裁修饰身形，轻便易打理不需熨烫",
+        "color": "黑色",
+        "material": "精选面料",
+        "storeItemId": "item-026"
+      },
+      {
+        "type": "outerwear",
+        "name": "轻薄防晒外套",
+        "description": "UPF50+高效防晒，仅重150g超轻便携，可收纳至小袋随身携带",
+        "color": "白色",
+        "material": "精选面料",
+        "storeItemId": "item-049"
+      },
+      {
+        "type": "shoes",
+        "name": "玛丽珍平底鞋",
+        "description": "经典玛丽珍鞋型，搭扣设计复古甜美，平底款日常好走不累脚",
+        "color": "黑色",
+        "material": "精选面料",
+        "storeItemId": "item-018"
+      }
+    ],
+    "styleDescription": "气场全开！利落的线条、挺括的版型、点睛的配饰，这套穿搭让你在人群中自带主角光环。",
+    "sceneImage": "https://picsum.photos/seed/outfit-11/600/800",
+    "linkedItems": [
+      {
+        "id": "item-023",
+        "name": "雪纺印花衬衫",
+        "brand": "Lily",
+        "price": 599,
+        "imageUrl": "https://picsum.photos/seed/chiffon-shirt/400/500",
+        "storeId": "store-nbty",
+        "storeName": "宁波天一银泰"
+      },
+      {
+        "id": "item-033",
+        "name": "格纹百褶短裙",
+        "brand": "teenie weenie",
+        "price": 499,
+        "imageUrl": "https://picsum.photos/seed/pleated-skirt/400/500",
+        "storeId": "store-hzcx",
+        "storeName": "杭州城西银泰"
+      },
+      {
+        "id": "item-026",
+        "name": "褶皱连衣裙",
+        "brand": "三宅一生",
+        "price": 2899,
+        "imageUrl": "https://picsum.photos/seed/pleats-dress/400/500",
+        "storeId": "store-hzxh",
+        "storeName": "杭州西湖银泰"
+      },
+      {
+        "id": "item-049",
+        "name": "轻薄防晒外套",
+        "brand": "UNIQLO",
+        "price": 199,
+        "imageUrl": "https://picsum.photos/seed/uv-jacket/400/500",
+        "storeId": "store-hzxh",
+        "storeName": "杭州西湖银泰"
+      }
+    ],
+    "styleScore": 76,
+    "tags": [
+      "面试",
+      "职场",
+      "干练"
+    ],
+    "createdAt": "2026-07-10T16:00:00.000Z"
+  },
+  {
+    "id": "outfit-12",
+    "date": "2026-07-12",
+    "name": "夏日清凉度假风",
+    "mood": "chill",
+    "weather": {
+      "temperature": 29,
+      "condition": "rainy",
+      "city": "宁波",
+      "season": "summer",
+      "humidity": 47
+    },
+    "pieces": [
+      {
+        "type": "top",
+        "name": "oversize卫衣",
+        "description": "加绒内里温暖舒适，oversize版型慵懒随性，韩系街头必备",
+        "color": "灰色",
+        "material": "精选面料",
+        "storeItemId": "item-020"
+      },
+      {
+        "type": "bottom",
+        "name": "鱼尾半身长裙",
+        "description": "不规则鱼尾裙摆设计，走动间飘逸灵动，展现独特文艺气质",
+        "color": "米白",
+        "material": "精选面料",
+        "storeItemId": "item-016"
+      },
+      {
+        "type": "dress",
+        "name": "V领针织连衣裙",
+        "description": "修身针织连衣裙，V领设计拉长颈部线条，单穿或搭外套均优雅",
+        "color": "黑色",
+        "material": "精选面料",
+        "storeItemId": "item-044"
+      },
+      {
+        "type": "outerwear",
+        "name": "双面呢大衣",
+        "description": "100%羊毛双面呢手工缝制，廓形剪裁大气简约，可穿多年的经典款",
+        "color": "驼色",
+        "material": "精选面料",
+        "storeItemId": "item-034"
+      },
+      {
+        "type": "shoes",
+        "name": "玛丽珍平底鞋",
+        "description": "经典玛丽珍鞋型，搭扣设计复古甜美，平底款日常好走不累脚",
+        "color": "黑色",
+        "material": "精选面料",
+        "storeItemId": "item-018"
+      }
+    ],
+    "styleDescription": "慵懒不等于随便。这套穿搭用宽松廓形和亲肤面料，打造出「刚刚好」的松弛感，周末就该这样穿。",
+    "sceneImage": "https://picsum.photos/seed/outfit-12/600/800",
+    "linkedItems": [
+      {
+        "id": "item-020",
+        "name": "oversize卫衣",
+        "brand": "Champion",
+        "price": 499,
+        "imageUrl": "https://picsum.photos/seed/hoodie/400/500",
+        "storeId": "store-hzcx",
+        "storeName": "杭州城西银泰"
+      },
+      {
+        "id": "item-016",
+        "name": "鱼尾半身长裙",
+        "brand": "JNBY",
+        "price": 1099,
+        "imageUrl": "https://picsum.photos/seed/mermaid-skirt/400/500",
+        "storeId": "store-hzxh",
+        "storeName": "杭州西湖银泰"
+      },
+      {
+        "id": "item-044",
+        "name": "V领针织连衣裙",
+        "brand": "Massimo Dutti",
+        "price": 1099,
+        "imageUrl": "https://picsum.photos/seed/knit-dress/400/500",
+        "storeId": "store-nbty",
+        "storeName": "宁波天一银泰"
+      },
+      {
+        "id": "item-034",
+        "name": "双面呢大衣",
+        "brand": "鄂尔多斯",
+        "price": 2999,
+        "imageUrl": "https://picsum.photos/seed/wool-coat/400/500",
+        "storeId": "store-nbdm",
+        "storeName": "宁波东门银泰"
+      }
+    ],
+    "styleScore": 88,
+    "tags": [
+      "度假",
+      "清凉",
+      "波西米亚"
+    ],
+    "createdAt": "2026-07-11T16:00:00.000Z"
+  },
+  {
+    "id": "outfit-13",
+    "date": "2026-07-13",
+    "name": "极简主义高级感",
+    "mood": "calm",
+    "weather": {
+      "temperature": -2,
+      "condition": "windy",
+      "city": "宁波",
+      "season": "winter",
+      "humidity": 75
+    },
+    "pieces": [
+      {
+        "type": "top",
+        "name": "薄荷绿针织短袖",
+        "description": "AIRism凉感面料，夏季贴身穿着清凉舒适，基础百搭款",
+        "color": "薄荷绿",
+        "material": "精选面料",
+        "storeItemId": "item-015"
+      },
+      {
+        "type": "bottom",
+        "name": "百慕大短裤",
+        "description": "膝上五分长度得体大方，西装面料质感通勤可穿，夏日清凉百搭",
+        "color": "卡其",
+        "material": "精选面料",
+        "storeItemId": "item-047"
+      },
+      {
+        "type": "dress",
+        "name": "无袖连衣裙",
+        "description": "A字廓形无袖连衣裙，建筑感剪裁简约大气，搭配配饰即可出彩",
+        "color": "黑色",
+        "material": "精选面料",
+        "storeItemId": "item-050"
+      },
+      {
+        "type": "outerwear",
+        "name": "经典款风衣",
+        "description": "经典双排扣风衣，防风防泼水面料，春秋季节的完美外搭",
+        "color": "卡其",
+        "material": "精选面料",
+        "storeItemId": "item-004"
+      },
+      {
+        "type": "shoes",
+        "name": "乐福鞋",
+        "description": "意大利进口牛皮，经典马衔扣设计，舒适与优雅兼得的通勤利器",
+        "color": "黑色",
+        "material": "精选面料",
+        "storeItemId": "item-045"
+      }
+    ],
+    "styleDescription": "简约而不简单，这套穿搭以柔和色调和流畅线条，营造出令人心安的舒适感。在忙碌都市中，给自己留一份从容。",
+    "sceneImage": "https://picsum.photos/seed/outfit-13/600/800",
+    "linkedItems": [
+      {
+        "id": "item-015",
+        "name": "薄荷绿针织短袖",
+        "brand": "UNIQLO",
+        "price": 149,
+        "imageUrl": "https://picsum.photos/seed/mint-tee/400/500",
+        "storeId": "store-hzwl",
+        "storeName": "杭州武林银泰"
+      },
+      {
+        "id": "item-047",
+        "name": "百慕大短裤",
+        "brand": "ZARA",
+        "price": 359,
+        "imageUrl": "https://picsum.photos/seed/bermuda-shorts/400/500",
+        "storeId": "store-hzcx",
+        "storeName": "杭州城西银泰"
+      },
+      {
+        "id": "item-050",
+        "name": "无袖连衣裙",
+        "brand": "cos",
+        "price": 899,
+        "imageUrl": "https://picsum.photos/seed/sleeveless-dress/400/500",
+        "storeId": "store-nbdm",
+        "storeName": "宁波东门银泰"
+      },
+      {
+        "id": "item-004",
+        "name": "经典款风衣",
+        "brand": "Burberry",
+        "price": 2599,
+        "imageUrl": "https://picsum.photos/seed/trench-coat/400/500",
+        "storeId": "store-hzwl",
+        "storeName": "杭州武林银泰"
+      }
+    ],
+    "styleScore": 94,
+    "tags": [
+      "极简",
+      "高级",
+      "质感"
+    ],
+    "createdAt": "2026-07-12T16:00:00.000Z"
+  },
+  {
+    "id": "outfit-14",
+    "date": "2026-07-14",
+    "name": "甜美约会樱花装",
+    "mood": "romantic",
+    "weather": {
+      "temperature": 18,
+      "condition": "sunny",
+      "city": "宁波",
+      "season": "spring",
+      "humidity": 79
+    },
+    "pieces": [
+      {
+        "type": "top",
+        "name": "oversize卫衣",
+        "description": "加绒内里温暖舒适，oversize版型慵懒随性，韩系街头必备",
+        "color": "灰色",
+        "material": "精选面料",
+        "storeItemId": "item-020"
+      },
+      {
+        "type": "bottom",
+        "name": "高腰直筒西裤",
+        "description": "高腰设计拉长腿部比例，垂感面料不易起皱，九分长度露出脚踝更显瘦",
+        "color": "黑色",
+        "material": "精选面料",
+        "storeItemId": "item-002"
+      },
+      {
+        "type": "dress",
+        "name": "褶皱连衣裙",
+        "description": "标志性褶皱工艺，立体剪裁修饰身形，轻便易打理不需熨烫",
+        "color": "黑色",
+        "material": "精选面料",
+        "storeItemId": "item-026"
+      },
+      {
+        "type": "outerwear",
+        "name": "双面呢大衣",
+        "description": "100%羊毛双面呢手工缝制，廓形剪裁大气简约，可穿多年的经典款",
+        "color": "驼色",
+        "material": "精选面料",
+        "storeItemId": "item-034"
+      },
+      {
+        "type": "shoes",
+        "name": "猫跟穆勒鞋",
+        "description": "3cm小猫跟舒适好走，穆勒鞋型慵懒精致兼具，春季通勤百搭",
+        "color": "米色",
+        "material": "精选面料",
+        "storeItemId": "item-030"
+      }
+    ],
+    "styleDescription": "蕾丝、荷叶边、柔和色调……这套穿搭仿佛从韩剧里走出来。穿上它，每一步都是心动的感觉。",
+    "sceneImage": "https://picsum.photos/seed/outfit-14/600/800",
+    "linkedItems": [
+      {
+        "id": "item-020",
+        "name": "oversize卫衣",
+        "brand": "Champion",
+        "price": 499,
+        "imageUrl": "https://picsum.photos/seed/hoodie/400/500",
+        "storeId": "store-hzcx",
+        "storeName": "杭州城西银泰"
+      },
+      {
+        "id": "item-002",
+        "name": "高腰直筒西裤",
+        "brand": "Massimo Dutti",
+        "price": 899,
+        "imageUrl": "https://picsum.photos/seed/straight-pants/400/500",
+        "storeId": "store-hzwl",
+        "storeName": "杭州武林银泰"
+      },
+      {
+        "id": "item-026",
+        "name": "褶皱连衣裙",
+        "brand": "三宅一生",
+        "price": 2899,
+        "imageUrl": "https://picsum.photos/seed/pleats-dress/400/500",
+        "storeId": "store-hzxh",
+        "storeName": "杭州西湖银泰"
+      },
+      {
+        "id": "item-034",
+        "name": "双面呢大衣",
+        "brand": "鄂尔多斯",
+        "price": 2999,
+        "imageUrl": "https://picsum.photos/seed/wool-coat/400/500",
+        "storeId": "store-nbdm",
+        "storeName": "宁波东门银泰"
+      }
+    ],
+    "styleScore": 94,
+    "tags": [
+      "约会",
+      "甜美",
+      "樱花"
+    ],
+    "createdAt": "2026-07-13T16:00:00.000Z"
+  },
+  {
+    "id": "outfit-15",
+    "date": "2026-07-15",
+    "name": "户外露营探险装",
+    "mood": "energetic",
+    "weather": {
+      "temperature": 20,
+      "condition": "windy",
+      "city": "杭州",
+      "season": "autumn",
+      "humidity": 57
+    },
+    "pieces": [
+      {
+        "type": "top",
+        "name": "薄荷绿针织短袖",
+        "description": "AIRism凉感面料，夏季贴身穿着清凉舒适，基础百搭款",
+        "color": "薄荷绿",
+        "material": "精选面料",
+        "storeItemId": "item-015"
+      },
+      {
+        "type": "bottom",
+        "name": "百慕大短裤",
+        "description": "膝上五分长度得体大方，西装面料质感通勤可穿，夏日清凉百搭",
+        "color": "卡其",
+        "material": "精选面料",
+        "storeItemId": "item-047"
+      },
+      {
+        "type": "dress",
+        "name": "复古碎花连衣裙",
+        "description": "法式复古碎花图案，V领收腰设计，裙摆轻盈飘逸，夏日约会首选",
+        "color": "碎花蓝",
+        "material": "精选面料",
+        "storeItemId": "item-003"
+      },
+      {
+        "type": "outerwear",
+        "name": "经典款风衣",
+        "description": "经典双排扣风衣，防风防泼水面料，春秋季节的完美外搭",
+        "color": "卡其",
+        "material": "精选面料",
+        "storeItemId": "item-004"
+      },
+      {
+        "type": "shoes",
+        "name": "白色厚底运动鞋",
+        "description": "经典574系列，厚底增高4cm，复古拼接设计，舒适又时髦",
+        "color": "白色",
+        "material": "精选面料",
+        "storeItemId": "item-009"
+      }
+    ],
+    "styleDescription": "充满活力的搭配让你随时准备出发！机能面料与动感设计碰撞，无论是逛街还是运动，都让你能量满满。",
+    "sceneImage": "https://picsum.photos/seed/outfit-15/600/800",
+    "linkedItems": [
+      {
+        "id": "item-015",
+        "name": "薄荷绿针织短袖",
+        "brand": "UNIQLO",
+        "price": 149,
+        "imageUrl": "https://picsum.photos/seed/mint-tee/400/500",
+        "storeId": "store-hzwl",
+        "storeName": "杭州武林银泰"
+      },
+      {
+        "id": "item-047",
+        "name": "百慕大短裤",
+        "brand": "ZARA",
+        "price": 359,
+        "imageUrl": "https://picsum.photos/seed/bermuda-shorts/400/500",
+        "storeId": "store-hzcx",
+        "storeName": "杭州城西银泰"
+      },
+      {
+        "id": "item-003",
+        "name": "复古碎花连衣裙",
+        "brand": "Maje",
+        "price": 2399,
+        "imageUrl": "https://picsum.photos/seed/floral-dress/400/500",
+        "storeId": "store-hzxh",
+        "storeName": "杭州西湖银泰"
+      },
+      {
+        "id": "item-004",
+        "name": "经典款风衣",
+        "brand": "Burberry",
+        "price": 2599,
+        "imageUrl": "https://picsum.photos/seed/trench-coat/400/500",
+        "storeId": "store-hzwl",
+        "storeName": "杭州武林银泰"
+      }
+    ],
+    "styleScore": 90,
+    "tags": [
+      "户外",
+      "机能",
+      "探险"
+    ],
+    "createdAt": "2026-07-14T16:00:00.000Z"
+  }
+]
