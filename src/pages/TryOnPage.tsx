@@ -1,581 +1,497 @@
-import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import Model3DViewer, { OUTFITS } from '@/components/outfit/Model3DViewer';
+import Model3DViewer from '@/components/outfit/Model3DViewer';
+import BottomNav from '@/components/common/BottomNav';
 import {
   createBodyModelManifest,
   downloadBodyModelManifest,
+  estimateBodyModelQuality,
 } from '@/services/bodyModelService';
 import type {
   BodyMeasurements,
   BodyModelManifest,
-  CaptureAngle,
   CaptureFrame,
 } from '@/types/bodyModel';
-import type { BodyType, SharePlatform } from '@/types';
+import type { BodyType } from '@/types';
 
-type TryOnStep = 'measure' | 'setup' | 'capture' | 'processing' | 'result';
-type NumericMeasurementKey = Exclude<keyof BodyMeasurements, 'bodyType'>;
-type OptionalMeasurementKey = Exclude<
-  NumericMeasurementKey,
-  'heightCm' | 'weightKg'
->;
+type TryOnStep = 'measure' | 'setup' | 'capture' | 'review' | 'result';
+type NumericKey = Exclude<keyof BodyMeasurements, 'bodyType'>;
 
-const CAPTURE_ANGLES: CaptureAngle[] = [
-  0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330,
-];
-
-const BODY_TYPES: { value: BodyType; label: string; hint: string }[] = [
-  { value: 'hourglass', label: 'X型', hint: '肩胯接近，腰线明显' },
-  { value: 'pear', label: '梨形', hint: '胯部更有存在感' },
-  { value: 'apple', label: '苹果', hint: '上身和腰腹更饱满' },
-  { value: 'rectangle', label: 'H型', hint: '肩腰胯线条较直' },
-  { value: 'inverted_triangle', label: '倒三角', hint: '肩部更宽' },
-];
-
-const INITIAL_MEASUREMENTS: BodyMeasurements = {
-  heightCm: 168,
-  weightKg: 55,
-  bodyType: 'hourglass',
+// 8 个关键角度 (45° 间隔, 覆盖 360°)
+const CAPTURE_ANGLES = [0, 45, 90, 135, 180, 225, 270, 315];
+const ANGLE_LABELS: Record<number, string> = {
+  0: '正面', 45: '右前', 90: '右侧', 135: '右后',
+  180: '背面', 225: '左后', 270: '左侧', 315: '左前',
 };
 
-const OPTIONAL_MEASUREMENT_FIELDS: {
-  key: OptionalMeasurementKey;
-  label: string;
-}[] = [
-  { key: 'shoulderCm', label: '肩宽 cm' },
-  { key: 'bustCm', label: '胸围 cm' },
-  { key: 'waistCm', label: '腰围 cm' },
-  { key: 'hipCm', label: '臀围 cm' },
-  { key: 'inseamCm', label: '内长 cm' },
+const BODY_TYPES: { value: BodyType; label: string }[] = [
+  { value: 'hourglass', label: '沙漏型' },
+  { value: 'pear', label: '梨型' },
+  { value: 'apple', label: '苹果型' },
+  { value: 'rectangle', label: '矩形' },
+  { value: 'inverted_triangle', label: '倒三角' },
 ];
 
-function numberValue(value: string) {
-  return value === '' ? undefined : Number(value);
+const DEFAULT_MEASUREMENTS: BodyMeasurements = {
+  heightCm: 165, weightKg: 55, bodyType: 'hourglass',
+};
+
+/** 语音引导 */
+function speak(text: string) {
+  if ('speechSynthesis' in window) {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'zh-CN'; u.rate = 0.9;
+    speechSynthesis.speak(u);
+  }
 }
 
-function makeDemoFrame(angle: CaptureAngle) {
-  const canvas = document.createElement('canvas');
-  canvas.width = 360;
-  canvas.height = 480;
-  const ctx = canvas.getContext('2d');
-
-  if (ctx) {
-    const gradient = ctx.createLinearGradient(0, 0, 360, 480);
-    gradient.addColorStop(0, '#111827');
-    gradient.addColorStop(1, '#4c1d95');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 360, 480);
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
-    ctx.fillRect(80, 48, 200, 360);
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '600 28px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(`${angle}deg`, 180, 230);
-    ctx.font = '16px sans-serif';
-    ctx.fillText('guided capture frame', 180, 260);
-  }
-
-  return canvas.toDataURL('image/webp', 0.72);
+/** 简易帧质量评估 */
+function assessFrameQuality(imageDataUrl: string): number {
+  // 实际产品中会用亮度、对比度、人体检测等指标
+  // 这里简化：data URL 长度作为粗略质量指标
+  const baseLen = imageDataUrl.length;
+  const minLen = 5000, maxLen = 200000;
+  return Math.round(Math.min(100, ((baseLen - minLen) / (maxLen - minLen)) * 60 + 35));
 }
 
 export default function TryOnPage() {
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+
   const [step, setStep] = useState<TryOnStep>('measure');
-  const [measurements, setMeasurements] =
-    useState<BodyMeasurements>(INITIAL_MEASUREMENTS);
-  const [captureFrames, setCaptureFrames] = useState<CaptureFrame[]>([]);
+  const [measurements, setMeasurements] = useState<BodyMeasurements>(DEFAULT_MEASUREMENTS);
+  const [frames, setFrames] = useState<CaptureFrame[]>([]);
+  const [currentAngle, setCurrentAngle] = useState(0);
+  const [countdown, setCountdown] = useState(-1);
+  const [manifest, setManifest] = useState<BodyModelManifest | null>(null);
   const [cameraReady, setCameraReady] = useState(false);
-  const [cameraError, setCameraError] = useState('');
-  const [modelManifest, setModelManifest] =
-    useState<BodyModelManifest | null>(null);
-  const [currentOutfitName, setCurrentOutfitName] = useState(OUTFITS[0].name);
 
-  const currentAngle = CAPTURE_ANGLES[captureFrames.length] ?? 330;
-  const progress = Math.round((captureFrames.length / CAPTURE_ANGLES.length) * 100);
-  const canUseMeasurements =
-    measurements.heightCm >= 120 &&
-    measurements.heightCm <= 220 &&
-    measurements.weightKg >= 30 &&
-    measurements.weightKg <= 180;
-
-  const bodyTypeCopy = useMemo(
-    () => BODY_TYPES.find((item) => item.value === measurements.bodyType),
-    [measurements.bodyType]
-  );
-
-  useEffect(() => {
-    return () => {
-      streamRef.current?.getTracks().forEach((track) => track.stop());
-    };
+  // 清理摄像头
+  const stopCamera = useCallback(() => {
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+    setCameraReady(false);
   }, []);
 
-  const updateMeasurement =
-    (key: NumericMeasurementKey) => (event: ChangeEvent<HTMLInputElement>) => {
-      const parsed = numberValue(event.target.value);
-      setMeasurements((current) => ({
-        ...current,
-        [key]: key === 'heightCm' || key === 'weightKg' ? parsed ?? 0 : parsed,
-      }));
-    };
+  useEffect(() => () => stopCamera(), [stopCamera]);
 
-  const startCamera = async () => {
-    setCameraError('');
-
-    if (!navigator.mediaDevices?.getUserMedia) {
-      setCameraError('当前浏览器不支持相机调用，可以先使用演示帧跑通流程。');
-      return;
+  // ── Step：资料填写 ──
+  const handleMeasureChange = (key: NumericKey, val: string) => {
+    const n = parseFloat(val);
+    if (!isNaN(n) && n > 0) {
+      setMeasurements((p) => ({ ...p, [key]: n }));
+    } else if (val === '') {
+      setMeasurements((p) => ({ ...p, [key]: undefined as any }));
     }
+  };
 
+  // ── Step：初始化摄像头 ──
+  const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: 'user',
-          width: { ideal: 720 },
-          height: { ideal: 1280 },
-        },
+        video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
         audio: false,
       });
       streamRef.current = stream;
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-      }
-
+      if (videoRef.current) videoRef.current.srcObject = stream;
       setCameraReady(true);
     } catch {
-      setCameraError('没有拿到相机权限。你仍然可以用演示帧生成建模任务。');
+      alert('无法访问摄像头，请允许相机权限后重试');
     }
   };
 
-  const captureCurrentFrame = () => {
-    const angle = CAPTURE_ANGLES[captureFrames.length];
-    if (angle === undefined) return;
+  // ── Step：开始采集 ──
+  const startCapture = useCallback(() => {
+    setCurrentAngle(0);
+    setFrames([]);
+    setCountdown(-1);
+    setStep('capture');
+    speak('请站到手机前方两米处，双手自然下垂。准备好了就开始。');
+    // 2 秒后开始第一个角度
+    setTimeout(() => {
+      setCountdown(3);
+      speak(`第一个角度：正面。保持不动，3，2，1`);
+    }, 2000);
+  }, []);
 
-    const video = videoRef.current;
-    let imageDataUrl = makeDemoFrame(angle);
-    let qualityScore = cameraReady ? 92 : 76;
-
-    if (video && video.videoWidth > 0 && video.videoHeight > 0) {
-      const canvas = document.createElement('canvas');
-      canvas.width = 360;
-      canvas.height = 480;
-      const ctx = canvas.getContext('2d');
-
-      if (ctx) {
-        const sourceRatio = video.videoWidth / video.videoHeight;
-        const targetRatio = canvas.width / canvas.height;
-        let sx = 0;
-        let sy = 0;
-        let sw = video.videoWidth;
-        let sh = video.videoHeight;
-
-        if (sourceRatio > targetRatio) {
-          sw = video.videoHeight * targetRatio;
-          sx = (video.videoWidth - sw) / 2;
-        } else {
-          sh = video.videoWidth / targetRatio;
-          sy = (video.videoHeight - sh) / 2;
-        }
-
-        ctx.drawImage(video, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
-        imageDataUrl = canvas.toDataURL('image/webp', 0.78);
-        qualityScore = 88 + Math.round(Math.random() * 8);
-      }
-    }
-
-    setCaptureFrames((frames) => [
-      ...frames,
-      {
-        angle,
-        imageDataUrl,
-        capturedAt: new Date().toISOString(),
-        qualityScore,
-      },
-    ]);
-  };
-
-  const buildModel = () => {
-    setStep('processing');
-    const request = {
-      measurements,
-      captureFrames,
-      captureMode: 'guided-360-phone-stand' as const,
-      deviceHint: navigator.userAgent,
-      createdAt: new Date().toISOString(),
-    };
-
-    window.setTimeout(() => {
-      setModelManifest(createBodyModelManifest(request));
-      setStep('result');
-    }, 1500);
-  };
-
-  const handleShare = async (_platform: SharePlatform) => {
-    if (navigator.share) {
-      await navigator.share({
-        title: `AI喵搭 - ${currentOutfitName}`,
-        text: `我用 360 度采集生成了 AI 数字分身，正在试穿 ${currentOutfitName}`,
-        url: window.location.href,
-      });
+  // 倒计时逻辑
+  useEffect(() => {
+    if (step !== 'capture' || countdown < 0) return;
+    if (countdown === 0) {
+      // 拍照
+      captureFrame();
       return;
     }
+    const timer = setTimeout(() => setCountdown((c) => c - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [step, countdown, currentAngle]);
 
-    await navigator.clipboard.writeText(window.location.href);
-    window.alert('链接已复制');
+  const captureFrame = useCallback(() => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas) return;
+
+    canvas.width = video.videoWidth || 1280;
+    canvas.height = video.videoHeight || 720;
+    const ctx = canvas.getContext('2d')!;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const imageDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+    const frame: CaptureFrame = {
+      angle: currentAngle as any,
+      imageDataUrl,
+      capturedAt: new Date().toISOString(),
+      qualityScore: assessFrameQuality(imageDataUrl),
+    };
+
+    setFrames((prev) => [...prev, frame]);
+
+    // 下一个角度
+    const nextIdx = CAPTURE_ANGLES.indexOf(currentAngle) + 1;
+    if (nextIdx < CAPTURE_ANGLES.length) {
+      const nextAngle = CAPTURE_ANGLES[nextIdx];
+      setCurrentAngle(nextAngle);
+      setCountdown(3);
+      const label = ANGLE_LABELS[nextAngle];
+      speak(`转向${label}，保持不动，3，2，1`);
+    } else {
+      // 采集完成
+      speak('采集完成！来看看效果吧。');
+      setCountdown(-1);
+      setStep('review');
+    }
+  }, [currentAngle]);
+
+  // ── Step：提交建模 ──
+  const submitModeling = () => {
+    const request = {
+      measurements,
+      captureFrames: frames,
+      captureMode: 'guided-360-phone-stand' as const,
+      deviceHint: navigator.userAgent.slice(0, 80),
+      createdAt: new Date().toISOString(),
+    };
+    const m = createBodyModelManifest(request);
+    setManifest(m);
+    setStep('result');
   };
 
-  const resetCapture = () => {
-    setCaptureFrames([]);
-    setModelManifest(null);
-    setStep('measure');
-  };
+  // ── 评分 ──
+  const qualityScore = useMemo(
+    () => (frames.length > 0 ? estimateBodyModelQuality(measurements, frames) : 0),
+    [measurements, frames]
+  );
+
+  const progressPct = frames.length / CAPTURE_ANGLES.length;
 
   return (
-    <div className="min-h-screen pb-24 safe-top safe-bottom bg-[#08111f] text-white">
-      <header className="sticky top-0 z-20 border-b border-white/10 bg-[#08111f]/90 backdrop-blur-xl">
+    <div className="min-h-screen pb-24 safe-top safe-bottom bg-gray-950">
+      <header className="sticky top-0 z-20 bg-gray-900/80 backdrop-blur-lg border-b border-white/10">
         <div className="flex items-center justify-between px-4 py-3">
-          <button className="text-sm text-white/60" onClick={() => navigate(-1)}>
-            ← 返回
-          </button>
-          <div className="text-center">
-            <h1 className="text-base font-bold">真人 3D 建模试穿</h1>
-            <p className="text-[11px] text-white/40">银泰 App 穿搭数字分身</p>
-          </div>
-          <button className="text-sm font-medium text-pink-300" onClick={resetCapture}>
-            重来
-          </button>
+          <button className="text-gray-400 text-sm" onClick={() => { stopCamera(); navigate(-1); }}>← 返回</button>
+          <h1 className="text-lg font-bold text-white">
+            {step === 'measure' && '身体数据'}
+            {step === 'setup' && '架设手机'}
+            {step === 'capture' && `采集 ${frames.length}/${CAPTURE_ANGLES.length}`}
+            {step === 'review' && '预览'}
+            {step === 'result' && '建模结果'}
+          </h1>
+          <div className="w-12" />
         </div>
       </header>
 
-      <main className="px-4 pt-4">
-        <div className="mb-4 grid grid-cols-4 gap-2 text-[11px] text-white/50">
-          {[
-            ['measure', '纸面数据'],
-            ['setup', '手机架设'],
-            ['capture', '360采集'],
-            ['result', '建模文件'],
-          ].map(([key, label], index) => (
-            <div key={key} className="space-y-1">
-              <div
-                className={`h-1.5 rounded-full ${
-                  ['measure', 'setup', 'capture', 'processing', 'result'].indexOf(step) >=
-                  index
-                    ? 'bg-pink-400'
-                    : 'bg-white/10'
-                }`}
-              />
-              <p>{label}</p>
-            </div>
-          ))}
-        </div>
-
+      <div className="px-4 pt-4">
         <AnimatePresence mode="wait">
+          {/* ═══ Step 1: 身体数据 ═══ */}
           {step === 'measure' && (
-            <motion.section
-              key="measure"
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              className="space-y-5"
-            >
-              <div>
-                <p className="text-sm text-pink-200">第一步</p>
-                <h2 className="mt-1 text-2xl font-bold">先把纸面身体数据填准</h2>
-                <p className="mt-2 text-sm leading-6 text-white/55">
-                  身高、体重和身材类型会先生成基础骨架，肩宽、腰围、臀围等可选数据会让后续真人建模更贴近本人。
-                </p>
+            <motion.div key="measure" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <div className="text-center mb-6">
+                <span className="text-5xl mb-4 block">📋</span>
+                <h2 className="text-xl font-bold text-white mb-2">身体数据</h2>
+                <p className="text-gray-400 text-sm">AI 将根据这些数据为你生成专属 3D 数字分身</p>
               </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <label className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
-                  <span className="text-xs text-white/45">身高 cm</span>
-                  <input
-                    className="mt-2 w-full bg-transparent text-2xl font-bold outline-none"
-                    type="number"
-                    min="120"
-                    max="220"
-                    value={measurements.heightCm ?? ''}
-                    onChange={updateMeasurement('heightCm')}
-                  />
-                </label>
-                <label className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
-                  <span className="text-xs text-white/45">体重 kg</span>
-                  <input
-                    className="mt-2 w-full bg-transparent text-2xl font-bold outline-none"
-                    type="number"
-                    min="30"
-                    max="180"
-                    value={measurements.weightKg ?? ''}
-                    onChange={updateMeasurement('weightKg')}
-                  />
-                </label>
-              </div>
-
-              <div>
-                <p className="mb-3 text-sm font-medium text-white/70">身材类型</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {BODY_TYPES.map((item) => (
-                    <button
-                      key={item.value}
-                      className={`rounded-2xl border p-3 text-left transition ${
-                        measurements.bodyType === item.value
-                          ? 'border-pink-300 bg-pink-400/18 text-white'
-                          : 'border-white/10 bg-white/[0.04] text-white/65'
-                      }`}
-                      onClick={() =>
-                        setMeasurements((current) => ({
-                          ...current,
-                          bodyType: item.value,
-                        }))
-                      }
-                    >
-                      <span className="block text-sm font-bold">{item.label}</span>
-                      <span className="mt-1 block text-[11px] leading-4 opacity-65">
-                        {item.hint}
-                      </span>
-                    </button>
-                  ))}
+              <div className="rounded-2xl bg-white/5 border border-white/10 p-4 space-y-4 mb-6">
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="身高 (cm)" value={measurements.heightCm} onChange={(v) => handleMeasureChange('heightCm', v)} />
+                  <Field label="体重 (kg)" value={measurements.weightKg} onChange={(v) => handleMeasureChange('weightKg', v)} />
+                  <Field label="肩宽 (cm)" value={measurements.shoulderCm} onChange={(v) => handleMeasureChange('shoulderCm', v)} optional />
+                  <Field label="胸围 (cm)" value={measurements.bustCm} onChange={(v) => handleMeasureChange('bustCm', v)} optional />
+                  <Field label="腰围 (cm)" value={measurements.waistCm} onChange={(v) => handleMeasureChange('waistCm', v)} optional />
+                  <Field label="臀围 (cm)" value={measurements.hipCm} onChange={(v) => handleMeasureChange('hipCm', v)} optional />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-400 mb-2 block">身型</label>
+                  <div className="flex gap-2 flex-wrap">
+                    {BODY_TYPES.map((bt) => (
+                      <button
+                        key={bt.value}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                          measurements.bodyType === bt.value
+                            ? 'bg-pink-500 text-white'
+                            : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                        }`}
+                        onClick={() => setMeasurements((p) => ({ ...p, bodyType: bt.value }))}
+                      >
+                        {bt.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                {OPTIONAL_MEASUREMENT_FIELDS.map(({ key, label }) => (
-                  <label
-                    key={key}
-                    className="rounded-2xl border border-white/10 bg-white/[0.04] p-3"
-                  >
-                    <span className="text-xs text-white/45">{label}</span>
-                    <input
-                      className="mt-2 w-full bg-transparent text-lg font-semibold outline-none"
-                      type="number"
-                      min="20"
-                      max="180"
-                      placeholder="可选"
-                      value={measurements[key] ?? ''}
-                      onChange={updateMeasurement(key)}
-                    />
-                  </label>
-                ))}
-              </div>
-
-              <button
-                className="w-full rounded-2xl bg-pink-400 py-4 text-sm font-bold text-[#08111f] disabled:bg-white/10 disabled:text-white/35"
-                disabled={!canUseMeasurements}
+              <motion.button
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold shadow-lg"
+                whileTap={{ scale: 0.96 }}
                 onClick={() => setStep('setup')}
               >
-                下一步：架好手机
-              </button>
-            </motion.section>
+                下一步：架设手机
+              </motion.button>
+            </motion.div>
           )}
 
+          {/* ═══ Step 2: 架设手机 ═══ */}
           {step === 'setup' && (
-            <motion.section
-              key="setup"
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              className="space-y-5"
-            >
-              <div>
-                <p className="text-sm text-pink-200">第二步</p>
-                <h2 className="mt-1 text-2xl font-bold">手机立在桌面，身体完整入镜</h2>
-                <p className="mt-2 text-sm leading-6 text-white/55">
-                  建议距离手机 1.5 到 2 米，光线从正前方来。转身时保持站姿自然，慢慢完成一圈。
+            <motion.div key="setup" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <div className="text-center mb-6">
+                <span className="text-6xl mb-4 block">📱</span>
+                <h2 className="text-xl font-bold text-white mb-2">架设手机</h2>
+                <p className="text-gray-400 text-sm max-w-xs mx-auto">
+                  将手机固定在与胸部齐平的位置（如靠墙、书架或三脚架），后置摄像头对准你站立的区域。
                 </p>
               </div>
-
-              <div className="grid gap-3">
-                {[
-                  ['1', '手机竖屏固定', '靠墙或支架放稳，镜头高度尽量接近腰胸之间。'],
-                  ['2', '穿贴身但不紧绷的衣服', '避免宽大外套遮挡肩线、腰线和腿部轮廓。'],
-                  ['3', '按 30 度一步转身', '每次听到提示或看到角度后停一下，采集 12 帧。'],
-                ].map(([index, title, desc]) => (
-                  <div
-                    key={title}
-                    className="flex gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-4"
-                  >
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-pink-400 text-sm font-bold text-[#08111f]">
-                      {index}
+              <div className="rounded-2xl bg-white/5 border border-white/10 p-4 mb-6">
+                <div className="relative w-full rounded-xl overflow-hidden bg-black" style={{ aspectRatio: '4/3' }}>
+                  {cameraReady ? (
+                    <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full text-gray-500">
+                      <span className="text-4xl mb-3">📷</span>
+                      <p className="text-sm">摄像头预览</p>
                     </div>
-                    <div>
-                      <p className="font-semibold">{title}</p>
-                      <p className="mt-1 text-sm leading-5 text-white/50">{desc}</p>
+                  )}
+                </div>
+                <canvas ref={canvasRef} className="hidden" />
+              </div>
+              {!cameraReady ? (
+                <motion.button
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold shadow-lg"
+                  whileTap={{ scale: 0.96 }}
+                  onClick={startCamera}
+                >
+                  📷 打开相机
+                </motion.button>
+              ) : (
+                <motion.button
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold shadow-lg"
+                  whileTap={{ scale: 0.96 }}
+                  onClick={startCapture}
+                >
+                  ⚡ 开始 360° 采集
+                </motion.button>
+              )}
+              <button
+                className="w-full mt-3 py-2 text-sm text-gray-500"
+                onClick={() => { setStep('measure'); stopCamera(); }}
+              >
+                上一步
+              </button>
+            </motion.div>
+          )}
+
+          {/* ═══ Step 3: 自动采集 ═══ */}
+          {step === 'capture' && (
+            <motion.div key="capture" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              {/* 进度条 */}
+              <div className="mb-4">
+                <div className="flex items-center justify-between text-sm mb-2">
+                  <span className="text-gray-400">采集进度</span>
+                  <span className="text-pink-400 font-bold">{frames.length}/{CAPTURE_ANGLES.length}</span>
+                </div>
+                <div className="h-2 rounded-full bg-white/10 overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-pink-500 to-purple-500 rounded-full transition-all duration-500"
+                    style={{ width: `${progressPct * 100}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* 摄像头 + 引导 */}
+              <div className="relative w-full rounded-2xl overflow-hidden bg-black mb-4" style={{ aspectRatio: '4/3' }}>
+                <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+                <canvas ref={canvasRef} className="hidden" />
+
+                {/* 人形站位引导框 */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="w-2/5 h-4/5 border-2 border-dashed border-pink-400/50 rounded-3xl flex items-center justify-center">
+                    <span className="text-pink-400/30 text-xs">站位区域</span>
+                  </div>
+                </div>
+
+                {/* 当前角度 */}
+                <div className="absolute top-3 left-3 bg-black/50 backdrop-blur rounded-full px-3 py-1">
+                  <span className="text-white text-sm font-bold">
+                    {ANGLE_LABELS[currentAngle]} ({currentAngle}°)
+                  </span>
+                </div>
+
+                {/* 倒计时 */}
+                {countdown >= 0 && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                    <motion.div
+                      key={countdown}
+                      className="text-8xl font-black text-white"
+                      initial={{ scale: 2, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.5, opacity: 0 }}
+                    >
+                      {countdown > 0 ? countdown : '📸'}
+                    </motion.div>
+                  </div>
+                )}
+              </div>
+
+              {/* 已采集缩略图 */}
+              <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+                {frames.map((f, i) => (
+                  <div key={i} className="flex-shrink-0 w-12 h-16 rounded-lg overflow-hidden border border-white/10 relative">
+                    <img src={f.imageDataUrl} alt="" className="w-full h-full object-cover" />
+                    <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-[8px] text-center text-white">
+                      {ANGLE_LABELS[f.angle]}
                     </div>
                   </div>
                 ))}
               </div>
-
-              <button
-                className="w-full rounded-2xl border border-white/10 bg-white/[0.06] py-3 text-sm font-semibold text-white"
-                onClick={startCamera}
-              >
-                {cameraReady ? '相机已就绪' : '打开相机预览'}
-              </button>
-              {cameraError && (
-                <p className="rounded-2xl bg-amber-400/12 p-3 text-sm leading-5 text-amber-100">
-                  {cameraError}
-                </p>
-              )}
-
-              <button
-                className="w-full rounded-2xl bg-pink-400 py-4 text-sm font-bold text-[#08111f]"
-                onClick={() => setStep('capture')}
-              >
-                开始 360 度采集
-              </button>
-            </motion.section>
+            </motion.div>
           )}
 
-          {step === 'capture' && (
-            <motion.section
-              key="capture"
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              className="space-y-4"
-            >
-              <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-black">
-                <video
-                  ref={videoRef}
-                  className="h-[520px] w-full object-cover"
-                  playsInline
-                  muted
-                />
-                {!cameraReady && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#101827] text-center">
-                    <div className="text-5xl font-black text-white/10">
-                      {currentAngle}°
-                    </div>
-                    <p className="mt-3 max-w-[240px] text-sm leading-6 text-white/55">
-                      未开启相机时会生成演示帧，方便先跑通建模任务流程。
-                    </p>
-                  </div>
-                )}
-                <div className="pointer-events-none absolute inset-x-8 top-10 h-[380px] rounded-[48%] border-2 border-dashed border-pink-200/65" />
-                <div className="absolute left-4 top-4 rounded-full bg-black/60 px-3 py-1 text-sm font-bold">
-                  当前角度 {currentAngle}°
-                </div>
-                <div className="absolute bottom-4 left-4 right-4">
-                  <div className="h-2 overflow-hidden rounded-full bg-white/15">
-                    <div
-                      className="h-full rounded-full bg-pink-300"
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
-                  <p className="mt-2 text-center text-xs text-white/65">
-                    已采集 {captureFrames.length}/{CAPTURE_ANGLES.length} 帧
-                  </p>
-                </div>
+          {/* ═══ Step 4: 预览 ═══ */}
+          {step === 'review' && (
+            <motion.div key="review" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <div className="text-center mb-4">
+                <h2 className="text-xl font-bold text-white mb-2">采集完成 ✨</h2>
+                <p className="text-gray-400 text-sm">
+                  {frames.length}/{CAPTURE_ANGLES.length} 个角度 · 质量评分 {qualityScore}
+                </p>
               </div>
-
-              <div className="grid grid-cols-6 gap-2">
+              {/* 8 格预览 */}
+              <div className="grid grid-cols-4 gap-1.5 mb-6">
                 {CAPTURE_ANGLES.map((angle) => {
-                  const done = captureFrames.some((frame) => frame.angle === angle);
+                  const frame = frames.find((f) => f.angle === angle);
                   return (
-                    <div
-                      key={angle}
-                      className={`rounded-full py-1 text-center text-[11px] ${
-                        done ? 'bg-pink-300 text-[#08111f]' : 'bg-white/8 text-white/40'
-                      }`}
-                    >
-                      {angle}°
+                    <div key={angle} className="aspect-[3/4] rounded-lg overflow-hidden bg-white/5 border border-white/10">
+                      {frame ? (
+                        <div className="relative w-full h-full">
+                          <img src={frame.imageDataUrl} alt="" className="w-full h-full object-cover" />
+                          <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-[10px] text-center text-white py-0.5">
+                            {ANGLE_LABELS[angle]}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-center h-full text-white/20 text-xs">缺失</div>
+                      )}
                     </div>
                   );
                 })}
               </div>
-
-              {captureFrames.length < CAPTURE_ANGLES.length ? (
+              <div className="flex gap-3">
                 <button
-                  className="w-full rounded-2xl bg-pink-400 py-4 text-sm font-bold text-[#08111f]"
-                  onClick={captureCurrentFrame}
+                  className="flex-1 py-3 rounded-xl bg-white/5 text-gray-400 text-sm font-medium"
+                  onClick={() => { setStep('capture'); startCapture(); }}
                 >
-                  采集当前角度，继续慢慢转身
+                  重新采集
                 </button>
-              ) : (
                 <button
-                  className="w-full rounded-2xl bg-emerald-300 py-4 text-sm font-bold text-[#08111f]"
-                  onClick={buildModel}
+                  className="flex-1 py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold"
+                  onClick={submitModeling}
                 >
-                  生成真人 3D 建模任务
+                  提交建模
                 </button>
-              )}
-            </motion.section>
+              </div>
+            </motion.div>
           )}
 
-          {step === 'processing' && (
-            <motion.section
-              key="processing"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="flex min-h-[560px] flex-col items-center justify-center text-center"
-            >
-              <motion.div
-                className="mb-6 h-20 w-20 rounded-full border-4 border-pink-200/20 border-t-pink-300"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1.1, repeat: Infinity, ease: 'linear' }}
-              />
-              <h2 className="text-xl font-bold">正在生成建模文件</h2>
-              <p className="mt-3 max-w-xs text-sm leading-6 text-white/50">
-                正在整理纸面数据、多角度帧和试穿预览参数，生成可提交给后端真人重建服务的 manifest。
+          {/* ═══ Step 5: 结果 ═══ */}
+          {step === 'result' && manifest && (
+            <motion.div key="result" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <div className="text-center mb-6">
+                <div className="text-6xl mb-4">🎉</div>
+                <h2 className="text-xl font-bold text-white mb-2">建模任务已生成</h2>
+                <div className="flex items-center justify-center gap-2 text-sm">
+                  <span className="text-gray-400">评分</span>
+                  <span className={`font-bold ${qualityScore >= 80 ? 'text-green-400' : 'text-yellow-400'}`}>
+                    {qualityScore}/100
+                  </span>
+                </div>
+              </div>
+
+              {/* 3D 参数化预览 */}
+              <div className="mb-6">
+                <p className="text-xs text-gray-500 text-center mb-2">← 基于采集数据的参数化预览（非最终 GLB 模型） →</p>
+                <Model3DViewer bodyModel={measurements} />
+              </div>
+
+              {/* 流水线步骤 */}
+              <div className="rounded-2xl bg-white/5 border border-white/10 p-4 mb-4">
+                <p className="text-xs text-gray-400 mb-3">后端建模流水线</p>
+                {manifest.pipeline.map((step, i) => (
+                  <div key={i} className="flex items-center gap-2 text-xs text-gray-500 py-1">
+                    <span className="text-pink-400">{i + 1}.</span>
+                    <span>{step}</span>
+                  </div>
+                ))}
+              </div>
+
+              <p className="text-xs text-gray-500 text-center mb-4">
+                {manifest.note}
               </p>
-            </motion.section>
-          )}
 
-          {step === 'result' && modelManifest && (
-            <motion.section
-              key="result"
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              className="space-y-4"
-            >
-              <div className="rounded-3xl border border-emerald-300/25 bg-emerald-300/10 p-4">
-                <p className="text-sm text-emerald-100">建模任务已生成</p>
-                <h2 className="mt-1 text-xl font-bold">{modelManifest.output.fileName}</h2>
-                <p className="mt-2 text-sm leading-6 text-white/55">
-                  质量评分 {modelManifest.qualityScore}/100，已整理 {modelManifest.captureFrameCount}
-                  帧 360 度采集数据。后端接入后可把这些数据转换成真人 GLB 模型。
-                </p>
-              </div>
-
-              <Model3DViewer
-                outfitId="casual"
-                bodyModel={measurements}
-                onOutfitChange={(outfit) => setCurrentOutfitName(outfit.name)}
-              />
-
-              <div className="grid grid-cols-2 gap-3">
+              <div className="flex gap-3">
                 <button
-                  className="rounded-2xl bg-white py-3 text-sm font-bold text-[#08111f]"
-                  onClick={() => downloadBodyModelManifest(modelManifest)}
+                  className="flex-1 py-3 rounded-xl bg-white/5 text-gray-400 text-sm font-medium"
+                  onClick={() => downloadBodyModelManifest(manifest)}
                 >
-                  下载建模 manifest
+                  📥 下载建模任务文件
                 </button>
                 <button
-                  className="rounded-2xl border border-white/10 bg-white/[0.06] py-3 text-sm font-bold text-white"
-                  onClick={() => handleShare('copy_link')}
+                  className="flex-1 py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold text-sm"
+                  onClick={() => navigate('/')}
                 >
-                  分享试穿结果
+                  回到首页
                 </button>
               </div>
-
-              <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                <p className="text-sm font-semibold">当前数字分身参数</p>
-                <p className="mt-2 text-sm leading-6 text-white/55">
-                  {measurements.heightCm}cm / {measurements.weightKg}kg /{' '}
-                  {bodyTypeCopy?.label}。银泰 App 后续可以用同一个 manifest ID
-                  绑定门店穿搭推荐、3D 试穿和会员资产。
-                </p>
-              </div>
-            </motion.section>
+            </motion.div>
           )}
         </AnimatePresence>
-      </main>
+      </div>
+
+      <BottomNav dark />
+    </div>
+  );
+}
+
+// ── 输入字段 ──
+function Field({
+  label, value, onChange, optional,
+}: {
+  label: string; value: number | undefined; onChange: (v: string) => void; optional?: boolean;
+}) {
+  return (
+    <div>
+      <label className="text-xs text-gray-400 mb-1 block">
+        {label}{optional && <span className="text-gray-600 ml-1">选填</span>}
+      </label>
+      <input
+        type="number"
+        inputMode="decimal"
+        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm
+                   focus:border-pink-500 focus:outline-none placeholder-gray-600"
+        placeholder="—"
+        value={value ?? ''}
+        onChange={(e) => onChange(e.target.value)}
+      />
     </div>
   );
 }
