@@ -3,6 +3,7 @@ import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ROUTES } from '@/config/routes';
 import { useOutfitStore } from '@/stores/useOutfitStore';
+import BottomNav from '@/components/common/BottomNav';
 import { useShareHandler } from '@/hooks/useShareHandler';
 import { usePosterComposer } from '@/hooks/usePosterComposer';
 import { getPosterTemplates } from '@/services/shareService';
@@ -181,6 +182,7 @@ export default function SharePage() {
           )}
         </div>
       </div>
+      <BottomNav />
     </div>
   );
 }

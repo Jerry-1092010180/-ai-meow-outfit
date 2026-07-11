@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ROUTES } from '@/config/routes';
 import { useChallengeStore } from '@/stores/useChallengeStore';
+import BottomNav from '@/components/common/BottomNav';
 
 export default function ChallengeDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -215,6 +216,7 @@ export default function ChallengeDetailPage() {
           )}
         </div>
       </div>
+      <BottomNav />
     </div>
   );
 }
