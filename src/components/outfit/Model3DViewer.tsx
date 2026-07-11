@@ -1,4 +1,4 @@
-import { useState, Component, type ReactNode } from 'react';
+import { useState, useEffect, Component, type ReactNode } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
@@ -60,6 +60,7 @@ interface Model3DViewerProps {
 
 export default function Model3DViewer({ outfitId = 'casual', onOutfitChange }: Model3DViewerProps) {
   const [selectedId, setSelectedId] = useState(outfitId);
+  useEffect(() => setSelectedId(outfitId), [outfitId]);
   const current = OUTFITS.find((o) => o.id === selectedId) || OUTFITS[0];
 
   return (

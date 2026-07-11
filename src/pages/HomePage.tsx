@@ -41,7 +41,9 @@ export default function HomePage() {
       setStep('generating');
       track('outfit_generate', { mood });
       await generate(mood);
-      setStep('reveal');
+      // 只在生成成功（todayOutfit 不为空）时进入 reveal
+      const outfit = useOutfitStore.getState().todayOutfit;
+      setStep(outfit ? 'reveal' : 'mood');
     },
     [generate]
   );

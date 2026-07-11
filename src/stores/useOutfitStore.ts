@@ -30,20 +30,23 @@ export const useOutfitStore = create<OutfitState>()(
       isGenerating: false,
 
       generateOutfit: async (mood: Mood) => {
+        if (get().isGenerating) return; // 并发锁
         set({ isGenerating: true });
         try {
           const outfit = await generateOutfitService(mood, 'current-user');
           const today = getToday();
           set((state) => ({
             todayOutfit: outfit,
+            diary: { ...state.diary, [today]: outfit },
             lastOpenDate: today,
             isGenerating: false,
           }));
-        } catch {
+        } catch (e) {
           set({ isGenerating: false });
           useNotificationStore
             .getState()
             .addNotification('生成失败，请重试', 'error');
+          throw e;
         }
       },
 

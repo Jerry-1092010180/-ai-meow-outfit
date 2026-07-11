@@ -58,6 +58,7 @@ export function pick<T>(arr: T[], n: number): T[] {
 }
 
 /** 随机选 1 个 */
-export function pickOne<T>(arr: T[]): T {
+export function pickOne<T>(arr: T[]): T | undefined {
+  if (arr.length === 0) return undefined;
   return arr[Math.floor(Math.random() * arr.length)];
 }

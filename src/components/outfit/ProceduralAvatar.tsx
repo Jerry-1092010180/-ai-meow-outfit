@@ -45,7 +45,10 @@ export default function ProceduralAvatar({
   const profile = useUserStore((s) => s.profile);
 
   const bodyType = outfit.bodyType || profile?.bodyType || 'hourglass';
-  const skin = outfit.skinTone || SKIN_TONES[profile?.colorPreferences?.[0] || 'warm'];
+  const rawSkin = outfit.skinTone;
+  const skin = rawSkin
+    ? (SKIN_TONES[rawSkin as ColorPreference] || rawSkin)
+    : SKIN_TONES[profile?.colorPreferences?.[0] || 'warm'];
   const hair = '#3D2B1F';
   const bp = BODY_PARAMS[bodyType] || BODY_PARAMS.hourglass;
 
