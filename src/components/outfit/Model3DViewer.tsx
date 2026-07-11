@@ -3,6 +3,7 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls, ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
 import ProceduralAvatar from './ProceduralAvatar';
+import type { BodyMeasurements } from '@/types/bodyModel';
 
 // ── 穿搭定义 ──
 interface OutfitDef {
@@ -56,9 +57,14 @@ function Floor() {
 interface Model3DViewerProps {
   outfitId?: string;
   onOutfitChange?: (outfit: OutfitDef) => void;
+  bodyModel?: BodyMeasurements;
 }
 
-export default function Model3DViewer({ outfitId = 'casual', onOutfitChange }: Model3DViewerProps) {
+export default function Model3DViewer({
+  outfitId = 'casual',
+  onOutfitChange,
+  bodyModel,
+}: Model3DViewerProps) {
   const [selectedId, setSelectedId] = useState(outfitId);
   useEffect(() => setSelectedId(outfitId), [outfitId]);
   const current = OUTFITS.find((o) => o.id === selectedId) || OUTFITS[0];
@@ -87,6 +93,9 @@ export default function Model3DViewer({ outfitId = 'casual', onOutfitChange }: M
                   topColor: current.topColor,
                   bottomColor: current.bottomColor,
                   shoeColor: current.shoeColor,
+                  bodyType: bodyModel?.bodyType,
+                  heightCm: bodyModel?.heightCm,
+                  weightKg: bodyModel?.weightKg,
                 }}
               />
             </group>

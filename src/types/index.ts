@@ -4,3 +4,4 @@ export * from './challenge';
 export * from './store';
 export * from './share';
 export * from './api';
+export * from './bodyModel';

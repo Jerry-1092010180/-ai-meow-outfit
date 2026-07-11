@@ -25,6 +25,8 @@ export interface AvatarOutfit {
   shoeColor: string;
   skinTone?: string | ColorPreference;
   bodyType?: BodyType;
+  heightCm?: number;
+  weightKg?: number;
 }
 
 interface ProceduralAvatarProps {
@@ -51,6 +53,10 @@ export default function ProceduralAvatar({
     : SKIN_TONES[profile?.colorPreferences?.[0] || 'warm'];
   const hair = '#3D2B1F';
   const bp = BODY_PARAMS[bodyType] || BODY_PARAMS.hourglass;
+  const heightScale = outfit.heightCm ? outfit.heightCm / 168 : 1;
+  const weightScale = outfit.weightKg ? Math.sqrt(outfit.weightKg / 58) : 1;
+  const avatarScale = scale * Math.min(Math.max(heightScale, 0.88), 1.12);
+  const widthScale = Math.min(Math.max(weightScale, 0.88), 1.14);
 
   useFrame(() => {
     if (groupRef.current && animate) {
@@ -58,8 +64,16 @@ export default function ProceduralAvatar({
     }
   });
 
-  const s = scale;
-  const { torsoW, hipW, shoulderOff } = bp;
+  const s = avatarScale;
+  const {
+    torsoW,
+    hipW,
+    shoulderOff,
+  } = {
+    torsoW: bp.torsoW * widthScale,
+    hipW: bp.hipW * widthScale,
+    shoulderOff: bp.shoulderOff * Math.min(Math.max(widthScale, 0.94), 1.08),
+  };
 
   return (
     <group ref={groupRef} position={position}>
