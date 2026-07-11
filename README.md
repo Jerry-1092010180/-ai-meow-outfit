@@ -14,7 +14,7 @@
 
 ## 🚀 在线体验
 
-> **主链接**：[https://c3c21dc7.ai-meow-outfit.pages.dev](https://c3c21dc7.ai-meow-outfit.pages.dev) ← 评委扫码入口
+> **主链接**：[https://1bd6bea0.ai-meow-outfit.pages.dev](https://1bd6bea0.ai-meow-outfit.pages.dev) ← 评委扫码入口
 
 | 备用平台 | 链接 |
 |----------|------|
