@@ -14,8 +14,9 @@ import type {
   CaptureFrame,
 } from '@/types/bodyModel';
 import type { BodyType } from '@/types';
+import { submitReconstruction, checkAvatarHealth } from '@/services/avatarApi';
 
-type TryOnStep = 'measure' | 'setup' | 'capture' | 'review' | 'result';
+type TryOnStep = 'measure' | 'setup' | 'capture' | 'review' | 'reconstructing' | 'result';
 type NumericKey = Exclude<keyof BodyMeasurements, 'bodyType'>;
 
 // 8 个关键角度 (45° 间隔, 覆盖 360°)
@@ -69,6 +70,8 @@ export default function TryOnPage() {
   const [countdown, setCountdown] = useState(-1);
   const [manifest, setManifest] = useState<BodyModelManifest | null>(null);
   const [cameraReady, setCameraReady] = useState(false);
+  const [reconstructResult, setReconstructResult] = useState<any>(null);
+  const [apiAvailable, setApiAvailable] = useState(false);
 
   // 清理摄像头
   const stopCamera = useCallback(() => {
@@ -167,7 +170,8 @@ export default function TryOnPage() {
   }, [currentAngle]);
 
   // ── Step：提交建模 ──
-  const submitModeling = () => {
+  const submitModeling = async () => {
+    // Create manifest for local download
     const request = {
       measurements,
       captureFrames: frames,
@@ -177,6 +181,16 @@ export default function TryOnPage() {
     };
     const m = createBodyModelManifest(request);
     setManifest(m);
+
+    // Try real GPU reconstruction
+    setStep('reconstructing');
+    try {
+      const result = await submitReconstruction(measurements, frames);
+      setReconstructResult(result);
+      setApiAvailable(true);
+    } catch {
+      setApiAvailable(false);
+    }
     setStep('result');
   };
 
@@ -198,7 +212,8 @@ export default function TryOnPage() {
             {step === 'setup' && '架设手机'}
             {step === 'capture' && `采集 ${frames.length}/${CAPTURE_ANGLES.length}`}
             {step === 'review' && '预览'}
-            {step === 'result' && '建模结果'}
+            {step === 'reconstructing' && '重建中...'}
+            {step === 'result' && (apiAvailable ? '真实模型' : '建模结果')}
           </h1>
           <div className="w-12" />
         </div>
@@ -413,47 +428,89 @@ export default function TryOnPage() {
             </motion.div>
           )}
 
-          {/* ═══ Step 5: 结果 ═══ */}
+          {/* ═══ Step: 重建中 ═══ */}
+          {step === 'reconstructing' && (
+            <motion.div key="reconstructing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="flex flex-col items-center justify-center py-20">
+              <motion.div className="text-6xl mb-6" animate={{ rotate: 360 }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}>✨</motion.div>
+              <h2 className="text-xl font-bold text-white mb-2">4090D GPU 重建中...</h2>
+              <p className="text-gray-400 text-sm text-center max-w-xs">
+                正在将 {frames.length} 张多视角照片通过 silhouette carving + marching cubes 生成 3D 模型
+              </p>
+            </motion.div>
+          )}
+
+          {/* ═══ Step: 结果 ═══ */}
           {step === 'result' && manifest && (
             <motion.div key="result" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <div className="text-center mb-6">
-                <div className="text-6xl mb-4">🎉</div>
-                <h2 className="text-xl font-bold text-white mb-2">建模任务已生成</h2>
-                <div className="flex items-center justify-center gap-2 text-sm">
-                  <span className="text-gray-400">评分</span>
-                  <span className={`font-bold ${qualityScore >= 80 ? 'text-green-400' : 'text-yellow-400'}`}>
-                    {qualityScore}/100
-                  </span>
+              <div className="text-center mb-4">
+                <div className="text-5xl mb-3">{apiAvailable ? '✅' : '🎉'}</div>
+                <h2 className="text-xl font-bold text-white mb-1">
+                  {apiAvailable ? '4090D GPU 真实重建完成' : '建模任务已生成'}
+                </h2>
+                <div className="flex items-center justify-center gap-3 text-sm">
+                  <span className="text-gray-400">评分 {qualityScore}/100</span>
+                  {reconstructResult && (
+                    <>
+                      <span className="text-gray-600">·</span>
+                      <span className="text-green-400">{reconstructResult.vertices.toLocaleString()} 顶点</span>
+                      <span className="text-gray-600">·</span>
+                      <span className="text-green-400">{reconstructResult.elapsed_seconds}s</span>
+                    </>
+                  )}
                 </div>
               </div>
 
-              {/* 3D 参数化预览 */}
+              {/* 真实 GLB 模型 或 参数化预览 */}
               <div className="mb-6">
-                <p className="text-xs text-gray-500 text-center mb-2">← 基于采集数据的参数化预览（非最终 GLB 模型） →</p>
-                <Model3DViewer bodyModel={measurements} />
+                {apiAvailable && reconstructResult ? (
+                  <>
+                    <p className="text-xs text-green-400 text-center mb-2">← 4090D GPU 生成的真人 GLB 模型（可下载） →</p>
+                    <div className="rounded-2xl overflow-hidden bg-gray-900 shadow-2xl" style={{ aspectRatio: '3/4', minHeight: 400 }}>
+                      <a
+                        href={`http://100.114.7.5:8765/models/${reconstructResult.job_id}.glb`}
+                        target="_blank"
+                        className="flex items-center justify-center w-full h-full text-pink-400 font-bold text-lg hover:underline"
+                      >
+                        📦 点击下载 GLB 模型
+                        <br />
+                        <span className="text-sm text-gray-500 font-normal">
+                          ({reconstructResult.vertices.toLocaleString()} 顶点, {reconstructResult.faces.toLocaleString()} 面)
+                        </span>
+                      </a>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-xs text-gray-500 text-center mb-2">← 参数化预览（非最终 GLB 模型，AIGC 未连通时显示） →</p>
+                    <Model3DViewer bodyModel={measurements} />
+                  </>
+                )}
               </div>
 
-              {/* 流水线步骤 */}
+              {/* 流水线 */}
               <div className="rounded-2xl bg-white/5 border border-white/10 p-4 mb-4">
-                <p className="text-xs text-gray-400 mb-3">后端建模流水线</p>
-                {manifest.pipeline.map((step, i) => (
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-xs text-gray-400">后端建模流水线</span>
+                  {apiAvailable && <span className="text-xs text-green-400 bg-green-400/10 px-2 py-0.5 rounded-full">已在 4090D 上执行</span>}
+                </div>
+                {manifest.pipeline.map((s, i) => (
                   <div key={i} className="flex items-center gap-2 text-xs text-gray-500 py-1">
-                    <span className="text-pink-400">{i + 1}.</span>
-                    <span>{step}</span>
+                    <span className={apiAvailable ? 'text-green-400' : 'text-pink-400'}>
+                      {apiAvailable ? '✓' : i + 1 + '.'}
+                    </span>
+                    <span>{s}</span>
                   </div>
                 ))}
               </div>
-
-              <p className="text-xs text-gray-500 text-center mb-4">
-                {manifest.note}
-              </p>
 
               <div className="flex gap-3">
                 <button
                   className="flex-1 py-3 rounded-xl bg-white/5 text-gray-400 text-sm font-medium"
                   onClick={() => downloadBodyModelManifest(manifest)}
                 >
-                  📥 下载建模任务文件
+                  📥 下载任务文件
                 </button>
                 <button
                   className="flex-1 py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold text-sm"
