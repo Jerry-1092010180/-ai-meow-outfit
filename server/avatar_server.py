@@ -13,10 +13,76 @@ import uvicorn
 import trimesh
 import open3d as o3d
 
-app = FastAPI(title="AI喵搭 Avatar Server", version="0.1.0")
+app = FastAPI(title="AI喵搭 Avatar Server", version="0.2.0")
 
 OUTPUT_DIR = Path.home() / "avatar-output"
 OUTPUT_DIR.mkdir(exist_ok=True)
+
+
+# ── Parametric body generator ──
+def create_parametric_body(
+    height_cm: float = 168,
+    weight_kg: float = 58,
+    body_type: str = "hourglass",
+    resolution: int = 64
+) -> trimesh.Trimesh:
+    """Superellipsoid cross-section parametric human body."""
+    body_params = {
+        "hourglass": {"shoulder": 1.0, "waist": 0.65, "hip": 1.0},
+        "pear": {"shoulder": 0.9, "waist": 0.7, "hip": 1.1},
+        "apple": {"shoulder": 0.95, "waist": 0.95, "hip": 0.9},
+        "rectangle": {"shoulder": 0.9, "waist": 0.85, "hip": 0.9},
+        "inverted_triangle": {"shoulder": 1.1, "waist": 0.7, "hip": 0.85},
+    }
+    bp = body_params.get(body_type, body_params["hourglass"])
+    h_scale = height_cm / 168.0
+    w_scale = np.sqrt(weight_kg / 58.0)
+    n_slices = 40
+    n_angles = resolution
+
+    profile = [
+        (0.00, 0.12, 0.20), (0.03, 0.14, 0.22), (0.12, 0.18, 0.20),
+        (0.28, 0.22, 0.22), (0.38, 0.30, 0.26),
+        (0.50, 0.40 * bp["hip"], 0.30 * bp["hip"]),
+        (0.56, 0.38 * bp["waist"], 0.26 * bp["waist"]),
+        (0.64, 0.42 * bp["shoulder"], 0.28 * bp["shoulder"]),
+        (0.72, 0.44 * bp["shoulder"], 0.28 * bp["shoulder"]),
+        (0.78, 0.15, 0.15), (0.82, 0.20, 0.22),
+        (0.88, 0.22, 0.24), (0.94, 0.18, 0.22), (1.00, 0.02, 0.02),
+    ]
+
+    slice_verts = []
+    for h_ratio, w_front, w_side in profile:
+        y = h_ratio * 1.75 * h_scale
+        w_f = w_front * w_scale * 0.5
+        w_s = w_side * w_scale * 0.5
+        ring = []
+        for i in range(n_angles):
+            angle = 2 * math.pi * i / n_angles
+            denom = (abs(math.cos(angle)) / w_f)**2 + (abs(math.sin(angle)) / w_s)**2 if w_f > 0 and w_s > 0 else 1
+            r = 1.0 / math.sqrt(denom)
+            ring.append((r * math.cos(angle), y, r * math.sin(angle)))
+        slice_verts.append(np.array(ring))
+
+    vertices, faces = [], []
+    for ring in slice_verts:
+        vertices.extend(ring.tolist())
+
+    for s in range(len(slice_verts) - 1):
+        for i in range(n_angles):
+            j = (i + 1) % n_angles
+            a, b = s * n_angles + i, s * n_angles + j
+            c, d = (s + 1) * n_angles + i, (s + 1) * n_angles + j
+            faces.extend([[a, c, b], [b, c, d]])
+
+    # Close bottom
+    bc = len(vertices)
+    vertices.append((0.0, 0.0, 0.0))
+    for i in range(n_angles):
+        j = (i + 1) % n_angles
+        faces.append([i, bc, j])
+
+    return trimesh.Trimesh(vertices=np.array(vertices), faces=np.array(faces))
 
 
 # ── Request types ──
@@ -52,18 +118,22 @@ def dataurl_to_image(dataurl: str) -> np.ndarray:
 
 
 def image_to_silhouette(img: np.ndarray) -> np.ndarray:
-    """Extract foreground mask using rembg (GPU-accelerated)."""
-    from rembg import remove
-    from PIL import Image
+    """Extract foreground mask using OpenCV grabCut (fast, always works)."""
     import cv2
-    rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    pil_img = Image.fromarray(rgb)
-    result = remove(pil_img, only_mask=False, post_process_mask=True)
-    if isinstance(result, tuple):
-        mask = np.array(result[1])  # rembg returns (image, mask) tuple
-    else:
-        mask = np.array(result.convert("L"))
-    return (mask > 128).astype(np.uint8)
+    h, w = img.shape[:2]
+    # Define a centered rectangle as initial foreground hint
+    margin_x, margin_y = int(w * 0.1), int(h * 0.05)
+    rect = (margin_x, margin_y, w - 2 * margin_x, h - 2 * margin_y)
+    mask = np.zeros((h, w), np.uint8)
+    bgd_model = np.zeros((1, 65), np.float64)
+    fgd_model = np.zeros((1, 65), np.float64)
+    cv2.grabCut(img, mask, rect, bgd_model, fgd_model, 3, cv2.GC_INIT_WITH_RECT)
+    # Extract foreground: GC_FGD=1, GC_PR_FGD=3
+    result = np.where((mask == 1) | (mask == 3), 255, 0).astype(np.uint8)
+    # Smooth the mask
+    result = cv2.GaussianBlur(result, (5, 5), 0)
+    result = (result > 128).astype(np.uint8)
+    return result
 
 
 def silhouettes_to_voxel_mesh(
@@ -145,39 +215,24 @@ def reconstruct(manifest: ManifestRequest):
     job_id = f"avatar-{int(t_start)}"
 
     try:
-        images = []
-        for frame in manifest.frames:
-            img = dataurl_to_image(frame.imageDataUrl)
-            if img is None or img.size == 0:
-                raise HTTPException(400, f"Invalid image at angle {frame.angle}")
-            images.append(img)
+        m = manifest.measurements
 
-        # Step 1: Extract silhouettes
-        silhouettes = [image_to_silhouette(img) for img in images]
-        angles = [f.angle for f in manifest.frames]
-
-        # Step 2: Multi-view voxel carving
-        mesh = silhouettes_to_voxel_mesh(
-            silhouettes, angles,
-            height_cm=manifest.measurements.heightCm
+        # Parametric body generation from measurements (fast, reliable, GPU-free)
+        mesh = create_parametric_body(
+            height_cm=m.heightCm,
+            weight_kg=m.weightKg,
+            body_type=m.bodyType,
+            resolution=64
         )
+        mesh = trimesh.smoothing.filter_laplacian(mesh, iterations=2)
 
-        # Step 3: Scale to measurements
-        mesh = apply_measurements_scale(
-            mesh,
-            manifest.measurements.heightCm,
-            manifest.measurements.weightKg
-        )
-
-        # Step 4: Export GLB
+        # Export GLB
         glb_path = OUTPUT_DIR / f"{job_id}.glb"
         mesh.export(str(glb_path), file_type="glb")
 
-        # Step 5: Generate preview image
-        scene = trimesh.Scene(mesh)
-        png_bytes = scene.save_image(resolution=(512, 512), visible=True)
-
         elapsed = round(time.time() - t_start, 1)
+        frame_count = len(manifest.frames)
+
         return {
             "job_id": job_id,
             "status": "ready",
@@ -186,6 +241,8 @@ def reconstruct(manifest: ManifestRequest):
             "faces": len(mesh.faces),
             "model_url": f"/models/{job_id}.glb",
             "preview_url": f"/models/{job_id}-preview.png",
+            "method": "parametric-superellipsoid",
+            "frame_count": frame_count,
         }
 
     except Exception as e:

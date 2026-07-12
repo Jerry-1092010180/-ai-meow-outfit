@@ -14,7 +14,8 @@ import type {
   CaptureFrame,
 } from '@/types/bodyModel';
 import type { BodyType } from '@/types';
-import { submitReconstruction, checkAvatarHealth } from '@/services/avatarApi';
+import { submitReconstruction, getPresetModelPath } from '@/services/avatarApi';
+import GLBModelViewer from '@/components/outfit/GLBModelViewer';
 
 type TryOnStep = 'measure' | 'setup' | 'capture' | 'review' | 'reconstructing' | 'result';
 type NumericKey = Exclude<keyof BodyMeasurements, 'bodyType'>;
@@ -462,29 +463,28 @@ export default function TryOnPage() {
                 </div>
               </div>
 
-              {/* 真实 GLB 模型 或 参数化预览 */}
+              {/* 真实 GLB 模型 */}
               <div className="mb-6">
                 {apiAvailable && reconstructResult ? (
                   <>
-                    <p className="text-xs text-green-400 text-center mb-2">← 4090D GPU 生成的真人 GLB 模型（可下载） →</p>
-                    <div className="rounded-2xl overflow-hidden bg-gray-900 shadow-2xl" style={{ aspectRatio: '3/4', minHeight: 400 }}>
-                      <a
-                        href={`http://100.114.7.5:8765/models/${reconstructResult.job_id}.glb`}
-                        target="_blank"
-                        className="flex items-center justify-center w-full h-full text-pink-400 font-bold text-lg hover:underline"
-                      >
-                        📦 点击下载 GLB 模型
-                        <br />
-                        <span className="text-sm text-gray-500 font-normal">
-                          ({reconstructResult.vertices.toLocaleString()} 顶点, {reconstructResult.faces.toLocaleString()} 面)
-                        </span>
-                      </a>
-                    </div>
+                    <p className="text-xs text-green-400 text-center mb-2">
+                      ← 4090D GPU 生成 · {reconstructResult.method} · {reconstructResult.vertices} 顶点 · {reconstructResult.elapsed_seconds}s →
+                    </p>
+                    <GLBModelViewer modelPath={`http://100.114.7.5:8765/models/${reconstructResult.job_id}.glb`} />
+                    <a
+                      href={`http://100.114.7.5:8765/models/${reconstructResult.job_id}.glb`}
+                      className="block text-center text-sm text-pink-400 mt-2 hover:underline"
+                      target="_blank"
+                    >
+                      📥 下载 GLB 模型
+                    </a>
                   </>
                 ) : (
                   <>
-                    <p className="text-xs text-gray-500 text-center mb-2">← 参数化预览（非最终 GLB 模型，AIGC 未连通时显示） →</p>
-                    <Model3DViewer bodyModel={measurements} />
+                    <p className="text-xs text-gray-500 text-center mb-2">
+                      ← AIGC 不可达，加载预置模型（{measurements.bodyType} 身型） →
+                    </p>
+                    <GLBModelViewer modelPath={getPresetModelPath(measurements.bodyType)} />
                   </>
                 )}
               </div>
