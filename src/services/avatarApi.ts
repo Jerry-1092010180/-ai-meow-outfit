@@ -30,6 +30,7 @@ export async function submitReconstruction(
     imageDataUrl: compressImageDataUrl(f.imageDataUrl, 512, 0.7),
   }));
 
+  console.log('[Avatar] Upload Started endpoint=' + AVATAR_API + ' frames=' + compressedFrames.length);
   const res = await fetch(`${AVATAR_API}/reconstruct`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -38,11 +39,14 @@ export async function submitReconstruction(
   if (!res.ok) {
     throw new Error(`Server error: ${res.status}`);
   }
+  if (res.ok) console.log('[Avatar] Upload Success HTTP' + res.status);
+  else console.warn('[Avatar] Upload FAILED HTTP' + res.status);
   return res.json();
 }
 
 /** Compress a base64 image to reduce upload size */
 function compressImageDataUrl(dataUrl: string, maxDim: number, quality: number): string {
+  console.log('[Avatar] Compress Image', maxDim + 'px', 'q' + quality);
   // Quick compression: decode → resize → re-encode synchronously
   try {
     const canvas = document.createElement('canvas');
@@ -74,6 +78,7 @@ export function getReconstructionModelUrl(result: ReconstructResult): string {
 
 /** 根据身型匹配预置 GLB 模型路径 (兼容所有部署平台的 BASE_URL) */
 export function getPresetModelPath(bodyType: string): string {
+  console.log('[Avatar] Fallback GLB path bodyType=' + bodyType);
   const validTypes = ['hourglass', 'pear', 'apple', 'rectangle', 'inverted_triangle'];
   const bt = validTypes.includes(bodyType) ? bodyType : 'hourglass';
   const base = import.meta.env.BASE_URL || '/';

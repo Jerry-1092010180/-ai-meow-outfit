@@ -240,6 +240,8 @@ def health():
 def reconstruct(manifest: ManifestRequest):
     t_start = time.time()
     job_id = f"avatar-{int(t_start)}"
+    frame_count = len(manifest.frames)
+    print(f"[Avatar] Reconstruct Started job={job_id} frames={frame_count}")
 
     try:
         m = manifest.measurements
@@ -249,6 +251,7 @@ def reconstruct(manifest: ManifestRequest):
 
         # ── Phase 1: Try multi-view silhouette carving from real photos ──
         if len(frames) >= 4:
+            print(f"[Avatar] Phase1 silhouette carving frames={len(frames)}")
             try:
                 images = []
                 for f in frames:
@@ -279,6 +282,7 @@ def reconstruct(manifest: ManifestRequest):
 
         # ── Phase 2: Fallback to parametric body ──
         if mesh is None:
+            print(f"[Avatar] Phase2 parametric fallback height={m.heightCm} type={m.bodyType}")
             mesh = create_parametric_body(
                 height_cm=m.heightCm,
                 weight_kg=m.weightKg,
@@ -292,6 +296,7 @@ def reconstruct(manifest: ManifestRequest):
         mesh.export(str(glb_path), file_type="glb")
 
         elapsed = round(time.time() - t_start, 1)
+        print(f"[Avatar] Reconstruct Complete job={job_id} method={method} verts={len(mesh.vertices)} elapsed={elapsed}s")
         return {
             "job_id": job_id,
             "status": "ready",
@@ -306,6 +311,7 @@ def reconstruct(manifest: ManifestRequest):
 
     except Exception as e:
         import traceback
+        print(f"[Avatar] Reconstruct FAILED job={job_id} error={e}")
         traceback.print_exc()
         raise HTTPException(500, f"Reconstruction failed: {str(e)}")
 

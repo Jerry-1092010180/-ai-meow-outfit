@@ -40,6 +40,7 @@ function LoadingSpinner() {
 
 export default function GLBModelViewer({ modelPath, fallbackPath }: GLBModelViewerProps) {
   const [error, setError] = useState(false);
+  console.log('[Avatar] Viewer Loading path=' + modelPath + (fallbackPath ? ' fallback=' + fallbackPath : ''));
   const path = error && fallbackPath ? fallbackPath : modelPath;
 
   return (

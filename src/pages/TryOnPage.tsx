@@ -58,6 +58,7 @@ export default function TryOnPage() {
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
     setCameraReady(false);
+    console.log('[Avatar] Camera Stopped');
   }, []);
   useEffect(() => () => stopCamera(), [stopCamera]);
 
@@ -115,6 +116,7 @@ export default function TryOnPage() {
           video: { facingMode: 'user' },
           audio: false,
         });
+        console.log('[Avatar] Camera Started facingMode=user');
         if (cancelled) { stream.getTracks().forEach(t => t.stop()); return; }
         streamRef.current = stream;
 
@@ -176,6 +178,7 @@ export default function TryOnPage() {
 	          }, 400);
 	        }
       } catch (err: any) {
+        console.error('[Avatar] Camera FAILED', err?.message || err);
         if (!cancelled) alert(`摄像头启动失败: ${err.message || '未知错误'}`);
       }
     })();
@@ -220,6 +223,7 @@ export default function TryOnPage() {
 
   // ── 提交 AIGC ──
   const submitModeling = async () => {
+    console.log('[Avatar] Submit Started frames=' + frames.length);
     const m = createBodyModelManifest({
       measurements, captureFrames: frames,
       captureMode: 'guided-360-phone-stand' as const,
@@ -230,14 +234,20 @@ export default function TryOnPage() {
     try {
       // Phase 1: multi-view silhouette carving from real photos
       const r = await submitReconstruction(measurements, frames);
+      console.log('[Avatar] Submit Success method=' + (r?.method || 'unknown'));
       setReconstructResult(r); setApiAvailable(true);
-    } catch {
+    } catch (e1: any) {
+      console.warn('[Avatar] Submit Phase1 FAILED', e1?.message || e1);
       setApiAvailable(false);
       try {
         // Phase 2: parametric fallback (empty frames)
+        console.log('[Avatar] Submit Phase2 retry without frames');
         const r2 = await submitReconstruction(measurements, []);
+        console.log('[Avatar] Submit Phase2 Success method=' + (r2?.method || 'unknown'));
         setReconstructResult(r2);
-      } catch { /* will show preset GLB */ }
+      } catch (e2: any) {
+        console.warn('[Avatar] Submit Phase2 FAILED', e2?.message || e2);
+      }
     }
     setStep('result');
   };

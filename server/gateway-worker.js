@@ -18,6 +18,7 @@ export default {
 
     // Health check
     if (path === '/api/avatar/health') {
+      console.log('[Gateway] Health check');
       try {
         const res = await fetch(`${AIGC_BASE}/health`);
         return new Response(await res.text(), {
@@ -35,12 +36,14 @@ export default {
     // Reconstruct
     if (path === '/api/avatar/reconstruct' && request.method === 'POST') {
       const body = await request.json();
+      console.log('[Gateway] Reconstruct POST frames=' + (body.frames?.length || 0));
       const res = await fetch(`${AIGC_BASE}/reconstruct`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
       const data = await res.json();
+      console.log('[Gateway] Reconstruct Response status=' + res.status + ' method=' + (data.method || '?'));
 
       // Rewrite model_url to use the gateway path
       if (data.model_url?.startsWith('/models/')) {
@@ -55,6 +58,7 @@ export default {
 
     // Serve GLB models
     if (path.startsWith('/api/avatar/models/')) {
+      console.log('[Gateway] Serve Model ' + path.split('/').pop());
       const filename = path.split('/').pop();
       const res = await fetch(`${AIGC_BASE}/models/${filename}`);
       if (!res.ok) {
