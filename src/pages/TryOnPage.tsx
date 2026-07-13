@@ -125,7 +125,7 @@ export default function TryOnPage() {
         video.setAttribute('playsinline', '');
         video.muted = true;
         video.srcObject = stream;
-        video.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);z-index:1;';
+        video.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);z-index:0;';
         videoRef.current = video;
 
         // Wait for container to exist (it should now, since step='capture' rendered)
