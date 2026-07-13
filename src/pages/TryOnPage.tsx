@@ -151,7 +151,7 @@ export default function TryOnPage() {
 	            setCaptureAnalysis(analysis);
 	            if (borderRef.current === 'captured') return;
 
-	            if (countdownRef.current > 0 && !analysis.ready) {
+	            if (countdownRef.current > 0 && analysis.motionScore > 0.12) {
 	              setCountdown(-1);
 	              setBorderState(analysis.lightState === 'turning' ? 'turning' : 'waiting');
 	              readyTicksRef.current = 0;
@@ -161,7 +161,7 @@ export default function TryOnPage() {
 	            if (analysis.ready) {
 	              readyTicksRef.current += 1;
 	              setBorderState('ready'); borderRef.current = 'ready';
-	              if (countdownRef.current < 0 && readyTicksRef.current >= 2) setCountdown(2);
+	              if (countdownRef.current < 0 && readyTicksRef.current >= 1) setCountdown(2);
 	            } else {
 	              readyTicksRef.current = 0;
 	              setBorderState(analysis.lightState === 'turning' ? 'turning' : 'waiting');

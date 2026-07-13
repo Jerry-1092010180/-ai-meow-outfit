@@ -229,17 +229,14 @@ export function analyzeCaptureFrame(frame: ImageData, options: AnalyzeOptions): 
   const angleScore = scoreAround(aspect, expectedAspectForAngle(options.targetAngle), 0.11);
 
   const distance: CaptureDistance =
-    box.height > 0.92 || box.width > 0.72 ? 'too-close' : box.height < 0.56 ? 'too-far' : 'good';
-  const isFullBody = fullBodyScore >= 0.72;
-  const isCentered = centerScore >= 0.62;
-  const isStable = stabilityScore >= 0.75;
-  const angleMatched = angleScore >= 0.42;
+    box.height > 0.95 || box.width > 0.82 ? 'too-close' : box.height < 0.35 ? 'too-far' : 'good';
+  const isFullBody = fullBodyScore >= 0.45;
+  const isCentered = centerScore >= 0.35;
+  const isStable = stabilityScore >= 0.55;
+  const angleMatched = angleScore >= 0.2;
   const ready =
-    isFullBody &&
-    isCentered &&
-    isStable &&
-    angleMatched &&
-    distance === 'good';
+    [isFullBody, isCentered, isStable, angleMatched].filter(Boolean).length >= 3 &&
+    distance !== 'too-close';
 
   const qualityScore = Math.round(
     clamp(

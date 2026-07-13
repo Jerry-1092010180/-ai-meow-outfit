@@ -13,7 +13,15 @@ import uvicorn
 import trimesh
 import open3d as o3d
 
-app = FastAPI(title="AI喵搭 Avatar Server", version="0.2.0")
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI(title="AI喵搭 Avatar Server", version="0.3.0")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 OUTPUT_DIR = Path.home() / "avatar-output"
 OUTPUT_DIR.mkdir(exist_ok=True)
