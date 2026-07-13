@@ -126,22 +126,32 @@ def dataurl_to_image(dataurl: str) -> np.ndarray:
 
 
 def image_to_silhouette(img: np.ndarray) -> np.ndarray:
-    """Extract foreground mask using OpenCV grabCut (fast, always works)."""
+    """Extract foreground mask using OpenCV grabCut + morphology + largest component + hole filling."""
     import cv2
     h, w = img.shape[:2]
-    # Define a centered rectangle as initial foreground hint
     margin_x, margin_y = int(w * 0.1), int(h * 0.05)
     rect = (margin_x, margin_y, w - 2 * margin_x, h - 2 * margin_y)
     mask = np.zeros((h, w), np.uint8)
     bgd_model = np.zeros((1, 65), np.float64)
     fgd_model = np.zeros((1, 65), np.float64)
     cv2.grabCut(img, mask, rect, bgd_model, fgd_model, 3, cv2.GC_INIT_WITH_RECT)
-    # Extract foreground: GC_FGD=1, GC_PR_FGD=3
     result = np.where((mask == 1) | (mask == 3), 255, 0).astype(np.uint8)
-    # Smooth the mask
-    result = cv2.GaussianBlur(result, (5, 5), 0)
-    result = (result > 128).astype(np.uint8)
-    return result
+
+    # Morphology close
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
+    result = cv2.morphologyEx(result, cv2.MORPH_CLOSE, kernel)
+
+    # Largest connected component
+    num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(result, connectivity=8)
+    if num_labels > 1:
+        largest = 1 + np.argmax(stats[1:, cv2.CC_STAT_AREA])
+        result = np.where(labels == largest, 255, 0).astype(np.uint8)
+
+    # Hole filling
+    result = cv2.morphologyEx(result, cv2.MORPH_CLOSE,
+                              cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15)))
+
+    return (result > 128).astype(np.uint8)
 
 
 def silhouettes_to_voxel_mesh(
@@ -152,30 +162,39 @@ def silhouettes_to_voxel_mesh(
 ) -> trimesh.Trimesh:
     """
     Multi-view silhouette carving → voxel grid → marching cubes → mesh.
-    Each silhouette is assumed to be a binary mask of the person at the given rotation.
+    Uses soft silhouette + majority voting (≥5/8) for robustness.
     """
-    voxel = np.ones((voxel_resolution, voxel_resolution, voxel_resolution), dtype=bool)
+    votes = np.zeros((voxel_resolution, voxel_resolution, voxel_resolution), dtype=np.uint8)
+    num_views = len(silhouettes)
 
     for sil, angle in zip(silhouettes, angles_deg):
-        # Resize silhouette to voxel resolution
         h, w = sil.shape
         scale = min(voxel_resolution / w, voxel_resolution / h)
         new_w = int(w * scale)
         new_h = int(h * scale)
         import cv2
-        sil_resized = cv2.resize(sil.astype(np.uint8), (new_w, new_h)) > 128
+
+        # Soft silhouette: blur edges to get 0~1 probability instead of binary
+        sil_soft = cv2.GaussianBlur(sil.astype(np.float32), (15, 15), 0)
+        # Normalize: center=1.0, outer edge~0.3
+        sil_soft = np.clip((sil_soft - 0.1) * 2, 0, 1)
+
+        sil_resized = cv2.resize(sil_soft, (new_w, new_h))
         pad_h = (voxel_resolution - new_h) // 2
         pad_w = (voxel_resolution - new_w) // 2
-        sil_vox = np.zeros((voxel_resolution, voxel_resolution), dtype=bool)
+        sil_vox = np.zeros((voxel_resolution, voxel_resolution), dtype=np.float32)
         sil_vox[pad_h:pad_h+new_h, pad_w:pad_w+new_w] = sil_resized
 
-        # Rotate the voxel grid to match the camera angle
         angle_idx = int(round(angle / 360 * voxel_resolution)) % voxel_resolution
         sil_rotated = np.roll(sil_vox, angle_idx, axis=1)
 
-        # Carve: only keep voxels that project inside the silhouette at this angle
+        # Vote: accumulate soft silhouette probability
         for y in range(voxel_resolution):
-            voxel[:, :, y] &= sil_rotated
+            votes[:, :, y] += (sil_rotated > 0.6).astype(np.uint8)
+
+    # Majority vote: keep voxels visible in ≥5 or ≥(num_views-3) views
+    min_votes = max(5, num_views - 3)
+    voxel = votes >= min_votes
 
     if not voxel.any():
         # Fallback: return a simple cylinder mesh scaled to measurements

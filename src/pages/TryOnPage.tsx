@@ -5,7 +5,7 @@ import BottomNav from '@/components/common/BottomNav';
 import GLBModelViewer from '@/components/outfit/GLBModelViewer';
 import { createBodyModelManifest, downloadBodyModelManifest, estimateBodyModelQuality } from '@/services/bodyModelService';
 import { submitReconstruction, getPresetModelPath, getReconstructionModelUrl } from '@/services/avatarApi';
-import { analyzeCaptureFrame, type CaptureAnalysis } from '@/services/captureAnalysis';
+import { analyzeCaptureFrame, clearCenterHistory, type CaptureAnalysis } from '@/services/captureAnalysis';
 import type { BodyMeasurements, BodyModelManifest, CaptureAngle, CaptureFrame } from '@/types/bodyModel';
 import type { BodyType } from '@/types';
 
@@ -101,6 +101,7 @@ export default function TryOnPage() {
 	    readyTicksRef.current = 0;
 	    captureAnalysisRef.current = null;
 	    setCaptureAnalysis(null);
+	    clearCenterHistory();
 	    setStep('capture');
 	  }, []);
 
