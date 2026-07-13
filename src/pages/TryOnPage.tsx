@@ -255,92 +255,91 @@ export default function TryOnPage() {
                 </div>
               </div>
 
-              <div className="relative w-full rounded-2xl overflow-hidden bg-black mb-3" style={{ aspectRatio: '3/4' }}>
-                {/* Camera preview — always visible */}
-                <video ref={videoRef} autoPlay playsInline muted webkit-playsinline="true"
-                  className="absolute inset-0 w-full h-full object-cover"
-                  style={{ transform: 'scaleX(-1)', zIndex: 1 }} />
-                <canvas ref={canvasRef} className="hidden" />
+              <div className="relative w-full rounded-2xl overflow-hidden bg-gray-900 mb-3"
+                style={{ aspectRatio: '3/4', boxShadow: borderState === 'ready' ? '0 0 40px 8px rgba(74,222,128,0.6), inset 0 0 30px rgba(74,222,128,0.2)' :
+                         borderState === 'captured' ? '0 0 60px 12px rgba(255,255,255,0.8)' :
+                         borderState === 'turning' ? '0 0 30px 6px rgba(248,113,113,0.5)' : 'none' }}>
+                {/* Camera video — always rendered, no overlay blocking it */}
+                <video ref={videoRef} autoPlay playsInline muted
+                  width={1280} height={720}
+                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+                           objectFit: 'cover', transform: 'scaleX(-1)', zIndex: 0 }} />
+                <canvas ref={canvasRef} style={{ display: 'none' }} />
 
-                {/* Marquee border — 走马灯 */}
-                <div className="absolute inset-0 pointer-events-none rounded-2xl" style={{ zIndex: 10 }}>
-                  {/* Green marquee when ready */}
-                  {borderState === 'ready' && (
-                    <div className="absolute inset-0 rounded-2xl border-4 border-transparent"
-                      style={{
-                        background: 'linear-gradient(90deg, transparent 30%, #4ade80 50%, transparent 70%) border-box',
-                        WebkitMask: 'linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0)',
-                        WebkitMaskComposite: 'xor',
-                        maskComposite: 'exclude',
-                        animation: 'marquee-sweep 1.5s linear infinite',
-                      }} />
-                  )}
-                  {/* Red marquee when turning */}
-                  {borderState === 'turning' && (
-                    <div className="absolute inset-0 rounded-2xl border-4 border-transparent"
-                      style={{
-                        background: 'linear-gradient(90deg, transparent 30%, #f87171 50%, transparent 70%) border-box',
-                        WebkitMask: 'linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0)',
-                        WebkitMaskComposite: 'xor',
-                        maskComposite: 'exclude',
-                        animation: 'marquee-sweep 0.8s linear infinite',
-                      }} />
-                  )}
-                  {/* White flash on capture */}
-                  {borderState === 'captured' && (
-                    <div className="absolute inset-0 rounded-2xl bg-white/60" style={{ animation: 'flash-out 0.8s ease-out forwards' }} />
-                  )}
+                {/* Top gradient overlay for readability */}
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 80,
+                              background: 'linear-gradient(to bottom, rgba(0,0,0,0.6), transparent)', zIndex: 5 }} />
+                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 120,
+                              background: 'linear-gradient(to top, rgba(0,0,0,0.7), transparent)', zIndex: 5 }} />
+
+                {/* Angle indicator ring */}
+                <div style={{ position: 'absolute', top: 16, left: '50%', transform: 'translateX(-50%)', zIndex: 10 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(0,0,0,0.6)',
+                                backdropFilter: 'blur(8px)', borderRadius: 24, padding: '6px 16px' }}>
+                    <svg width="28" height="28" viewBox="0 0 28 28" style={{ transform: `rotate(${currentAngle}deg)` }}>
+                      <circle cx="14" cy="14" r="12" fill="none" stroke="white" strokeWidth="2" opacity="0.3" />
+                      <circle cx="14" cy="14" r="12" fill="none" stroke="#4ade80" strokeWidth="2.5"
+                        strokeDasharray={`${(currentAngle/360)*75.4} 75.4`} strokeLinecap="round" />
+                      <line x1="14" y1="2" x2="14" y2="8" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
+                    </svg>
+                    <span style={{ color: 'white', fontSize: 15, fontWeight: 700 }}>{ANGLE_LABELS[currentAngle]}</span>
+                    <span style={{ color: '#9ca3af', fontSize: 12 }}>{currentAngle}°</span>
+                  </div>
                 </div>
 
-                {/* Center clock icon */}
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ zIndex: 10 }}>
-                  <motion.div className="text-6xl bg-black/30 rounded-full w-20 h-20 flex items-center justify-center"
-                    animate={borderState === 'turning' ? { rotate: 360 } :
-                             borderState === 'ready' ? { scale: [1, 1.2, 1] } : {}}
-                    transition={borderState === 'turning' ? { duration: 1.5, repeat: Infinity, ease: 'linear' } : { duration: 0.6 }}>
-                    <span className="text-4xl">{borderState === 'ready' ? '🎯' : borderState === 'captured' ? '📸' : '🕐'}</span>
+                {/* Progress dots */}
+                <div style={{ position: 'absolute', top: 16, right: 12, zIndex: 10, display: 'flex', gap: 3 }}>
+                  {CAPTURE_ANGLES.map((a, i) => (
+                    <div key={a} style={{ width: 6, height: 6, borderRadius: '50%',
+                      background: i < currentAngleIdx ? '#4ade80' : a === currentAngle ? '#fbbf24' : 'rgba(255,255,255,0.2)',
+                      boxShadow: a === currentAngle ? '0 0 6px #fbbf24' : 'none' }} />
+                  ))}
+                </div>
+
+                {/* Center guide */}
+                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 8,
+                              width: 80, height: 80, borderRadius: '50%', background: 'rgba(0,0,0,0.35)',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
+                  <motion.div style={{ fontSize: 32 }}
+                    animate={borderState === 'turning' ? { rotate: 360 } : { scale: [1, 1.15, 1] }}
+                    transition={borderState === 'turning' ? { duration: 1.2, repeat: Infinity, ease: 'linear' } : { duration: 0.8, repeat: Infinity }}>
+                    {borderState === 'ready' ? '🎯' : borderState === 'captured' ? '✅' : '↻'}
                   </motion.div>
                 </div>
 
-                {/* Top info bar */}
-                <div className="absolute top-3 left-3 bg-black/60 backdrop-blur rounded-full px-3 py-1" style={{ zIndex: 10 }}>
-                  <span className="text-white text-sm font-bold">{ANGLE_LABELS[currentAngle]} · {currentAngle}°</span>
-                </div>
-                <div className="absolute top-3 right-3 bg-black/50 backdrop-blur rounded-full px-2 py-1 text-xs text-white/70" style={{ zIndex: 10 }}>
-                  {frames.length}/{CAPTURE_ANGLES.length}
-                </div>
-
-                {/* Bottom instruction */}
-                <div className="absolute bottom-6 left-4 right-4 pointer-events-none" style={{ zIndex: 10 }}>
-                  <div className="bg-black/60 backdrop-blur rounded-2xl px-4 py-3 text-center">
-                    <p className="text-white text-sm font-bold">
-                      {borderState === 'waiting' && '每次顺时针旋转45度 · 系统自动检测'}
-                      {borderState === 'turning' && '✅ 正在转身 · 边框变绿时停下'}
-                      {borderState === 'ready' && '📍 角度到位 · 保持不动'}
-                      {borderState === 'captured' && '📸 已拍照 · 继续顺时针旋转45度'}
+                {/* Bottom instruction bar */}
+                <div style={{ position: 'absolute', bottom: 16, left: 12, right: 12, zIndex: 10 }}>
+                  {/* Marquee bar — pulses green or red */}
+                  <div style={{
+                    height: 4, borderRadius: 2, marginBottom: 8,
+                    background: borderState === 'ready' ? '#4ade80' : borderState === 'turning' ? '#f87171' : 'rgba(255,255,255,0.15)',
+                    boxShadow: borderState === 'ready' ? '0 0 12px #4ade80, 0 0 24px #4ade80' :
+                               borderState === 'turning' ? '0 0 12px #f87171' : 'none',
+                    transition: 'all 0.3s',
+                    animation: (borderState === 'ready' || borderState === 'turning') ? 'pulse-bar 0.6s ease-in-out infinite' : 'none',
+                  }} />
+                  <div style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(8px)', borderRadius: 16,
+                                padding: '10px 14px', textAlign: 'center' }}>
+                    <p style={{ color: 'white', fontSize: 14, fontWeight: 700, margin: 0, lineHeight: 1.5 }}>
+                      {borderState === 'waiting' && <>👆 请退后两步 · <span style={{ color: '#fbbf24' }}>每次顺时针旋转45度</span></>}
+                      {borderState === 'turning' && <>🔄 检测到转身 · 转到<span style={{ color: '#4ade80' }}> {ANGLE_LABELS[currentAngle]}</span> 方向后停下</>}
+                      {borderState === 'ready' && <>🎯 角度到位 · <span style={{ color: '#4ade80' }}>保持不动</span></>}
+                      {borderState === 'captured' && <>📸 第 {frames.length}/{CAPTURE_ANGLES.length} 张已拍 · 继续<span style={{ color: '#fbbf24' }}>顺时针旋转45度</span></>}
                     </p>
                   </div>
                 </div>
 
                 {countdown > 0 && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/20" style={{ zIndex: 20 }}>
-                    <motion.span key={countdown} className="text-8xl font-black text-white drop-shadow-2xl"
-                      initial={{ scale: 1.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>{countdown}</motion.span>
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                background: 'rgba(0,0,0,0.25)', zIndex: 20 }}>
+                    <motion.span key={countdown} style={{ fontSize: 96, fontWeight: 900, color: 'white',
+                      textShadow: '0 4px 20px rgba(0,0,0,0.5)' }}
+                      initial={{ scale: 2, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>{countdown}</motion.span>
                   </div>
                 )}
               </div>
 
-              {/* Marquee animation keyframes */}
-              <style>{`
-                @keyframes marquee-sweep {
-                  0% { background-position: -200% 0; }
-                  100% { background-position: 200% 0; }
-                }
-                @keyframes flash-out {
-                  0% { opacity: 1; }
-                  100% { opacity: 0; }
-                }
-              `}</style>
+              <style>{`@keyframes pulse-bar { 0%,100%{opacity:0.6} 50%{opacity:1} }`}</style>
 
               {/* 缩略图 */}
               <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-2">
