@@ -220,7 +220,18 @@ export default function TryOnPage() {
     });
     setManifest(m);
     setStep('reconstructing');
-    try { const r = await submitReconstruction(measurements, frames); setReconstructResult(r); setApiAvailable(true); } catch { setApiAvailable(false); }
+    try {
+      // Phase 1: multi-view silhouette carving from real photos
+      const r = await submitReconstruction(measurements, frames);
+      setReconstructResult(r); setApiAvailable(true);
+    } catch {
+      setApiAvailable(false);
+      try {
+        // Phase 2: parametric fallback (empty frames)
+        const r2 = await submitReconstruction(measurements, []);
+        setReconstructResult(r2);
+      } catch { /* will show preset GLB */ }
+    }
     setStep('result');
   };
 
