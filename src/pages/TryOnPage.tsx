@@ -4,14 +4,16 @@ import { AnimatePresence, motion } from 'framer-motion';
 import BottomNav from '@/components/common/BottomNav';
 import GLBModelViewer from '@/components/outfit/GLBModelViewer';
 import { createBodyModelManifest, downloadBodyModelManifest, estimateBodyModelQuality } from '@/services/bodyModelService';
-import { submitReconstruction, getPresetModelPath } from '@/services/avatarApi';
-import type { BodyMeasurements, BodyModelManifest, CaptureFrame } from '@/types/bodyModel';
+import { submitReconstruction, getPresetModelPath, getReconstructionModelUrl } from '@/services/avatarApi';
+import { analyzeCaptureFrame, type CaptureAnalysis } from '@/services/captureAnalysis';
+import type { BodyMeasurements, BodyModelManifest, CaptureAngle, CaptureFrame } from '@/types/bodyModel';
 import type { BodyType } from '@/types';
 
 type TryOnStep = 'measure' | 'capture' | 'review' | 'reconstructing' | 'result';
+type BorderState = 'waiting' | 'turning' | 'ready' | 'captured';
 type NumericKey = Exclude<keyof BodyMeasurements, 'bodyType'>;
 
-const CAPTURE_ANGLES = [0, 45, 90, 135, 180, 225, 270, 315];
+const CAPTURE_ANGLES: CaptureAngle[] = [0, 45, 90, 135, 180, 225, 270, 315];
 const ANGLE_LABELS: Record<number, string> = { 0: '正面', 45: '右前', 90: '右侧', 135: '右后', 180: '背面', 225: '左后', 270: '左侧', 315: '左前' };
 const BODY_TYPES: { value: BodyType; label: string }[] = [
   { value: 'hourglass', label: '沙漏型' }, { value: 'pear', label: '梨型' }, { value: 'apple', label: '苹果型' },
@@ -23,18 +25,6 @@ function speak(text: string) {
   try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = 'zh-CN'; u.rate = 0.9; speechSynthesis.speak(u); } catch {}
 }
 
-// Simple frame differencing to detect body rotation
-function frameDifference(a: ImageData | null, b: ImageData | null): number {
-  if (!a || !b || a.width !== b.width || a.height !== b.height) return 1;
-  const ad = a.data, bd = b.data;
-  let diff = 0;
-  const step = 8; // Sample every 8th pixel for performance
-  for (let i = 0; i < ad.length; i += step * 4) {
-    diff += Math.abs(ad[i] - bd[i]) + Math.abs(ad[i + 1] - bd[i + 1]) + Math.abs(ad[i + 2] - bd[i + 2]);
-  }
-  return diff / (ad.length / (step * 4) * 3 * 255);
-}
-
 export default function TryOnPage() {
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -43,21 +33,25 @@ export default function TryOnPage() {
   const streamRef = useRef<MediaStream | null>(null);
   const prevFrameRef = useRef<ImageData | null>(null);
   const detectIntervalRef = useRef<number>(0);
-  const borderRef = useRef<typeof borderState>('waiting');
+  const borderRef = useRef<BorderState>('waiting');
   const angleIdxRef = useRef(0);
+  const countdownRef = useRef(-1);
+  const readyTicksRef = useRef(0);
+  const captureAnalysisRef = useRef<CaptureAnalysis | null>(null);
 
   const [step, setStep] = useState<TryOnStep>('measure');
   const [measurements, setMeasurements] = useState<BodyMeasurements>(DEFAULT_MEASUREMENTS);
   const [frames, setFrames] = useState<CaptureFrame[]>([]);
   const [currentAngleIdx, setCurrentAngleIdx] = useState(0);
   const [countdown, setCountdown] = useState(-1);
-  const [borderState, _setBorderState] = useState<'waiting' | 'turning' | 'ready' | 'captured'>('waiting');
-  const setBorderState = (v: typeof borderState) => { borderRef.current = v; _setBorderState(v); };
+  const [borderState, _setBorderState] = useState<BorderState>('waiting');
+  const setBorderState = (v: BorderState) => { borderRef.current = v; _setBorderState(v); };
   const [cameraReady, setCameraReady] = useState(false);
-  const [turnProgress, setTurnProgress] = useState(0);
+  const [captureAnalysis, setCaptureAnalysis] = useState<CaptureAnalysis | null>(null);
   const [manifest, setManifest] = useState<BodyModelManifest | null>(null);
   const [reconstructResult, setReconstructResult] = useState<any>(null);
   const [apiAvailable, setApiAvailable] = useState(false);
+  useEffect(() => { countdownRef.current = countdown; }, [countdown]);
 
   const stopCamera = useCallback(() => {
     clearInterval(detectIntervalRef.current);
@@ -100,12 +94,15 @@ export default function TryOnPage() {
   // Step 1: Transition to capture page first (so containerRef mounts)
   const startCaptureFlow = useCallback(() => {
     setCameraReady(false);
-    setCurrentAngleIdx(0); angleIdxRef.current = 0;
-    setFrames([]); setCountdown(-1);
-    setBorderState('waiting'); borderRef.current = 'waiting';
-    setTurnProgress(0); prevFrameRef.current = null;
-    setStep('capture');
-  }, []);
+	    setCurrentAngleIdx(0); angleIdxRef.current = 0;
+	    setFrames([]); setCountdown(-1);
+	    setBorderState('waiting'); borderRef.current = 'waiting';
+	    prevFrameRef.current = null;
+	    readyTicksRef.current = 0;
+	    captureAnalysisRef.current = null;
+	    setCaptureAnalysis(null);
+	    setStep('capture');
+	  }, []);
 
   // Step 2: Once capture page is rendered, init camera
   useEffect(() => {
@@ -142,28 +139,41 @@ export default function TryOnPage() {
         if (!cancelled) {
           setCameraReady(true);
           speak('请退后两步，每次顺时针旋转45度');
-          detectIntervalRef.current = window.setInterval(() => {
-            const current = getFrameData();
-            if (!current) return;
-            const diff = frameDifference(prevFrameRef.current, current);
-            setTurnProgress(Math.min(1, diff * 10));
-            const bs = borderRef.current;
-            const cai = angleIdxRef.current;
-            if (bs !== 'captured' && diff > 0.08) {
-              setBorderState('turning'); borderRef.current = 'turning';
-            } else if ((bs === 'turning' || (bs === 'waiting' && cai === 0)) && diff < 0.04) {
-              prevFrameRef.current = current;
-              setBorderState('ready'); borderRef.current = 'ready';
-              setCountdown(2);
-            }
-          }, 400);
-        }
+	          detectIntervalRef.current = window.setInterval(() => {
+	            const current = getFrameData();
+	            if (!current) return;
+	            const analysis = analyzeCaptureFrame(current, {
+	              previousFrame: prevFrameRef.current,
+	              targetAngle: CAPTURE_ANGLES[angleIdxRef.current],
+	            });
+	            prevFrameRef.current = current;
+	            captureAnalysisRef.current = analysis;
+	            setCaptureAnalysis(analysis);
+	            if (borderRef.current === 'captured') return;
+
+	            if (countdownRef.current > 0 && !analysis.ready) {
+	              setCountdown(-1);
+	              setBorderState(analysis.lightState === 'turning' ? 'turning' : 'waiting');
+	              readyTicksRef.current = 0;
+	              return;
+	            }
+
+	            if (analysis.ready) {
+	              readyTicksRef.current += 1;
+	              setBorderState('ready'); borderRef.current = 'ready';
+	              if (countdownRef.current < 0 && readyTicksRef.current >= 2) setCountdown(2);
+	            } else {
+	              readyTicksRef.current = 0;
+	              setBorderState(analysis.lightState === 'turning' ? 'turning' : 'waiting');
+	            }
+	          }, 400);
+	        }
       } catch (err: any) {
         if (!cancelled) alert(`摄像头启动失败: ${err.message || '未知错误'}`);
       }
     })();
     return () => { cancelled = true; };
-  }, [step, cameraReady]);
+	  }, [step, cameraReady, getFrameData]);
 
   // ── 倒计时 → 拍照 ──
   useEffect(() => {
@@ -172,18 +182,20 @@ export default function TryOnPage() {
       const dataUrl = capturePhoto();
       if (!dataUrl) return;
       const angle = CAPTURE_ANGLES[currentAngleIdx];
-      setFrames((p) => [...p, { angle: angle as any, imageDataUrl: dataUrl, capturedAt: new Date().toISOString(), qualityScore: 80 }]);
-      setBorderState('captured');
-      setTurnProgress(0);
+	      setFrames((p) => [...p, { angle, imageDataUrl: dataUrl, capturedAt: new Date().toISOString(), qualityScore: captureAnalysisRef.current?.qualityScore ?? 70 }]);
+	      setBorderState('captured');
+	      readyTicksRef.current = 0;
 
       const next = currentAngleIdx + 1;
       if (next < CAPTURE_ANGLES.length) {
         setTimeout(() => {
-          angleIdxRef.current = next; setCurrentAngleIdx(next);
-          setBorderState('waiting');
-          prevFrameRef.current = null;
-          setCountdown(-1);
-          speak(`请继续顺时针旋转45度`);
+	          angleIdxRef.current = next; setCurrentAngleIdx(next);
+	          setBorderState('waiting');
+	          prevFrameRef.current = null;
+	          captureAnalysisRef.current = null;
+	          setCaptureAnalysis(null);
+	          setCountdown(-1);
+	          speak(`请继续顺时针旋转45度`);
         }, 1500);
       } else {
         setTimeout(() => {
@@ -215,6 +227,13 @@ export default function TryOnPage() {
   const qualityScore = useMemo(() => (frames.length > 0 ? estimateBodyModelQuality(measurements, frames) : 0), [measurements, frames]);
   const currentAngle = CAPTURE_ANGLES[currentAngleIdx];
   const progressPct = frames.length / CAPTURE_ANGLES.length;
+  const analysisMetrics = captureAnalysis ? [
+    ['全身', captureAnalysis.fullBodyScore],
+    ['距离', captureAnalysis.distanceScore],
+    ['居中', captureAnalysis.centerScore],
+    ['角度', captureAnalysis.angleScore],
+    ['稳定', captureAnalysis.stabilityScore],
+  ] as const : [];
 
   return (
     <div className="min-h-screen pb-24 safe-top safe-bottom bg-gray-950">
@@ -311,13 +330,30 @@ export default function TryOnPage() {
                 </div>
 
                 {/* Progress dots */}
-                <div style={{ position: 'absolute', top: 16, right: 12, zIndex: 10, display: 'flex', gap: 3 }}>
-                  {CAPTURE_ANGLES.map((a, i) => (
+	                <div style={{ position: 'absolute', top: 16, right: 12, zIndex: 10, display: 'flex', gap: 3 }}>
+	                  {CAPTURE_ANGLES.map((a, i) => (
                     <div key={a} style={{ width: 6, height: 6, borderRadius: '50%',
                       background: i < currentAngleIdx ? '#4ade80' : a === currentAngle ? '#fbbf24' : 'rgba(255,255,255,0.2)',
                       boxShadow: a === currentAngle ? '0 0 6px #fbbf24' : 'none' }} />
-                  ))}
-                </div>
+	                  ))}
+	                </div>
+
+	                {/* Smart person box */}
+	                {captureAnalysis?.box && (
+	                  <div style={{
+	                    position: 'absolute',
+	                    left: `${captureAnalysis.box.x * 100}%`,
+	                    top: `${captureAnalysis.box.y * 100}%`,
+	                    width: `${captureAnalysis.box.width * 100}%`,
+	                    height: `${captureAnalysis.box.height * 100}%`,
+	                    border: `2px solid ${captureAnalysis.ready ? '#4ade80' : '#fbbf24'}`,
+	                    boxShadow: captureAnalysis.ready ? '0 0 16px rgba(74,222,128,0.65)' : '0 0 12px rgba(251,191,36,0.45)',
+	                    borderRadius: 12,
+	                    zIndex: 7,
+	                    pointerEvents: 'none',
+	                    transition: 'all 0.25s ease',
+	                  }} />
+	                )}
 
                 {/* Center guide */}
                 <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 8,
@@ -343,14 +379,14 @@ export default function TryOnPage() {
                   }} />
                   <div style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(8px)', borderRadius: 16,
                                 padding: '10px 14px', textAlign: 'center' }}>
-                    <p style={{ color: 'white', fontSize: 14, fontWeight: 700, margin: 0, lineHeight: 1.5 }}>
-                      {borderState === 'waiting' && <>👆 请退后两步 · <span style={{ color: '#fbbf24' }}>每次顺时针旋转45度</span></>}
-                      {borderState === 'turning' && <>🔄 检测到转身 · 转到<span style={{ color: '#4ade80' }}> {ANGLE_LABELS[currentAngle]}</span> 方向后停下</>}
-                      {borderState === 'ready' && <>🎯 角度到位 · <span style={{ color: '#4ade80' }}>保持不动</span></>}
-                      {borderState === 'captured' && <>📸 第 {frames.length}/{CAPTURE_ANGLES.length} 张已拍 · 继续<span style={{ color: '#fbbf24' }}>顺时针旋转45度</span></>}
-                    </p>
-                  </div>
-                </div>
+	                    <p style={{ color: 'white', fontSize: 14, fontWeight: 700, margin: 0, lineHeight: 1.5 }}>
+	                      {borderState === 'waiting' && <>👆 {captureAnalysis?.instruction ?? '请退后两步'} · <span style={{ color: '#fbbf24' }}>{captureAnalysis?.detail ?? '每次顺时针旋转45度'}</span></>}
+	                      {borderState === 'turning' && <>🔄 {captureAnalysis?.instruction ?? '检测到转身'} · <span style={{ color: '#4ade80' }}>{captureAnalysis?.detail ?? `转到 ${ANGLE_LABELS[currentAngle]} 后停下`}</span></>}
+	                      {borderState === 'ready' && <>🎯 {captureAnalysis?.instruction ?? '角度到位'} · <span style={{ color: '#4ade80' }}>{captureAnalysis?.detail ?? '保持不动'}</span></>}
+	                      {borderState === 'captured' && <>📸 第 {frames.length}/{CAPTURE_ANGLES.length} 张已拍 · 继续<span style={{ color: '#fbbf24' }}>顺时针旋转45度</span></>}
+	                    </p>
+	                  </div>
+	                </div>
 
                 {countdown > 0 && (
                   <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -362,9 +398,23 @@ export default function TryOnPage() {
                 )}
               </div>
 
-              <style>{`@keyframes pulse-bar { 0%,100%{opacity:0.6} 50%{opacity:1} }`}</style>
+	              <style>{`@keyframes pulse-bar { 0%,100%{opacity:0.6} 50%{opacity:1} }`}</style>
 
-              {/* 缩略图 */}
+	              {/* 智能判定面板 */}
+	              <div className="grid grid-cols-5 gap-1.5 mb-3">
+	                {analysisMetrics.map(([label, value]) => {
+	                  const pct = Math.round(value * 100);
+	                  const active = pct >= 70;
+	                  return (
+	                    <div key={label} className={`rounded-lg px-1.5 py-2 text-center border ${active ? 'bg-green-500/10 border-green-400/30' : 'bg-white/5 border-white/10'}`}>
+	                      <div className={`text-[10px] ${active ? 'text-green-300' : 'text-gray-500'}`}>{label}</div>
+	                      <div className={`text-sm font-bold ${active ? 'text-green-200' : 'text-gray-300'}`}>{pct}</div>
+	                    </div>
+	                  );
+	                })}
+	              </div>
+
+	              {/* 缩略图 */}
               <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-2">
                 {frames.map((f, i) => (
                   <div key={i} className="flex-shrink-0 w-10 h-14 rounded-lg overflow-hidden border border-white/10">
@@ -420,9 +470,9 @@ export default function TryOnPage() {
                 <p className="text-gray-400 text-sm">身型: {measurements.bodyType} · 身高: {measurements.heightCm}cm · 体重: {measurements.weightKg}kg</p>
               </div>
               <div className="mb-6">
-                {apiAvailable && reconstructResult ? (
-                  <GLBModelViewer modelPath={`http://100.114.7.5:8765/models/${reconstructResult.job_id}.glb`} />
-                ) : (
+	                {apiAvailable && reconstructResult ? (
+	                  <GLBModelViewer modelPath={getReconstructionModelUrl(reconstructResult)} />
+	                ) : (
                   <>
                     <p className="text-xs text-gray-500 text-center mb-2">← 预置 {measurements.bodyType} GLB 模型 →</p>
                     <GLBModelViewer modelPath={getPresetModelPath(measurements.bodyType)} />

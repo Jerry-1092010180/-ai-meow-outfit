@@ -4,16 +4,17 @@
 
 import type { BodyMeasurements, CaptureFrame } from '@/types/bodyModel';
 
-// AIGC Tailscale IP ← 通过 Cloudflare Tunnel 代理时替换为此处
-const AVATAR_API = 'http://100.114.7.5:8765';
+// Routed through API Gateway in production so the AIGC machine stays private.
+const AVATAR_API = import.meta.env.VITE_AVATAR_API_BASE_URL || '/api/avatar';
 
-interface ReconstructResult {
+export interface ReconstructResult {
   job_id: string;
   status: string;
   elapsed_seconds: number;
   vertices: number;
   faces: number;
   model_url: string;
+  cdn_url?: string;
   method: string;
   frame_count: number;
 }
@@ -37,6 +38,14 @@ export async function submitReconstruction(
 /** 获取已生成的模型下载 URL */
 export function getModelUrl(jobId: string): string {
   return `${AVATAR_API}/models/${jobId}.glb`;
+}
+
+/** Prefer CDN URL returned by the gateway, then absolute model URL, then gateway model route. */
+export function getReconstructionModelUrl(result: ReconstructResult): string {
+  if (result.cdn_url) return result.cdn_url;
+  if (result.model_url?.startsWith('http')) return result.model_url;
+  if (result.model_url?.startsWith('/')) return `${AVATAR_API}${result.model_url}`;
+  return getModelUrl(result.job_id);
 }
 
 /** 根据身型匹配预置 GLB 模型路径 */

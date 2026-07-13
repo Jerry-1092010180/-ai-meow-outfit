@@ -4,7 +4,7 @@ AI 喵搭 — 真人 3D 重建服务器
 用法: python avatar_server.py --port 8765
 """
 
-import os, io, json, base64, time, tempfile
+import os, io, json, base64, time, tempfile, math
 from pathlib import Path
 import numpy as np
 from fastapi import FastAPI, HTTPException

@@ -2,17 +2,13 @@ import type { BodyType } from './user';
 
 export type CaptureAngle =
   | 0
-  | 30
-  | 60
+  | 45
   | 90
-  | 120
-  | 150
+  | 135
   | 180
-  | 210
-  | 240
+  | 225
   | 270
-  | 300
-  | 330;
+  | 315;
 
 export interface BodyMeasurements {
   heightCm: number;
