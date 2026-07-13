@@ -9,7 +9,9 @@ interface GLBModelViewerProps {
 }
 
 function Model({ path }: { path: string }) {
+  console.log('[GLB] Loading model:', path);
   const { scene } = useGLTF(path);
+  console.log('[GLB] Loaded successfully:', path, '- vertices:', scene.children.length);
   const cloned = scene.clone(true);
 
   // Normalize materials

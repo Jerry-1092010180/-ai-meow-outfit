@@ -72,11 +72,12 @@ export function getReconstructionModelUrl(result: ReconstructResult): string {
   return getModelUrl(result.job_id);
 }
 
-/** 根据身型匹配预置 GLB 模型路径 */
+/** 根据身型匹配预置 GLB 模型路径 (兼容所有部署平台的 BASE_URL) */
 export function getPresetModelPath(bodyType: string): string {
   const validTypes = ['hourglass', 'pear', 'apple', 'rectangle', 'inverted_triangle'];
   const bt = validTypes.includes(bodyType) ? bodyType : 'hourglass';
-  return `/models/body-${bt}.glb`;
+  const base = import.meta.env.BASE_URL || '/';
+  return `${base}models/body-${bt}.glb`;
 }
 
 /** 检查 AIGC 服务器是否可达 */
