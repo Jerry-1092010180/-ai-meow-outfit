@@ -37,8 +37,9 @@ function frameDifference(a: ImageData | null, b: ImageData | null): number {
 
 export default function TryOnPage() {
   const navigate = useNavigate();
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const prevFrameRef = useRef<ImageData | null>(null);
   const detectIntervalRef = useRef<number>(0);
@@ -103,23 +104,30 @@ export default function TryOnPage() {
         audio: false,
       });
       streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        // Play immediately, transition to capture UI after short delay
-        try { await videoRef.current.play(); } catch {}
+
+      // Create video imperatively to avoid React re-render stream loss
+      const video = document.createElement('video');
+      video.setAttribute('autoplay', '');
+      video.setAttribute('playsinline', '');
+      video.muted = true;
+      video.srcObject = stream;
+      video.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);z-index:0;background:#000;';
+      videoRef.current = video;
+
+      if (containerRef.current) {
+        containerRef.current.innerHTML = '';
+        containerRef.current.appendChild(video);
       }
-      // Transition to capture UI directly — video will show when ready
+      try { await video.play(); } catch (e) { console.error('play err', e); }
+
       setCameraReady(true);
       angleIdxRef.current = 0; setCurrentAngleIdx(0);
-      setFrames([]);
-      setCountdown(-1);
-      setBorderState('waiting');
-      setTurnProgress(0);
-      prevFrameRef.current = null;
+      setFrames([]); setCountdown(-1);
+      setBorderState('waiting'); borderRef.current = 'waiting';
+      setTurnProgress(0); prevFrameRef.current = null;
       setStep('capture');
-      setTimeout(() => speak('请退后两米，让全身出现在画面中。每次顺时针旋转45度，系统将自动检测并拍照。'), 1000);
+      setTimeout(() => speak('请退后两步，每次顺时针旋转45度，系统自动检测并拍照'), 1000);
 
-      // Motion detection loop — uses refs to avoid stale closure
       detectIntervalRef.current = window.setInterval(() => {
         const current = getFrameData();
         if (!current) return;
@@ -127,12 +135,11 @@ export default function TryOnPage() {
         setTurnProgress(Math.min(1, diff * 10));
         const bs = borderRef.current;
         const cai = angleIdxRef.current;
-
         if (bs !== 'captured' && diff > 0.08) {
-          setBorderState('turning');
+          setBorderState('turning'); borderRef.current = 'turning';
         } else if ((bs === 'turning' || (bs === 'waiting' && cai === 0)) && diff < 0.04) {
           prevFrameRef.current = current;
-          setBorderState('ready');
+          setBorderState('ready'); borderRef.current = 'ready';
           setCountdown(2);
         }
       }, 400);
@@ -259,11 +266,8 @@ export default function TryOnPage() {
                 style={{ aspectRatio: '3/4', boxShadow: borderState === 'ready' ? '0 0 40px 8px rgba(74,222,128,0.6), inset 0 0 30px rgba(74,222,128,0.2)' :
                          borderState === 'captured' ? '0 0 60px 12px rgba(255,255,255,0.8)' :
                          borderState === 'turning' ? '0 0 30px 6px rgba(248,113,113,0.5)' : 'none' }}>
-                {/* Camera video — always rendered, no overlay blocking it */}
-                <video ref={videoRef} autoPlay playsInline muted
-                  width={1280} height={720}
-                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-                           objectFit: 'cover', transform: 'scaleX(-1)', zIndex: 0 }} />
+                {/* Camera container — video inserted imperatively */}
+                <div ref={containerRef} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, background: '#111' }} />
                 <canvas ref={canvasRef} style={{ display: 'none' }} />
 
                 {/* Top gradient overlay for readability */}
