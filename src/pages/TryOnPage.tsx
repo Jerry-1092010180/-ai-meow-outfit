@@ -99,26 +99,38 @@ export default function TryOnPage() {
   // ── 启动摄像头 ──
   const beginCapture = useCallback(async () => {
     try {
+      // Minimal constraints for maximum compatibility
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
+        video: { facingMode: 'user' },
         audio: false,
       });
       streamRef.current = stream;
 
-      // Create video imperatively to avoid React re-render stream loss
+      // Imperative video — bypasses React
       const video = document.createElement('video');
       video.setAttribute('autoplay', '');
       video.setAttribute('playsinline', '');
       video.muted = true;
       video.srcObject = stream;
-      video.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);z-index:0;background:#000;';
+      video.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);z-index:0;';
       videoRef.current = video;
 
       if (containerRef.current) {
         containerRef.current.innerHTML = '';
         containerRef.current.appendChild(video);
       }
-      try { await video.play(); } catch (e) { console.error('play err', e); }
+
+      // Handle play
+      try { await video.play(); }
+      catch (playErr) { console.warn('Autoplay blocked, adding tap-to-start fallback');
+        // Some browsers block autoplay; add click handler
+        video.style.background = '#222';
+        const msg = document.createElement('div');
+        msg.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:14px;z-index:5;pointer-events:none;';
+        msg.textContent = '📷 点击屏幕启动摄像头';
+        containerRef.current?.appendChild(msg);
+        containerRef.current?.addEventListener('click', () => { video.play(); msg.remove(); }, { once: true });
+      }
 
       setCameraReady(true);
       angleIdxRef.current = 0; setCurrentAngleIdx(0);
@@ -126,7 +138,7 @@ export default function TryOnPage() {
       setBorderState('waiting'); borderRef.current = 'waiting';
       setTurnProgress(0); prevFrameRef.current = null;
       setStep('capture');
-      setTimeout(() => speak('请退后两步，每次顺时针旋转45度，系统自动检测并拍照'), 1000);
+      setTimeout(() => speak('请退后两步，每次顺时针旋转45度'), 1000);
 
       detectIntervalRef.current = window.setInterval(() => {
         const current = getFrameData();
@@ -143,7 +155,10 @@ export default function TryOnPage() {
           setCountdown(2);
         }
       }, 400);
-    } catch { alert('无法访问摄像头，请允许相机权限后重试'); }
+    } catch (err: any) {
+      console.error('Camera error:', err.name, err.message);
+      alert(`摄像头启动失败: ${err.message || '未知错误'}\n\n请确保:\n1. 使用 HTTPS 访问\n2. 浏览器已授予相机权限\n3. 没有其他应用占用摄像头`);
+    }
   }, []);
 
   // ── 倒计时 → 拍照 ──
