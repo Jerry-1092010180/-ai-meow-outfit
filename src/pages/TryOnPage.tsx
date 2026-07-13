@@ -112,12 +112,24 @@ export default function TryOnPage() {
       video.setAttribute('playsinline', '');
       video.muted = true;
       video.srcObject = stream;
-      video.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);z-index:0;';
+      // Force visibility with explicit sizing and bright background
+      video.style.cssText = 'display:block;position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);z-index:1;background:red;border:4px solid yellow;';
       videoRef.current = video;
 
       if (containerRef.current) {
-        containerRef.current.innerHTML = '';
-        containerRef.current.appendChild(video);
+        const container = containerRef.current;
+        container.innerHTML = '';
+        container.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;background:blue;';
+        container.appendChild(video);
+        // Debug: log dimensions
+        setTimeout(() => {
+          console.log('Container:', container.offsetWidth, 'x', container.offsetHeight);
+          console.log('Video:', video.offsetWidth, 'x', video.offsetHeight, 'readyState:', video.readyState, 'paused:', video.paused);
+          if (video.offsetWidth === 0) alert('Video has 0 width! Container: ' + container.offsetWidth + 'x' + container.offsetHeight);
+        }, 1000);
+      } else {
+        alert('containerRef is null!');
+        console.error('containerRef.current is null');
       }
 
       // Handle play
