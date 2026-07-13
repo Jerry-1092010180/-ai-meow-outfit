@@ -57,9 +57,52 @@ function frameDiff(a:ImageData|null,b:ImageData|null):{score:number;maskPct:numb
   return{score:diff/(px*3*255),maskPct:motionPixels/Math.max(px,1)};
 }
 
-// ── 多帧 center 历史 (stability) ──
+// ── 帧间运动检测 (不依赖颜色) ──
+let prevMotionFrame: ImageData | null = null;
+function findBodyByMotion(frame: ImageData, currMotion: { score: number; maskPct: number }): { box: CaptureBox | null; confidence: number } {
+  // 只在 motion 足够大时才做
+  if (currMotion.maskPct < 0.01 || !prevMotionFrame) {
+    prevMotionFrame = frame;
+    return { box: null, confidence: 0 };
+  }
+
+  const { width, height, data } = frame;
+  const pd = prevMotionFrame.data;
+  // 二值化运动掩码
+  const motionPixels: Array<{ x: number; y: number }> = [];
+  for (let y = 2; y < height - 2; y += 3) {
+    for (let x = 2; x < width - 2; x += 3) {
+      const i = (y * width + x) * 4;
+      if (Math.abs(data[i] - pd[i]) + Math.abs(data[i + 1] - pd[i + 1]) + Math.abs(data[i + 2] - pd[i + 2]) > 18 * 3) {
+        motionPixels.push({ x, y });
+      }
+    }
+  }
+
+  prevMotionFrame = frame;
+
+  if (motionPixels.length < 30) return { box: null, confidence: 0 };
+
+  // 膨胀模拟：扩大运动区域以包含静止的人体
+  const sx = motionPixels.map(p => p.x).sort((a, b) => a - b);
+  const sy = motionPixels.map(p => p.y).sort((a, b) => a - b);
+  const trim = Math.max(1, Math.floor(motionPixels.length * 0.05));
+  const mx = Math.max(0, (sx[trim] - 30)) / width;
+  const Mx = Math.min(1, (sx[sx.length - 1 - trim] + 30)) / width;
+  const my = Math.max(0, (sy[trim] - 40)) / height;
+  const My = Math.min(1, (sy[sy.length - 1 - trim] + 40)) / height;
+
+  if (Mx <= mx || My <= my || (Mx - mx) < 0.04 || (My - my) < 0.06) return { box: null, confidence: 0 };
+
+  // motion confidence: how much of the frame is moving
+  const motionConfidence = Math.min(1, motionPixels.length / ((width * height) / 1000));
+  return {
+    box: { x: mx, y: my, width: Mx - mx, height: My - my },
+    confidence: clamp(motionConfidence),
+  };
+}
 const centerHistory:Array<{x:number;y:number}>=[];
-function clearCenterHistory(){centerHistory.length=0;}
+function clearCenterHistory(){centerHistory.length=0;prevMotionFrame=null;}
 
 // ── 背景色检测 (foreground) ──
 function findBodyByColor(frame:ImageData):{box:CaptureBox|null;bodyPct:number;heightRatio:number}{
@@ -96,31 +139,36 @@ function findBodyByColor(frame:ImageData):{box:CaptureBox|null;bodyPct:number;he
   return{box:{x:mx,y:my,width:Mx-mx,height:My-my},bodyPct:bodyPct*0.6+(My-my)*0.4,heightRatio:My-my};
 }
 
-// ── 三级置信度人体检测 ──
-function detectBody(frame:ImageData):{box:CaptureBox|null;confidence:number;heightRatio:number;detailParts:string[]}{
-  const fg=findBodyByColor(frame);
-  const detail:string[]=[];
+// ── 三级置信度人体检测 (颜色 + 运动双重通道) ──
+function detectBody(frame: ImageData, motion: { score: number; maskPct: number }): { box: CaptureBox | null; confidence: number; heightRatio: number; detailParts: string[] } {
+  // 通道 A: 颜色检测
+  const fg = findBodyByColor(frame);
+  const detail: string[] = [];
 
-  if(fg.box){
-    // Geometry score: heightRatio >0.7 = full body
-    const geoScore=fg.heightRatio>0.7?1:Math.min(1,fg.heightRatio*1.4);
-
-    // Foreground score
-    const fgScore=fg.box.width>0.12&&fg.box.height>0.2?clamp(fg.bodyPct*2.5):0;
-
-    // Motion score (will be set later by caller)
-    // confidence = 0.2*motion + 0.5*foreground + 0.3*geometry
-    // motion is unknown here, we compute final confidence in analyzeCaptureFrame
-
-    return{
-      box:fg.box,
-      confidence:0.5*fgScore+0.3*geoScore, // motion added in caller
-      heightRatio:fg.heightRatio,
-      detailParts:detail,
+  if (fg.box) {
+    const geoScore = fg.heightRatio > 0.7 ? 1 : Math.min(1, fg.heightRatio * 1.4);
+    const fgScore = fg.box.width > 0.12 && fg.box.height > 0.2 ? clamp(fg.bodyPct * 2.5) : 0;
+    return {
+      box: fg.box,
+      confidence: 0.5 * fgScore + 0.3 * geoScore,
+      heightRatio: fg.heightRatio,
+      detailParts: detail,
     };
   }
 
-  return{box:null,confidence:0,heightRatio:0,detailParts:detail};
+  // 通道 B: 运动检测 (颜色失败时回退)
+  const motionBody = findBodyByMotion(frame, motion);
+  if (motionBody.box) {
+    const hRatio = motionBody.box.height;
+    return {
+      box: motionBody.box,
+      confidence: motionBody.confidence * 0.6 + 0.2, // motion 偏保守
+      heightRatio: hRatio,
+      detailParts: ['motion-fallback'],
+    };
+  }
+
+  return { box: null, confidence: 0, heightRatio: 0, detailParts: detail };
 }
 
 function aspectForAngle(a:number):number{
@@ -132,7 +180,7 @@ function aspectForAngle(a:number):number{
 
 export function analyzeCaptureFrame(frame:ImageData,opts:AnalyzeOptions):CaptureAnalysis{
   const motion=frameDiff(opts.previousFrame,frame);
-  const body=detectBody(frame);
+  const body=detectBody(frame,motion); // 传入 motion 给运动通道
 
   // Final confidence: add motion
   const confidence=motion.maskPct>0.02?Math.max(body.confidence,motion.maskPct):body.confidence;

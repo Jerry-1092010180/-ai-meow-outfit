@@ -150,6 +150,12 @@ export default function TryOnPage() {
 	            prevFrameRef.current = current;
 	            captureAnalysisRef.current = analysis;
 	            setCaptureAnalysis(analysis);
+	            if (Math.random() < 0.08) {
+	              try { const log = JSON.parse(localStorage.getItem("aimm-capture-log") || "[]");
+	                log.push({ ts: Date.now(), step: frames.length, det: analysis.detail });
+	                if (log.length > 200) log.splice(0, 100);
+	                localStorage.setItem("aimm-capture-log", JSON.stringify(log)); } catch {}
+	            }
 	            if (borderRef.current === 'captured') return;
 
 	            if (countdownRef.current > 0 && analysis.motionScore > 0.12) {
