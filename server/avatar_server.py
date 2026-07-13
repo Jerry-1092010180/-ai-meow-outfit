@@ -216,23 +216,55 @@ def reconstruct(manifest: ManifestRequest):
 
     try:
         m = manifest.measurements
+        frames = manifest.frames
+        method = "parametric-superellipsoid-fallback"
+        mesh = None
 
-        # Parametric body generation from measurements (fast, reliable, GPU-free)
-        mesh = create_parametric_body(
-            height_cm=m.heightCm,
-            weight_kg=m.weightKg,
-            body_type=m.bodyType,
-            resolution=64
-        )
-        mesh = trimesh.smoothing.filter_laplacian(mesh, iterations=2)
+        # ── Phase 1: Try multi-view silhouette carving from real photos ──
+        if len(frames) >= 4:
+            try:
+                images = []
+                for f in frames:
+                    img = dataurl_to_image(f.imageDataUrl)
+                    if img is not None and img.size > 0:
+                        images.append((f.angle, img))
+                if len(images) >= 4:
+                    # Extract silhouettes
+                    silhouettes = []
+                    angles_used = []
+                    for angle, img in images:
+                        sil = image_to_silhouette(img)
+                        if sil.sum() > 500:
+                            silhouettes.append(sil)
+                            angles_used.append(angle)
+                    if len(silhouettes) >= 4:
+                        carved = silhouettes_to_voxel_mesh(
+                            silhouettes, angles_used,
+                            voxel_resolution=256,
+                            height_cm=m.heightCm
+                        )
+                        if carved is not None and len(carved.vertices) > 10:
+                            mesh = apply_measurements_scale(carved, m.heightCm, m.weightKg)
+                            mesh = trimesh.smoothing.filter_laplacian(mesh, iterations=2)
+                            method = "multi-view-silhouette-carving"
+            except Exception as e:
+                print(f"Silhouette carving failed, falling back: {e}")
+
+        # ── Phase 2: Fallback to parametric body ──
+        if mesh is None:
+            mesh = create_parametric_body(
+                height_cm=m.heightCm,
+                weight_kg=m.weightKg,
+                body_type=m.bodyType,
+                resolution=64
+            )
+            mesh = trimesh.smoothing.filter_laplacian(mesh, iterations=2)
 
         # Export GLB
         glb_path = OUTPUT_DIR / f"{job_id}.glb"
         mesh.export(str(glb_path), file_type="glb")
 
         elapsed = round(time.time() - t_start, 1)
-        frame_count = len(manifest.frames)
-
         return {
             "job_id": job_id,
             "status": "ready",
@@ -241,8 +273,8 @@ def reconstruct(manifest: ManifestRequest):
             "faces": len(mesh.faces),
             "model_url": f"/models/{job_id}.glb",
             "preview_url": f"/models/{job_id}-preview.png",
-            "method": "parametric-superellipsoid",
-            "frame_count": frame_count,
+            "method": method,
+            "frame_count": len(frames),
         }
 
     except Exception as e:
