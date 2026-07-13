@@ -1,216 +1,168 @@
-# Codex 执行任务书 — 采集与重建全面升级（修订版 v3）
+# AI喵搭 — Codex 接手提示词
 
-## 前提
+## 项目定位
 
-项目路径：`/Users/jerry/Documents/Codex/ai-meow-outfit`
-入口上下文：`CONTEXT.md`
-最新线上：https://b2efe305.ai-meow-outfit.pages.dev
-Git tag：opc-v1.1
+OPC 2026 商业比赛项目。为银泰百货喵街 APP 4500 万会员设计 AI 原生互动玩法。
+参赛方向：创想家。交付物：可运行 H5 原型 + 方案文档 + 路演 Deck。
 
-**原则**：
-- ❌ 不要推翻现有 captureAnalysis.ts 整体架构（红绿灯、倒计时、状态机、视角采集保持不动）
-- ✅ 在现有 `findBodyBox()` 和 `ready` 判定逻辑上渐进替换
-- ✅ 加入 Debug Overlay 方便调参
-- ✅ Carving：vote + soft silhouette
+## 当前代码位置
 
----
+主分支：`main`（OPC 比赛期 MVP，**不要修改**）
+实验分支：`next-gen-avatar`（**所有开发在这里进行**）
+入口上下文：`CONTEXT.md`（项目结构 + AIGC 连接方式）
+架构设计：`ARCHITECTURE.md`、`next-gen-architecture.md`
+文档：`docs/`（avatar-pipeline-design.md、database-design.md、avatar-platform-design.md 等）
+AIGC 服务器：`jerry@100.114.7.5` / 密码 `0` / 4090D GPU / conda DeepLearning
 
-## 任务一：修复 findBodyBox + ready 判定（渐进式）
+## 当前状态
 
-**修改文件**：`src/services/captureAnalysis.ts`
+### 已实现的 MVP 功能（main 分支）
+- 首页天气穿搭推荐（Open-Meteo API）
+- Onboarding 3 步引导（身型/风格/门店）
+- 前置摄像头 8 张照片采集（使用中）
+- 虚拟试穿（预置 5 种身型 GLB + 程序化 3D 人体）
+- PK 挑战 + 双人 3D 同框
+- 穿搭日记 + 门店好物
+- AI 海报分享
+- AIGC 参数化人体重建（4090D GPU）
 
-**当前问题**：
-人体检测依赖边框颜色减法（`bgColor = border color → diff > 40 = 人`），真实环境极易翻车。bodyBox 返回 null → 卡 0/8。
+### NEXT-GEN-AVATAR 分支已完成的
+1. AI Provider 接口层（7 个 pluggable provider）
+2. GLB Viewer 路径修复（BASE_URL 兼容）
+3. 完整 Pipeline 日志系统（28 条日志/7 文件）
+4. Debug Audit（数据流 + Top 10 Bug）
+5. AIGC Python 服务器日志（[Avatar] 标签）
 
-**修改方案**：
+## 当前阻塞 Demo 的 Top 3 Bug
 
-### A. 人体检测改为三级加权
+见 `debug-audit.md`。最紧急的是：
 
-不要依赖单一指标。改为：
+### Bug 1（P0）：Body Detection 第一节点失败
+- **文件**：`src/services/captureAnalysis.ts`
+- **函数**：`findBodyByColor()` 第 119 行
+- **原因**：`THRESH=22` 太高 → 前景像素 < 20 个 → `box=null` → 所有 score=0 → 卡在 0/8
+- **失败链**：findBodyByColor() box=null → detectBody() 返回 null → analyzeCaptureFrame 走 191 行 → ready=false → detail='rdy:--' → 永远不触发拍照
+- **真实场景**：白墙+白衣、灰墙+黑衣、黄光环境都会失败
+- **运动回退矛盾**：findBodyByMotion() 需要 motion>0，但用户拍照时必须静止
 
+### Bug 2（P0）：Gateway 未部署
+- **文件**：`server/gateway-worker.js`（代码已写好）
+- **原因**：未执行 `wrangler deploy`，手机无法访问 Tailscale 内网 AIGC
+- **当前 fallback**：`getPresetModelPath()` 显示预置 GLB——demo 可用但用户看不到重建效果
+
+### Bug 3（P1）：采集体验不完整
+- 摄像头黑屏、倒计时无视觉反馈、角度切换无引导
+
+## 架构核心原则（必须遵守）
+
+> AI 模型是可替换插件。真正稳定的是：Avatar 数据结构、数据库、商城接口、Three.js Viewer、用户资产。
+
+### Provider 接口（`pipeline/interfaces/avatar-provider.ts`）
+所有 AI 模型通过接口调用，每 6-12 个月可换一代模型，不改管线：
+- `SegmentationProvider` — REMBG / MediaPipe / SAM
+- `PoseEstimatorProvider` — ViTPose / OpenPose / MediaPipe
+- `BodyEstimatorProvider` ⭐ — SMPLify-X / SPIN / CLIFF（核心资产）
+- `FaceEstimatorProvider` — DECA / MICA / EMICA
+- `TextureGeneratorProvider` — PyTorch3D / DreamGaussian
+- `MeshDetailProvider` — PIFu / ECON / GaussianAvatar
+- `HairGeneratorProvider` — NeuralHaircut / preset
+
+### 数据流（已验证 + 未验证）
 ```
-confidence = 0.20 × Motion + 0.50 × Foreground + 0.30 × Geometry
-
-Motion     = 帧间差 (已有 frameDifference())
-Foreground = 现有颜色检测算法（阈值从 40 降至 22~28）
-Geometry   = bbox height + bbox width + center offset 综合评分
-
-confidence > 0.55 → bodyPresent = true
-```
-
-**注意**：Motion 在用户静止拍照时会降到接近 0，所以权重不能高（0.20）。它只做辅助——当 foreground 失败时起到"有人存在"的提示作用。
-
-### B. Foreground 检测保留现有 border-color 算法但降低阈值
-
-- 阈值从 `40` → `22~28`
-- 新增 `bodyPct = 0.6 × bodyArea + 0.4 × bboxHeight`（替代纯面积）
-- 新增 `heightRatio = box.height / frameHeight`
-- 如果 `heightRatio > 0.7` 直接标记 `isFullBody = true`（不依赖 bodyPct）
-
-### C. 删除 bodyPct 硬阈值，改用 bbox 几何
-
-`bodyPct > 0.02` → 删除。
-替代为：
-
-```
-const heightRatio = box.height / frameHeight;
-const widthRatio = box.width / frameWidth;
-if (heightRatio > 0.7 && widthRatio > 0.15) {
-  isFullBody = true;
-  isStable = true;
-}
-```
-
-### D. stabilityScore 改为 body center 标准差（过去多帧）
-
-```
-要求过去若干帧（约15帧）body center 的 σx / σy < 4px
-```
-
-**具体改动**：新增一个 `centerHistory: Array<{x,y}>`，在 motion detection 循环中记录 `box.x+box.width/2` 和 `box.y+box.height/2`。每次 analyzeCaptureFrame 调用时向前追加，并计算近 15 帧的 center 标准差。
-
-### E. ready 判定改为连续加权评分
-
-去除 `passes >= 3` 离散逻辑，改为：
-
-```
-readyScore =
-  0.25 × fullBodyScore +
-  0.20 × centerScore +
-  0.20 × stabilityScore +
-  0.15 × distanceScore +
-  0.20 × angleScore
-
-ready = readyScore > 0.72
-```
-
-### F. 验收验证
-
-- `npm run build` 通过
-- 手机打开采集页，浅色/深色/复杂背景前均能稳定检测人体
-- 正常光照下约 3 秒内进入 ready 状态
-- 采集进度从 0/8 推进到 1/8
-
----
-
-## 任务二：Capture Debug Overlay
-
-**修改文件**：`src/pages/TryOnPage.tsx` + `src/services/captureAnalysis.ts`
-
-**目的**：实时在视频画面上绘制检测数据，帮助快速定位哪一项指标不达标。
-
-**实现方式**：
-1. `captureAnalysis.ts` 的返回接口保持不变，但 `detail` 字符串改为结构化 JSON 字符串（"ready:0.68,motion:0.13,body:0.74,center:0.82,angle:0.91,stable:0.80"）
-2. 在 `TryOnPage.tsx` 的采集页面（capture step）中，在 video 上覆盖一个 `<div>` 显示这些数据
-3. 数据显示在画面左上角或底部，半透明背景，白色文字，字号小（12px）
-
-**具体改动（TryOnPage.tsx）**：
-在 capture step 的 `div ref={containerRef}` 上方或下方，添加：
-
-```tsx
-{captureAnalysis && (
-  <div style={{
-    position: 'absolute', bottom: 80, left: 8, right: 8, zIndex: 15,
-    background: 'rgba(0,0,0,0.6)', borderRadius: 8, padding: '6px 10px',
-    fontSize: 11, color: '#ccc', fontFamily: 'monospace',
-  }}>
-    {captureAnalysis.detail}
-  </div>
-)}
+Camera          ⚠️ 部分验证（前置 getUserMedia 已启动）
+  ↓
+Capture 8张     ❌ 阻塞（findBodyByColor THRESH=22 失败）
+  ↓
+Upload          ⚠️ 直连 Tailscale IP→手机不可达
+  ↓
+Gateway         ❌ 未部署
+  ↓
+Python/4090D    ✅ 已验证（test_reconstruct.py 200 OK 2.5s）
+  ↓
+Generate GLB    ✅ 已验证
+  ↓
+Three.js Viewer ⚠️ 预置 GLB 路径已修复，需手机确认
 ```
 
-如果 `captureAnalysis.detail` 改为结构化的 key:value 格式，直接渲染即可。
+## 下一步优先级
 
-**验收**：
-- 采集画面上看到实时检测数据行
-- 用户转身时数字变化可见
+### P0（必须本周完成）
+1. **修复 Body Detection**：`captureAnalysis.ts` 中 `findBodyByColor()` 的 THRESH 从 22 降低到 10，或直接用帧间差分检测人体（不需要颜色对比）
+2. **部署 Gateway**：`wrangler deploy server/gateway-worker.js --name avatar-gateway` + `wrangler secret put AIGC_BASE_URL`
+3. **完整手机测试**：Camera → Capture 8 张 → Upload → Gateway → Python → GLB → Viewer
 
----
+### P1（Demo 可用后优化）
+4. 采集过程视觉反馈（倒计时、角度提示、走马灯）
+5. 重建过程的进度动画
+6. GLB Viewer 错误处理和 fallback
 
-## 任务三：Gateway Worker 部署 + 健康检查
+### P2（比赛提交前）
+7. 预置 GLB 纹理增强
+8. Debug Overlay 可开关
+9. 路演 Deck + 方案文档更新
 
-**修改文件**：`server/gateway-worker.js`
+## 关键文件索引
 
-**改动**：
-1. 在 gateway Worker 中添加 `/health` 返回完整状态链路（Cloudflare → Worker → AIGC → GPU → status）
-2. 部署 Worker：
+| 文件 | 行数 | 功能 |
+|------|------|------|
+| `src/pages/TryOnPage.tsx` | 522 | 采集主页面（摄像头 + 8 张拍摄 + 上传 + 结果） |
+| `src/services/captureAnalysis.ts` | 263 | 帧分析算法（findBodyByColor→THRESH=22 是第一失败点） |
+| `src/services/avatarApi.ts` | 91 | API 调用层（Upload URL + compressImageDataUrl） |
+| `src/services/bodyModelService.ts` | 81 | Manifest 生成 + quality score |
+| `src/services/outfitService.ts` | ~170 | 穿搭生成（FALLBACK_OUTFITS 兜底） |
+| `src/services/weatherService.ts` | ~50 | 天气 API（GPS → Open-Meteo → IP 降级） |
+| `src/components/outfit/GLBModelViewer.tsx` | 95 | Three.js GLB 加载器 |
+| `server/avatar_server.py` | 325 | AIGC 服务器（FastAPI + grabCut + carving） |
+| `server/gateway-worker.js` | 83 | Cloudflare Worker（未部署） |
+| `pipeline/interfaces/avatar-provider.ts` | 436 | AI Provider 接口层（7 个插件化接口） |
+| `CONTEXT.md` | 67 | 项目上下文 + AIGC 连接方式 |
+| `debug-audit.md` | 244 | Debug Audit 完整报告 |
+
+## 部署命令
 
 ```bash
-npx wrangler secret put AIGC_BASE_URL
-# 输入: http://100.114.7.5:8765
+# Cloudflare Pages（前段）
+source .env && npx wrangler pages deploy dist --project-name=ai-meow-outfit
 
+# Gateway Worker
 npx wrangler deploy server/gateway-worker.js --name avatar-gateway
+npx wrangler secret put AIGC_BASE_URL  # 输入: http://100.114.7.5:8765
+
+# AIGC 服务器重启
+ssh jerry@100.114.7.5 "source ~/anaconda3/etc/profile.d/conda.sh && conda activate DeepLearning && cd ~/avatar-server && nohup python3 avatar_server.py &>/dev/null &"
+
+# GitHub
+git add -A && git commit -m "fix: ..." && git push origin next-gen-avatar
 ```
 
-3. 将前端生产环境变量的 URL 更新为已部署的 Worker URL：
-```bash
-echo "VITE_AVATAR_API_BASE_URL=https://avatar-gateway.xxx.workers.dev/api/avatar" > .env.production
+## 日志系统
+
+所有 Pipeline 阶段使用统一日志格式：
+```
+[Avatar] EventName Details
+[Avatar] EventName FAILED reason
+【Gateway】 EventName Details
 ```
 
-**验收**：
-- `curl <worker>/api/avatar/health` 返回 AIGC 全链路状态
-- 手机浏览器能通过 Worker 调用 `/reconstruct`
+日志覆盖：TryOnPage(9处)、avatarApi(5处)、GLBModelViewer(1处)、outfitService(2处)、weatherService(2处)、avatar_server.py(5处)、gateway-worker.js(4处)
 
----
-
-## 任务四：修复 Silhouette Carving（vote + soft silhouette）
-
-**修改文件**：`server/avatar_server.py`
-
-**当前问题**：
-`voxel[:,:,y] &= rotated_sil` 要求 8 张图全部正确，任意偏差全灭。
-
-**改动**：
-
-### A. 改为多数投票
+## Demo 验收标准
 
 ```
-votes = np.zeros_like(voxel, dtype=np.uint8)
-votes += silhouette  # 0 or 1 for each voxel, per view
-voxel = votes >= 5   # 5/8 majority → keep
+Camera 预览 ✅
+Capture 8 张 ✅ (每张显示角度标签)
+Upload 200 ✅ (console 日志可见)
+Gateway 200 ✅ (console 日志可见)
+Python 2-5s ✅ (server.log 有 [Avatar] Reconstruct Complete)
+GLB >1KB ✅ (avatar-output/ 下有文件)
+Three.js 显示 ✅ (预置 GLB 旋转)
 ```
 
-### B. 改为 soft silhouette
+## 设计原则（请始终遵守）
 
-先用 distance transform 或其他方式生成 0~1 的置信度值，边缘=0.6 内部=1.0。然后 `score += probability`，最后 `score > 0.7` 保留。
-
-简化实现：先做 majority vote（hard），再做一步 morphological close（dilate → erode）平滑边缘。
-
-### C. GrabCut 后处理增强
-
-```
-import cv2
-cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
-→ 最大连通域提取
-→ hole filling
-```
-
-**验收**：
-- `python3 /tmp/test_reconstruct.py` 返回 `method: multi-view-silhouette-carving`
-- vertices 从 66 提升到 200+
-
----
-
-## 总排期
-
-| 任务 | 优先级 | 文件 |
-|------|--------|------|
-| 任务一：修复 findBodyBox + ready | P0 | captureAnalysis.ts |
-| 任务二：Debug Overlay | P0 | TryOnPage.tsx, captureAnalysis.ts |
-| 任务三：Gateway 部署 + health | P1 | gateway-worker.js |
-| 任务四：Carving vote + soft | P1 | avatar_server.py |
-
----
-
-## 架构摘要（供参考）
-
-```
-手机 → Cloudflare Pages (H5 前端)
-  └─ TryOnPage → getUserMedia → frames[]
-      └─ submitModeling() → compress → POST /api/avatar/reconstruct
-          ├─ [开发] → 直连 Tailscale AIGC
-          └─ [生产] → Cloudflare Worker → Tailscale AIGC
-              └─ avatar_server.py (4090D)
-                  ├─ grabCut → carving → GLB
-                  └─ 失败 → parametric → GLB
-```
+1. **不要修改 `main` 分支** — 所有工作在 `next-gen-avatar`
+2. **AI 模型可插拔** — Provider 接口模式，不要硬编码模型调用
+3. **每次只修一个 Bug** — 提交后等待 Review，不要连续开发
+4. **每步有日志** — 新增代码必须输出 `[Avatar]` 标签日志
+5. **Fallback 必须可见** — 任何降级必须 console.warn 说明原因
+6. **商业目标是 Demo** — 不是完美算法，是让裁判体验完整流程
