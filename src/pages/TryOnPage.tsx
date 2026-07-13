@@ -117,7 +117,7 @@ export default function TryOnPage() {
       setTurnProgress(0);
       prevFrameRef.current = null;
       setStep('capture');
-      setTimeout(() => speak('请退后两米，让全身出现在画面中。缓慢转身，系统将自动检测并拍照。'), 1000);
+      setTimeout(() => speak('请退后两米，让全身出现在画面中。每次顺时针旋转45度，系统将自动检测并拍照。'), 1000);
 
       // Motion detection loop — uses refs to avoid stale closure
       detectIntervalRef.current = window.setInterval(() => {
@@ -157,7 +157,7 @@ export default function TryOnPage() {
           setBorderState('waiting');
           prevFrameRef.current = null;
           setCountdown(-1);
-          speak(`请继续转身`);
+          speak(`请继续顺时针旋转45度`);
         }, 1500);
       } else {
         setTimeout(() => {
@@ -256,65 +256,91 @@ export default function TryOnPage() {
               </div>
 
               <div className="relative w-full rounded-2xl overflow-hidden bg-black mb-3" style={{ aspectRatio: '3/4' }}>
-                {!cameraReady && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-gray-900 z-10">
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="w-10 h-10 rounded-full border-2 border-pink-400 border-t-transparent animate-spin" />
-                      <p className="text-white/60 text-sm">启动摄像头...</p>
-                    </div>
-                  </div>
-                )}
-                <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" style={{ transform: 'scaleX(-1)' }} />
+                {/* Camera preview — always visible */}
+                <video ref={videoRef} autoPlay playsInline muted webkit-playsinline="true"
+                  className="absolute inset-0 w-full h-full object-cover"
+                  style={{ transform: 'scaleX(-1)', zIndex: 1 }} />
                 <canvas ref={canvasRef} className="hidden" />
 
-                {/* 边框信号 */}
-                <div className={`absolute inset-0 pointer-events-none border-4 transition-all duration-300 rounded-2xl ${
-                  borderState === 'ready' ? 'border-green-400 shadow-[inset_0_0_50px_rgba(74,222,128,0.4)]' :
-                  borderState === 'captured' ? 'border-white shadow-[inset_0_0_60px_rgba(255,255,255,0.6)]' :
-                  borderState === 'turning' ? 'border-yellow-400/60 shadow-[inset_0_0_30px_rgba(250,204,21,0.3)]' :
-                  'border-white/15'
-                }`} />
+                {/* Marquee border — 走马灯 */}
+                <div className="absolute inset-0 pointer-events-none rounded-2xl" style={{ zIndex: 10 }}>
+                  {/* Green marquee when ready */}
+                  {borderState === 'ready' && (
+                    <div className="absolute inset-0 rounded-2xl border-4 border-transparent"
+                      style={{
+                        background: 'linear-gradient(90deg, transparent 30%, #4ade80 50%, transparent 70%) border-box',
+                        WebkitMask: 'linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0)',
+                        WebkitMaskComposite: 'xor',
+                        maskComposite: 'exclude',
+                        animation: 'marquee-sweep 1.5s linear infinite',
+                      }} />
+                  )}
+                  {/* Red marquee when turning */}
+                  {borderState === 'turning' && (
+                    <div className="absolute inset-0 rounded-2xl border-4 border-transparent"
+                      style={{
+                        background: 'linear-gradient(90deg, transparent 30%, #f87171 50%, transparent 70%) border-box',
+                        WebkitMask: 'linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0)',
+                        WebkitMaskComposite: 'xor',
+                        maskComposite: 'exclude',
+                        animation: 'marquee-sweep 0.8s linear infinite',
+                      }} />
+                  )}
+                  {/* White flash on capture */}
+                  {borderState === 'captured' && (
+                    <div className="absolute inset-0 rounded-2xl bg-white/60" style={{ animation: 'flash-out 0.8s ease-out forwards' }} />
+                  )}
+                </div>
 
-                {/* 中央引导图标 */}
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <motion.div className="text-7xl"
-                    animate={borderState === 'turning' ? { rotate: [0, 360] } :
-                             borderState === 'ready' ? { scale: [1, 1.3, 1] } :
-                             borderState === 'captured' ? { scale: [1, 1.5, 1], rotate: [0, 360] } : {}}
-                    transition={borderState === 'turning' ? { duration: 1.5, repeat: Infinity, ease: 'linear' } :
-                               { duration: 0.6 }}>
-                    {borderState === 'ready' ? '🎯' : borderState === 'captured' ? '✅' : borderState === 'turning' ? '🔄' : '👤'}
+                {/* Center clock icon */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ zIndex: 10 }}>
+                  <motion.div className="text-6xl bg-black/30 rounded-full w-20 h-20 flex items-center justify-center"
+                    animate={borderState === 'turning' ? { rotate: 360 } :
+                             borderState === 'ready' ? { scale: [1, 1.2, 1] } : {}}
+                    transition={borderState === 'turning' ? { duration: 1.5, repeat: Infinity, ease: 'linear' } : { duration: 0.6 }}>
+                    <span className="text-4xl">{borderState === 'ready' ? '🎯' : borderState === 'captured' ? '📸' : '🕐'}</span>
                   </motion.div>
                 </div>
 
-                {/* 转身进度条 */}
-                <div className="absolute bottom-20 left-4 right-4 pointer-events-none">
-                  <div className="h-1 rounded-full bg-white/10 overflow-hidden">
-                    <div className={`h-full rounded-full transition-all duration-300 ${
-                      turnProgress > 0.7 ? 'bg-green-400' : turnProgress > 0.3 ? 'bg-yellow-400' : 'bg-white/20'
-                    }`} style={{ width: `${Math.min(100, turnProgress * 100 + (borderState === 'ready' ? 100 : 0))}%` }} />
-                  </div>
+                {/* Top info bar */}
+                <div className="absolute top-3 left-3 bg-black/60 backdrop-blur rounded-full px-3 py-1" style={{ zIndex: 10 }}>
+                  <span className="text-white text-sm font-bold">{ANGLE_LABELS[currentAngle]} · {currentAngle}°</span>
+                </div>
+                <div className="absolute top-3 right-3 bg-black/50 backdrop-blur rounded-full px-2 py-1 text-xs text-white/70" style={{ zIndex: 10 }}>
+                  {frames.length}/{CAPTURE_ANGLES.length}
                 </div>
 
-                {/* 信息栏 */}
-                <div className="absolute top-3 left-3 bg-black/50 backdrop-blur rounded-full px-3 py-1">
-                  <span className="text-white text-sm font-bold">{ANGLE_LABELS[currentAngle]} ({currentAngle}°)</span>
-                </div>
-                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur rounded-full px-4 py-2">
-                  <span className="text-white/70 text-xs">
-                    {borderState === 'waiting' && '缓慢转身，系统自动检测...'}
-                    {borderState === 'turning' && '检测到转身，继续转...'}
-                    {borderState === 'ready' && '角度到位！保持不动'}
-                    {borderState === 'captured' && '已捕捉！继续转身'}
-                  </span>
+                {/* Bottom instruction */}
+                <div className="absolute bottom-6 left-4 right-4 pointer-events-none" style={{ zIndex: 10 }}>
+                  <div className="bg-black/60 backdrop-blur rounded-2xl px-4 py-3 text-center">
+                    <p className="text-white text-sm font-bold">
+                      {borderState === 'waiting' && '每次顺时针旋转45度 · 系统自动检测'}
+                      {borderState === 'turning' && '✅ 正在转身 · 边框变绿时停下'}
+                      {borderState === 'ready' && '📍 角度到位 · 保持不动'}
+                      {borderState === 'captured' && '📸 已拍照 · 继续顺时针旋转45度'}
+                    </p>
+                  </div>
                 </div>
 
                 {countdown > 0 && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                    <motion.span key={countdown} className="text-8xl font-black text-white" initial={{ scale: 1.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>{countdown}</motion.span>
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20" style={{ zIndex: 20 }}>
+                    <motion.span key={countdown} className="text-8xl font-black text-white drop-shadow-2xl"
+                      initial={{ scale: 1.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>{countdown}</motion.span>
                   </div>
                 )}
               </div>
+
+              {/* Marquee animation keyframes */}
+              <style>{`
+                @keyframes marquee-sweep {
+                  0% { background-position: -200% 0; }
+                  100% { background-position: 200% 0; }
+                }
+                @keyframes flash-out {
+                  0% { opacity: 1; }
+                  100% { opacity: 0; }
+                }
+              `}</style>
 
               {/* 缩略图 */}
               <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-2">
