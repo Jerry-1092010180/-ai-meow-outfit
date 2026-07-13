@@ -97,81 +97,73 @@ export default function TryOnPage() {
   }, []);
 
   // ── 启动摄像头 ──
-  const beginCapture = useCallback(async () => {
-    try {
-      // Minimal constraints for maximum compatibility
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user' },
-        audio: false,
-      });
-      streamRef.current = stream;
-
-      // Imperative video — bypasses React
-      const video = document.createElement('video');
-      video.setAttribute('autoplay', '');
-      video.setAttribute('playsinline', '');
-      video.muted = true;
-      video.srcObject = stream;
-      // Force visibility with explicit sizing and bright background
-      video.style.cssText = 'display:block;position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);z-index:1;background:red;border:4px solid yellow;';
-      videoRef.current = video;
-
-      if (containerRef.current) {
-        const container = containerRef.current;
-        container.innerHTML = '';
-        container.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;background:blue;';
-        container.appendChild(video);
-        // Debug: log dimensions
-        setTimeout(() => {
-          console.log('Container:', container.offsetWidth, 'x', container.offsetHeight);
-          console.log('Video:', video.offsetWidth, 'x', video.offsetHeight, 'readyState:', video.readyState, 'paused:', video.paused);
-          if (video.offsetWidth === 0) alert('Video has 0 width! Container: ' + container.offsetWidth + 'x' + container.offsetHeight);
-        }, 1000);
-      } else {
-        alert('containerRef is null!');
-        console.error('containerRef.current is null');
-      }
-
-      // Handle play
-      try { await video.play(); }
-      catch (playErr) { console.warn('Autoplay blocked, adding tap-to-start fallback');
-        // Some browsers block autoplay; add click handler
-        video.style.background = '#222';
-        const msg = document.createElement('div');
-        msg.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:14px;z-index:5;pointer-events:none;';
-        msg.textContent = '📷 点击屏幕启动摄像头';
-        containerRef.current?.appendChild(msg);
-        containerRef.current?.addEventListener('click', () => { video.play(); msg.remove(); }, { once: true });
-      }
-
-      setCameraReady(true);
-      angleIdxRef.current = 0; setCurrentAngleIdx(0);
-      setFrames([]); setCountdown(-1);
-      setBorderState('waiting'); borderRef.current = 'waiting';
-      setTurnProgress(0); prevFrameRef.current = null;
-      setStep('capture');
-      setTimeout(() => speak('请退后两步，每次顺时针旋转45度'), 1000);
-
-      detectIntervalRef.current = window.setInterval(() => {
-        const current = getFrameData();
-        if (!current) return;
-        const diff = frameDifference(prevFrameRef.current, current);
-        setTurnProgress(Math.min(1, diff * 10));
-        const bs = borderRef.current;
-        const cai = angleIdxRef.current;
-        if (bs !== 'captured' && diff > 0.08) {
-          setBorderState('turning'); borderRef.current = 'turning';
-        } else if ((bs === 'turning' || (bs === 'waiting' && cai === 0)) && diff < 0.04) {
-          prevFrameRef.current = current;
-          setBorderState('ready'); borderRef.current = 'ready';
-          setCountdown(2);
-        }
-      }, 400);
-    } catch (err: any) {
-      console.error('Camera error:', err.name, err.message);
-      alert(`摄像头启动失败: ${err.message || '未知错误'}\n\n请确保:\n1. 使用 HTTPS 访问\n2. 浏览器已授予相机权限\n3. 没有其他应用占用摄像头`);
-    }
+  // Step 1: Transition to capture page first (so containerRef mounts)
+  const startCaptureFlow = useCallback(() => {
+    setCameraReady(false);
+    setCurrentAngleIdx(0); angleIdxRef.current = 0;
+    setFrames([]); setCountdown(-1);
+    setBorderState('waiting'); borderRef.current = 'waiting';
+    setTurnProgress(0); prevFrameRef.current = null;
+    setStep('capture');
   }, []);
+
+  // Step 2: Once capture page is rendered, init camera
+  useEffect(() => {
+    if (step !== 'capture' || cameraReady) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'user' },
+          audio: false,
+        });
+        if (cancelled) { stream.getTracks().forEach(t => t.stop()); return; }
+        streamRef.current = stream;
+
+        const video = document.createElement('video');
+        video.setAttribute('autoplay', '');
+        video.setAttribute('playsinline', '');
+        video.muted = true;
+        video.srcObject = stream;
+        video.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);z-index:1;';
+        videoRef.current = video;
+
+        // Wait for container to exist (it should now, since step='capture' rendered)
+        await new Promise<void>(resolve => {
+          const check = () => {
+            if (containerRef.current) { containerRef.current.innerHTML = ''; containerRef.current.appendChild(video); resolve(); }
+            else setTimeout(check, 50);
+          };
+          check();
+        });
+
+        try { await video.play(); } catch {}
+
+        if (!cancelled) {
+          setCameraReady(true);
+          speak('请退后两步，每次顺时针旋转45度');
+          detectIntervalRef.current = window.setInterval(() => {
+            const current = getFrameData();
+            if (!current) return;
+            const diff = frameDifference(prevFrameRef.current, current);
+            setTurnProgress(Math.min(1, diff * 10));
+            const bs = borderRef.current;
+            const cai = angleIdxRef.current;
+            if (bs !== 'captured' && diff > 0.08) {
+              setBorderState('turning'); borderRef.current = 'turning';
+            } else if ((bs === 'turning' || (bs === 'waiting' && cai === 0)) && diff < 0.04) {
+              prevFrameRef.current = current;
+              setBorderState('ready'); borderRef.current = 'ready';
+              setCountdown(2);
+            }
+          }, 400);
+        }
+      } catch (err: any) {
+        if (!cancelled) alert(`摄像头启动失败: ${err.message || '未知错误'}`);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [step, cameraReady]);
 
   // ── 倒计时 → 拍照 ──
   useEffect(() => {
@@ -272,7 +264,7 @@ export default function TryOnPage() {
                 </div>
               </div>
               <motion.button className="w-full py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold shadow-lg"
-                whileTap={{ scale: 0.96 }} onClick={beginCapture}>📷 开始 360° 采集</motion.button>
+                whileTap={{ scale: 0.96 }} onClick={startCaptureFlow}>📷 开始 360° 采集</motion.button>
             </motion.div>
           )}
 
@@ -403,7 +395,7 @@ export default function TryOnPage() {
                 })}
               </div>
               <div className="flex gap-3">
-                <button className="flex-1 py-3 rounded-xl bg-white/5 text-gray-400 text-sm" onClick={() => { stopCamera(); beginCapture(); }}>重新采集</button>
+                <button className="flex-1 py-3 rounded-xl bg-white/5 text-gray-400 text-sm" onClick={() => { stopCamera(); startCaptureFlow(); }}>重新采集</button>
                 <button className="flex-1 py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold" onClick={submitModeling}>提交 AIGC 建模</button>
               </div>
             </motion.div>
