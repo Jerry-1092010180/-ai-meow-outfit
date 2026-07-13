@@ -42,13 +42,16 @@ export default function TryOnPage() {
   const streamRef = useRef<MediaStream | null>(null);
   const prevFrameRef = useRef<ImageData | null>(null);
   const detectIntervalRef = useRef<number>(0);
+  const borderRef = useRef<typeof borderState>('waiting');
+  const angleIdxRef = useRef(0);
 
   const [step, setStep] = useState<TryOnStep>('measure');
   const [measurements, setMeasurements] = useState<BodyMeasurements>(DEFAULT_MEASUREMENTS);
   const [frames, setFrames] = useState<CaptureFrame[]>([]);
   const [currentAngleIdx, setCurrentAngleIdx] = useState(0);
   const [countdown, setCountdown] = useState(-1);
-  const [borderState, setBorderState] = useState<'waiting' | 'turning' | 'ready' | 'captured'>('waiting');
+  const [borderState, _setBorderState] = useState<'waiting' | 'turning' | 'ready' | 'captured'>('waiting');
+  const setBorderState = (v: typeof borderState) => { borderRef.current = v; _setBorderState(v); };
   const [cameraReady, setCameraReady] = useState(false);
   const [turnProgress, setTurnProgress] = useState(0);
   const [manifest, setManifest] = useState<BodyModelManifest | null>(null);
@@ -102,52 +105,39 @@ export default function TryOnPage() {
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        videoRef.current.onloadedmetadata = () => {
-          videoRef.current?.play().then(() => {
-            setCameraReady(true);
-            setCurrentAngleIdx(0);
-            setFrames([]);
-            setCountdown(-1);
-            setBorderState('waiting');
-            setTurnProgress(0);
-            prevFrameRef.current = null;
-            setStep('capture');
-            speak('请退后两米，让全身出现在画面中。缓慢转身，系统将自动检测并拍照。');
-
-            // Start motion detection loop
-            detectIntervalRef.current = window.setInterval(() => {
-              const current = getFrameData();
-              if (!current) return;
-              const diff = frameDifference(prevFrameRef.current, current);
-              setTurnProgress(Math.min(1, diff * 10)); // normalize diff to 0-1
-
-              const next = currentAngleIdx + 1;
-              const isLastAngle = next >= CAPTURE_ANGLES.length;
-
-              if (borderState !== 'captured' && diff > 0.08) {
-                // User is turning
-                setBorderState('turning');
-              } else if (borderState === 'turning' && diff < 0.04) {
-                // User stopped at new angle → ready
-                prevFrameRef.current = current;
-                setBorderState('ready');
-                setCountdown(2);
-                speak(`${ANGLE_LABELS[CAPTURE_ANGLES[Math.min(next, CAPTURE_ANGLES.length - 1)]]}`);
-              } else if (borderState === 'waiting' && currentAngleIdx === 0) {
-                // First angle — wait for user to be still
-                if (diff < 0.03) {
-                  prevFrameRef.current = current;
-                  setBorderState('ready');
-                  setCountdown(2);
-                  speak('正面，保持不动');
-                }
-              }
-            }, 400);
-          });
-        };
+        // Play immediately, transition to capture UI after short delay
+        try { await videoRef.current.play(); } catch {}
       }
+      // Transition to capture UI directly — video will show when ready
+      setCameraReady(true);
+      angleIdxRef.current = 0; setCurrentAngleIdx(0);
+      setFrames([]);
+      setCountdown(-1);
+      setBorderState('waiting');
+      setTurnProgress(0);
+      prevFrameRef.current = null;
+      setStep('capture');
+      setTimeout(() => speak('请退后两米，让全身出现在画面中。缓慢转身，系统将自动检测并拍照。'), 1000);
+
+      // Motion detection loop — uses refs to avoid stale closure
+      detectIntervalRef.current = window.setInterval(() => {
+        const current = getFrameData();
+        if (!current) return;
+        const diff = frameDifference(prevFrameRef.current, current);
+        setTurnProgress(Math.min(1, diff * 10));
+        const bs = borderRef.current;
+        const cai = angleIdxRef.current;
+
+        if (bs !== 'captured' && diff > 0.08) {
+          setBorderState('turning');
+        } else if ((bs === 'turning' || (bs === 'waiting' && cai === 0)) && diff < 0.04) {
+          prevFrameRef.current = current;
+          setBorderState('ready');
+          setCountdown(2);
+        }
+      }, 400);
     } catch { alert('无法访问摄像头，请允许相机权限后重试'); }
-  }, [currentAngleIdx, borderState, getFrameData, speak]);
+  }, []);
 
   // ── 倒计时 → 拍照 ──
   useEffect(() => {
@@ -163,7 +153,7 @@ export default function TryOnPage() {
       const next = currentAngleIdx + 1;
       if (next < CAPTURE_ANGLES.length) {
         setTimeout(() => {
-          setCurrentAngleIdx(next);
+          angleIdxRef.current = next; setCurrentAngleIdx(next);
           setBorderState('waiting');
           prevFrameRef.current = null;
           setCountdown(-1);
