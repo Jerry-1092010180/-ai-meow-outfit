@@ -40,6 +40,10 @@ function poseClass(pose: PoseName) {
   return `anime-pose-${pose}`;
 }
 
+function outfitClass(outfit?: AvatarOutfit | null) {
+  return `anime-outfit-${outfit?.category ?? 'top'}`;
+}
+
 export default function AnimeAvatarViewer({ avatar, outfit }: AnimeAvatarViewerProps) {
   const [pose, setPose] = useState<PoseName>('idle');
   const [expression, setExpression] = useState<AvatarExpressionName>('smile');
@@ -114,8 +118,8 @@ export default function AnimeAvatarViewer({ avatar, outfit }: AnimeAvatarViewerP
           width: 100%;
           height: 100%;
           object-fit: cover;
-          opacity: 0.44;
-          mix-blend-mode: soft-light;
+          opacity: 0.38;
+          mix-blend-mode: multiply;
           transform: none;
           filter: saturate(1.2) contrast(1.14) brightness(1.08);
         }
@@ -224,9 +228,27 @@ export default function AnimeAvatarViewer({ avatar, outfit }: AnimeAvatarViewerP
           width: 42%;
           height: 32%;
           transform: translateX(-50%);
-          border-radius: 36% 36% 28% 28%;
           background: linear-gradient(135deg, var(--garment-light), var(--garment) 58%, var(--garment-shadow));
-          clip-path: polygon(21% 0, 79% 0, 96% 86%, 50% 100%, 4% 86%);
+          clip-path: polygon(15% 3%, 34% 0, 50% 7%, 66% 0, 85% 3%, 98% 73%, 77% 97%, 50% 91%, 23% 97%, 2% 73%);
+        }
+        .anime-body::before {
+          content: "";
+          position: absolute;
+          inset: 10% 8% auto 12%;
+          height: 38%;
+          border-radius: 50%;
+          background: rgba(255,255,255,0.2);
+          transform: rotate(-10deg);
+        }
+        .anime-body::after {
+          content: "";
+          position: absolute;
+          right: 8%;
+          bottom: 9%;
+          width: 34%;
+          height: 56%;
+          border-radius: 44%;
+          background: rgba(0,0,0,0.12);
         }
         .anime-collar {
           position: absolute;
@@ -246,15 +268,15 @@ export default function AnimeAvatarViewer({ avatar, outfit }: AnimeAvatarViewerP
           top: 43%;
           width: 13%;
           height: 33%;
-          border-radius: 999px;
           background: var(--skin);
           transform-origin: 50% 8%;
+          clip-path: polygon(34% 0, 70% 3%, 83% 54%, 72% 100%, 28% 100%, 17% 54%);
         }
         .anime-arm::before {
           content: "";
           position: absolute;
           inset: 0 0 42%;
-          border-radius: 999px;
+          clip-path: polygon(22% 0, 78% 0, 88% 100%, 12% 100%);
           background: var(--garment);
           border-bottom: 4px solid #121018;
         }
@@ -264,10 +286,10 @@ export default function AnimeAvatarViewer({ avatar, outfit }: AnimeAvatarViewerP
           position: absolute;
           left: 50%;
           bottom: -7%;
-          width: 120%;
-          height: 18%;
+          width: 128%;
+          height: 20%;
           transform: translateX(-50%);
-          border-radius: 50%;
+          border-radius: 48% 52% 44% 50%;
           background: var(--skin);
           border: 4px solid #121018;
         }
@@ -279,9 +301,23 @@ export default function AnimeAvatarViewer({ avatar, outfit }: AnimeAvatarViewerP
           width: 49%;
           height: 18%;
           transform: translateX(-50%);
-          border-radius: 16% 16% 42% 42%;
           background: linear-gradient(160deg, var(--garment-2), var(--trim));
-          clip-path: polygon(12% 0, 88% 0, 100% 100%, 0 100%);
+          clip-path: polygon(12% 0, 88% 0, 100% 88%, 76% 100%, 50% 86%, 24% 100%, 0 88%);
+        }
+        .anime-outfit-top .anime-skirt,
+        .anime-outfit-outerwear .anime-skirt {
+          top: 67%;
+          height: 13%;
+          width: 43%;
+          background: linear-gradient(160deg, #24232b, #16151b);
+          clip-path: polygon(7% 0, 93% 0, 88% 92%, 56% 100%, 50% 78%, 44% 100%, 12% 92%);
+        }
+        .anime-outfit-dress .anime-skirt {
+          top: 62%;
+          height: 24%;
+          width: 58%;
+          background: linear-gradient(160deg, var(--garment), var(--garment-2) 58%, var(--trim));
+          clip-path: polygon(18% 0, 82% 0, 100% 94%, 79% 100%, 61% 92%, 50% 100%, 39% 92%, 21% 100%, 0 94%);
         }
         .anime-leg {
           position: absolute;
@@ -289,8 +325,8 @@ export default function AnimeAvatarViewer({ avatar, outfit }: AnimeAvatarViewerP
           top: 78%;
           width: 12%;
           height: 20%;
-          border-radius: 999px;
           background: var(--skin);
+          clip-path: polygon(28% 0, 75% 0, 86% 100%, 18% 100%);
         }
         .anime-leg.left { left: 38%; transform: rotate(3deg); }
         .anime-leg.right { right: 38%; transform: rotate(-3deg); }
@@ -335,7 +371,7 @@ export default function AnimeAvatarViewer({ avatar, outfit }: AnimeAvatarViewerP
 
       <div className="anime-stage" />
       <div
-        className={`anime-character ${poseClass(pose)} ${expressionClass(expression)}`}
+        className={`anime-character ${poseClass(pose)} ${expressionClass(expression)} ${outfitClass(outfit)}`}
         style={{
           ['--skin' as string]: skin,
           ['--hair' as string]: hair,

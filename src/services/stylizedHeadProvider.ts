@@ -179,83 +179,128 @@ async function createEnhancedStylizedTexture(
   const sourceW = Math.min(img.naturalWidth - sourceX, (box.width + cropPadX * 2) * img.naturalWidth);
   const sourceH = Math.min(img.naturalHeight - sourceY, (box.height + cropPadY * 1.85) * img.naturalHeight);
 
+  const analysisCanvas = document.createElement('canvas');
+  analysisCanvas.width = 256;
+  analysisCanvas.height = 320;
+  const analysisCtx = analysisCanvas.getContext('2d', { willReadFrequently: true });
+  if (!analysisCtx) throw new Error('Canvas unavailable');
+  analysisCtx.filter = 'brightness(1.08) contrast(1.08) saturate(1.12)';
+  analysisCtx.drawImage(img, sourceX, sourceY, sourceW, sourceH, 0, 0, analysisCanvas.width, analysisCanvas.height);
+  const sampledSkinTone = averageRegion(analysisCtx, 92, 118, 72, 96, false);
+  const sampledHairTone = averageRegion(analysisCtx, 48, 10, 160, 70, true);
+
   const canvas = document.createElement('canvas');
   canvas.width = 768;
   canvas.height = 960;
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
   if (!ctx) throw new Error('Canvas unavailable');
 
-  const skin = primaryFrame.skinToneHex || style.palette.skin;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = skin;
-  ctx.beginPath();
-  ctx.ellipse(384, 484, 268 * clamp(features.faceWidthRatio / 0.44, 0.86, 1.18), 360 * clamp(features.faceAspectRatio / 1.28, 0.9, 1.16), 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.save();
-  ctx.beginPath();
-  ctx.ellipse(384, 482, 278, 374, 0, 0, Math.PI * 2);
-  ctx.clip();
-  ctx.filter = 'brightness(1.16) contrast(1.16) saturate(1.18) blur(0.35px)';
-  ctx.globalAlpha = 0.9;
-  ctx.drawImage(img, sourceX, sourceY, sourceW, sourceH, 0, 0, canvas.width, canvas.height);
-  ctx.restore();
-
-  const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  posterize(pixels.data);
-  ctx.putImageData(pixels, 0, 0);
-
-  const skinToneHex = averageRegion(ctx, 280, 340, 200, 260, false) || skin;
-  const hairToneHex = averageRegion(ctx, 170, 40, 430, 190, true) || style.palette.hair;
+  const skin = sampledSkinTone || primaryFrame.skinToneHex || style.palette.skin;
+  const hairToneHex = sampledHairTone || style.palette.hair;
+  const skinToneHex = skin;
+  const faceRx = 268 * clamp(features.faceWidthRatio / 0.44, 0.86, 1.18);
+  const faceRy = 360 * clamp(features.faceAspectRatio / 1.28, 0.9, 1.16);
   const eyeY = canvas.height * features.eyeLineEstimateY;
   const mouthY = canvas.height * features.mouthLineEstimateY;
   const eyeDx = canvas.width * (features.eyeDistanceRatio ?? 0.34) * 0.5;
   const mouthW = canvas.width * (features.mouthWidthRatio ?? 0.24);
 
-  ctx.save();
-  ctx.globalCompositeOperation = 'source-atop';
-  ctx.fillStyle = `${style.palette.accent}20`;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = '#00000000';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.save();
+  ctx.shadowColor = 'rgba(18,16,24,0.25)';
+  ctx.shadowBlur = 22;
+  ctx.shadowOffsetY = 16;
+  ctx.fillStyle = skinToneHex;
+  ctx.beginPath();
+  ctx.ellipse(384, 494, faceRx, faceRy, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  ctx.save();
+  ctx.fillStyle = 'rgba(255,255,255,0.24)';
+  ctx.beginPath();
+  ctx.ellipse(292, 410, 70, 180, -0.35, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = 'rgba(120,58,48,0.13)';
+  ctx.beginPath();
+  ctx.ellipse(492, 570, 88, 210, 0.2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  ctx.save();
+  ctx.fillStyle = `${style.palette.accent}16`;
+  for (let y = 170; y < 780; y += 18) {
+    for (let x = 160 + ((y / 18) % 2) * 9; x < 620; x += 18) {
+      ctx.beginPath();
+      ctx.arc(x, y, 1.8, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
   ctx.restore();
 
   ctx.save();
   ctx.fillStyle = hairToneHex;
-  ctx.globalAlpha = 0.82;
   ctx.beginPath();
-  ctx.ellipse(384, 210, 280, 150, 0, Math.PI, Math.PI * 2);
-  ctx.quadraticCurveTo(645, 170, 635, 430);
-  ctx.quadraticCurveTo(535, 330, 384, 350);
-  ctx.quadraticCurveTo(230, 330, 130, 430);
-  ctx.quadraticCurveTo(115, 165, 384, 60);
+  ctx.moveTo(116, 420);
+  ctx.bezierCurveTo(96, 180, 216, 58, 394, 64);
+  ctx.bezierCurveTo(586, 70, 674, 196, 642, 448);
+  ctx.bezierCurveTo(578, 372, 496, 354, 414, 366);
+  ctx.bezierCurveTo(330, 334, 224, 348, 116, 420);
+  ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,0.16)';
+  ctx.beginPath();
+  ctx.moveTo(224, 164);
+  ctx.bezierCurveTo(310, 84, 468, 92, 558, 192);
+  ctx.bezierCurveTo(438, 130, 318, 136, 224, 164);
+  ctx.fill();
+  ctx.fillStyle = hairToneHex;
+  ctx.beginPath();
+  ctx.moveTo(190, 198);
+  ctx.bezierCurveTo(252, 242, 304, 306, 310, 390);
+  ctx.lineTo(250, 354);
+  ctx.lineTo(206, 458);
+  ctx.bezierCurveTo(178, 344, 174, 262, 190, 198);
   ctx.fill();
   ctx.restore();
 
   ctx.strokeStyle = '#17141b';
   ctx.lineWidth = 14;
   ctx.beginPath();
-  ctx.ellipse(384, 484, 278, 374, 0, 0, Math.PI * 2);
+  ctx.ellipse(384, 494, faceRx, faceRy, 0, 0, Math.PI * 2);
   ctx.stroke();
 
-  drawFeatureEllipse(ctx, 384 - eyeDx, eyeY, 35, 17, '#17141b', -0.08);
-  drawFeatureEllipse(ctx, 384 + eyeDx, eyeY, 35, 17, '#17141b', 0.08);
-  drawFeatureEllipse(ctx, 384 - eyeDx + 9, eyeY - 4, 7, 5, '#ffffff', 0);
-  drawFeatureEllipse(ctx, 384 + eyeDx + 9, eyeY - 4, 7, 5, '#ffffff', 0);
-  drawComicCurve(ctx, [[384 - eyeDx - 42, eyeY - 54], [384 - eyeDx, eyeY - 68], [384 - eyeDx + 48, eyeY - 56]], 9, '#3c2118');
-  drawComicCurve(ctx, [[384 + eyeDx - 48, eyeY - 56], [384 + eyeDx, eyeY - 68], [384 + eyeDx + 42, eyeY - 54]], 9, '#3c2118');
+  ctx.strokeStyle = '#17141b';
+  ctx.lineWidth = 12;
+  ctx.beginPath();
+  ctx.moveTo(120, 420);
+  ctx.bezierCurveTo(98, 180, 218, 60, 394, 66);
+  ctx.bezierCurveTo(586, 72, 674, 196, 642, 448);
+  ctx.stroke();
+
+  drawFeatureEllipse(ctx, 384 - eyeDx, eyeY, 42, 22, '#17141b', -0.08);
+  drawFeatureEllipse(ctx, 384 + eyeDx, eyeY, 42, 22, '#17141b', 0.08);
+  drawFeatureEllipse(ctx, 384 - eyeDx + 13, eyeY - 7, 10, 7, '#ffffff', 0);
+  drawFeatureEllipse(ctx, 384 + eyeDx + 13, eyeY - 7, 10, 7, '#ffffff', 0);
+  drawComicCurve(ctx, [[384 - eyeDx - 50, eyeY - 58], [384 - eyeDx, eyeY - 78], [384 - eyeDx + 58, eyeY - 58]], 11, '#3c2118');
+  drawComicCurve(ctx, [[384 + eyeDx - 58, eyeY - 58], [384 + eyeDx, eyeY - 78], [384 + eyeDx + 50, eyeY - 58]], 11, '#3c2118');
 
   ctx.fillStyle = '#8f4b3f';
-  ctx.globalAlpha = 0.36;
+  ctx.globalAlpha = 0.3;
   ctx.beginPath();
   ctx.ellipse(384, eyeY + 118, canvas.width * (features.noseWidthRatio ?? 0.13) * 0.5, 52, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.globalAlpha = 1;
 
-  drawComicCurve(ctx, [[384 - mouthW * 0.5, mouthY], [384, mouthY + 24], [384 + mouthW * 0.5, mouthY]], 13, '#a84b62');
-  drawComicCurve(ctx, [[384 - mouthW * 0.35, mouthY + 8], [384, mouthY + 18], [384 + mouthW * 0.35, mouthY + 8]], 5, '#f4c0ca');
+  drawComicCurve(ctx, [[384 - mouthW * 0.5, mouthY], [384, mouthY + 30], [384 + mouthW * 0.5, mouthY]], 15, '#a84b62');
+  drawComicCurve(ctx, [[384 - mouthW * 0.35, mouthY + 8], [384, mouthY + 21], [384 + mouthW * 0.35, mouthY + 8]], 6, '#f4c0ca');
 
   ctx.save();
-  ctx.fillStyle = skinToneHex;
-  ctx.globalAlpha = 0.22;
+  ctx.fillStyle = style.palette.accent;
+  ctx.globalAlpha = 0.18;
   ctx.beginPath();
   ctx.ellipse(278, mouthY - 76, 46, 24, -0.2, 0, Math.PI * 2);
   ctx.ellipse(490, mouthY - 76, 46, 24, 0.2, 0, Math.PI * 2);
