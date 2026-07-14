@@ -288,18 +288,16 @@ class LocalHumanoidLiteRigProvider:
         features = (stylized_head or {}).get("identityFeatures") or {}
         fit = (stylized_head or {}).get("headFit") or {}
         hair = _rgba(features.get("hairToneHex"), (92, 49, 32, 255))
-        cloth = (244, 244, 238, 255)
-        accent = (237, 113, 153, 255)
-        dark = (35, 34, 42, 255)
-        shoe = (44, 43, 50, 255)
+        body_neutral = (45, 46, 54, 255)
+        body_shadow = (33, 34, 40, 255)
+        body_trim = (70, 71, 82, 255)
 
         texture = _dataurl_to_png_bytes((stylized_head or {}).get("textureDataUrl"))
         skin_mat = writer.add_material("skin_toon", skin)
         hair_mat = writer.add_material("hair_toon", hair)
-        cloth_mat = writer.add_material("outfit_primary", cloth)
-        accent_mat = writer.add_material("outfit_accent", accent)
-        dark_mat = writer.add_material("outfit_dark", dark)
-        shoe_mat = writer.add_material("shoe_dark", shoe)
+        body_mat = writer.add_material("canonical_body_neutral", body_neutral)
+        body_shadow_mat = writer.add_material("canonical_body_shadow", body_shadow)
+        body_trim_mat = writer.add_material("canonical_body_trim", body_trim)
         face_mat = writer.add_material("stylized_face_texture", (255, 255, 255, 255), writer.add_image_texture(texture)) if texture else skin_mat
 
         b = MeshBuilder()
@@ -316,18 +314,18 @@ class LocalHumanoidLiteRigProvider:
         b.add_face_plane(head_center, (head_scale[0] * float(np.clip(fit.get("facePlaneScale", 1.0), 0.86, 1.3)), head_scale[1], head_scale[2]), face_mat)
 
         b.add_ellipsoid("neck", (0, 0.92, 0), (0.045, 0.05, 0.04), skin_mat, "Neck", rings=8, segments=16)
-        b.add_ellipsoid("chest", (0, 0.70, 0), (0.20, 0.22, 0.13), cloth_mat, "Chest", rings=14, segments=22)
-        b.add_ellipsoid("hips", (0, 0.44, 0), (0.17, 0.11, 0.11), dark_mat, "Hips", rings=12, segments=20)
-        b.add_ellipsoid("hem", (0, 0.54, 0), (0.22, 0.055, 0.13), accent_mat, "Spine", rings=8, segments=18)
+        b.add_ellipsoid("canonical_chest", (0, 0.70, 0), (0.192, 0.215, 0.122), body_mat, "Chest", rings=14, segments=22)
+        b.add_ellipsoid("canonical_hips", (0, 0.44, 0), (0.165, 0.105, 0.102), body_shadow_mat, "Hips", rings=12, segments=20)
+        b.add_ellipsoid("canonical_waist", (0, 0.54, 0), (0.19, 0.04, 0.105), body_trim_mat, "Spine", rings=8, segments=18)
 
         for side, label in [(-1, "Left"), (1, "Right")]:
             sx = side * 0.17
-            b.add_capsule(f"{label}UpperArm", (sx, 0.75, 0), (side * 0.28, 0.62, 0.035), 0.043, cloth_mat, f"{label}UpperArm")
+            b.add_capsule(f"canonical_{label}UpperArm", (sx, 0.75, 0), (side * 0.28, 0.62, 0.035), 0.038, body_mat, f"{label}UpperArm")
             b.add_capsule(f"{label}LowerArm", (side * 0.28, 0.62, 0.035), (side * 0.31, 0.78 if side > 0 else 0.50, 0.07), 0.031, skin_mat, f"{label}LowerArm")
             b.add_ellipsoid(f"{label}Hand", (side * 0.31, 0.78 if side > 0 else 0.50, 0.07), (0.045, 0.04, 0.03), skin_mat, f"{label}Hand", rings=8, segments=14)
             b.add_capsule(f"{label}UpperLeg", (side * 0.08, 0.38, 0), (side * 0.095, 0.22, 0.015), 0.045, skin_mat, f"{label}UpperLeg")
-            b.add_capsule(f"{label}LowerLeg", (side * 0.095, 0.22, 0.015), (side * 0.105, 0.08, 0.055), 0.037, cloth_mat, f"{label}LowerLeg")
-            b.add_ellipsoid(f"{label}Foot", (side * 0.105, 0.06, 0.07), (0.065, 0.035, 0.09), shoe_mat, f"{label}Foot", rings=8, segments=14)
+            b.add_capsule(f"{label}LowerLeg", (side * 0.095, 0.22, 0.015), (side * 0.105, 0.08, 0.055), 0.035, skin_mat, f"{label}LowerLeg")
+            b.add_ellipsoid(f"canonical_{label}Foot", (side * 0.105, 0.06, 0.07), (0.06, 0.03, 0.08), body_shadow_mat, f"{label}Foot", rings=8, segments=14)
 
         local_transforms = self._bone_local_transforms()
         global_transforms = self._global_transforms(local_transforms)
@@ -380,7 +378,13 @@ class LocalHumanoidLiteRigProvider:
                     "forward": "+Z",
                     "up": "+Y",
                     "expressionBlendshapes": ["neutral", "smile", "cool", "surprised"],
-                    "springBoneReady": False,
+                    "runtimeLayers": ["identity", "canonical-body", "hair", "outfit", "accessory"],
+                    "canonicalBody": {
+                        "materials": ["canonical_body_neutral", "canonical_body_shadow", "canonical_body_trim"],
+                        "outfitEmbedded": False,
+                    },
+                    "springBoneExtensionPoints": {"hair": True, "clothing": True, "accessories": True},
+                    "exportTargets": ["glb-rig-ready", "vrm-1.0-future"],
                 },
             },
         }

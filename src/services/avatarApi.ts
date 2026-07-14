@@ -3,7 +3,7 @@
  */
 
 import type { BodyMeasurements, CaptureFrame, SelfieFrame } from '@/types/bodyModel';
-import type { AvatarOutfit, AvatarPipelineMode, AvatarRenderStyle, StylizedHead } from '@/types/avatarSystem';
+import type { AvatarOutfit, AvatarPipelineMode, AvatarRenderStyle, StylizedHead, VrmReadyMetadata } from '@/types/avatarSystem';
 
 // Routed through API Gateway in production so the AIGC machine stays private.
 const AVATAR_API = import.meta.env.VITE_AVATAR_API_BASE_URL || '/api/avatar';
@@ -34,6 +34,8 @@ export interface ReconstructResult {
   rig_validation?: { ok: boolean; errors: string[]; bones: number; skinnedMeshes: number; animations: number };
   rig_format?: string;
   vrm_compatible?: boolean;
+  vrm_ready_metadata?: VrmReadyMetadata;
+  avatar_runtime_metadata?: VrmReadyMetadata;
 }
 
 export interface AvatarGenerationOptions {

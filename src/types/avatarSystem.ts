@@ -66,13 +66,70 @@ export interface AvatarAppearance {
   expressionHint?: string;
 }
 
+export type AvatarRuntimeLayer =
+  | 'identity'
+  | 'canonical-body'
+  | 'hair'
+  | 'outfit'
+  | 'accessory';
+
+export type AvatarExpressionName =
+  | 'neutral'
+  | 'smile'
+  | 'cool'
+  | 'surprised';
+
+export interface BodyVisibilityMask {
+  hiddenPrimitiveNames: string[];
+  mutedMaterialNames: string[];
+  reason: 'outfit-overlay-active' | 'canonical-body-runtime';
+}
+
+export type AvatarOutfitCategory =
+  | 'top'
+  | 'bottom'
+  | 'dress'
+  | 'outerwear'
+  | 'shoes'
+  | 'accessory';
+
+export type AvatarOutfitFittingMode =
+  | 'rigid-attach'
+  | 'skinned-compatible'
+  | 'procedural-proxy'
+  | 'future-physics';
+
+export type AvatarOutfitProviderStage =
+  | 'real-asset'
+  | 'proxy-from-product'
+  | 'fallback';
+
 export interface AvatarOutfit {
   id: string;
+  productId: string;
   name: string;
-  source: 'yintai-catalog' | 'procedural-demo' | 'user-selected';
-  category: 'hoodie' | 'dress' | 'suit' | 'streetwear' | 'accessory';
-  palette: string[];
+  brand: string;
+  category: AvatarOutfitCategory;
+  previewImage: string;
   assetUrl?: string;
+  assetFormat: 'glb' | 'procedural-proxy';
+  compatibleAvatarType: 'stylized-humanoid-lite';
+  fittingMode: AvatarOutfitFittingMode;
+  skeletonCompatibility: {
+    boneMapVersion: 'humanoid-lite-v0.1';
+    requiredBones: string[];
+    attachBone?: string;
+  };
+  materialConfig: {
+    baseColor: string;
+    secondaryColor?: string;
+    trimColor?: string;
+    textureUrl?: string;
+    toonShading: boolean;
+    outline: boolean;
+  };
+  source: 'yintai-product' | 'mock-product' | 'fallback';
+  providerStage: AvatarOutfitProviderStage;
 }
 
 export interface AvatarRig {
@@ -104,6 +161,24 @@ export interface RiggedAvatarAsset {
   rigValidation: RigValidation;
   providerStage: 'local-humanoid-lite-rig-provider' | 'future-vrm-provider' | 'auto-rig-aigc-provider';
   confidence: number;
+  vrmReadyMetadata?: VrmReadyMetadata;
+}
+
+export interface VrmReadyMetadata {
+  humanoidBoneMap: Record<string, string>;
+  coordinateSystem: {
+    unit: 'meter';
+    forward: '+Z' | '-Z';
+    up: '+Y';
+  };
+  runtimeLayers: AvatarRuntimeLayer[];
+  expressions: AvatarExpressionName[];
+  springBoneExtensionPoints: {
+    hair: boolean;
+    clothing: boolean;
+    accessories: boolean;
+  };
+  exportTargets: Array<'glb-rig-ready' | 'vrm-1.0-future'>;
 }
 
 export interface StylizedHead {
@@ -138,6 +213,7 @@ export interface StylizedAvatar {
   method?: string;
   status: 'local-preview' | 'processing' | 'ready' | 'failed';
   providerStage: 'procedural-mock' | 'aigc-gateway' | 'future-vrm-provider';
+  runtimeMetadata?: VrmReadyMetadata;
 }
 
 export interface StylizedAvatarBuildRequest {
@@ -167,4 +243,9 @@ export interface StylizedAvatarProvider {
 
 export interface RiggedAvatarExportProvider {
   export(avatar: StylizedAvatar, target: 'glb' | 'vrm'): Promise<RiggedAvatarAsset>;
+}
+
+export interface AvatarOutfitProvider {
+  listDemoOutfits(): Promise<AvatarOutfit[]>;
+  resolve(productId: string): Promise<AvatarOutfit>;
 }

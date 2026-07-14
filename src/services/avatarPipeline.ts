@@ -11,6 +11,7 @@ import type {
   StylizedAvatarBuildRequest,
   StylizedAvatarBuildResult,
   StylizedAvatarProvider,
+  VrmReadyMetadata,
 } from '@/types/avatarSystem';
 
 export const DEFAULT_COMIC_RENDER_STYLE: AvatarRenderStyle = {
@@ -28,12 +29,59 @@ export const DEFAULT_COMIC_RENDER_STYLE: AvatarRenderStyle = {
   },
 };
 
+export const DEFAULT_VRM_READY_METADATA: VrmReadyMetadata = {
+  humanoidBoneMap: {
+    Root: 'Root',
+    Hips: 'Hips',
+    Spine: 'Spine',
+    Chest: 'Chest',
+    Neck: 'Neck',
+    Head: 'Head',
+    LeftShoulder: 'LeftShoulder',
+    LeftUpperArm: 'LeftUpperArm',
+    LeftLowerArm: 'LeftLowerArm',
+    LeftHand: 'LeftHand',
+    RightShoulder: 'RightShoulder',
+    RightUpperArm: 'RightUpperArm',
+    RightLowerArm: 'RightLowerArm',
+    RightHand: 'RightHand',
+    LeftUpperLeg: 'LeftUpperLeg',
+    LeftLowerLeg: 'LeftLowerLeg',
+    LeftFoot: 'LeftFoot',
+    RightUpperLeg: 'RightUpperLeg',
+    RightLowerLeg: 'RightLowerLeg',
+    RightFoot: 'RightFoot',
+  },
+  coordinateSystem: { unit: 'meter', forward: '+Z', up: '+Y' },
+  runtimeLayers: ['identity', 'canonical-body', 'hair', 'outfit', 'accessory'],
+  expressions: ['neutral', 'smile', 'cool', 'surprised'],
+  springBoneExtensionPoints: { hair: true, clothing: true, accessories: true },
+  exportTargets: ['glb-rig-ready', 'vrm-1.0-future'],
+};
+
 export const DEFAULT_DEMO_OUTFIT: AvatarOutfit = {
-  id: 'yintai-demo-hoodie',
-  name: '银泰漫画感连帽套装',
-  source: 'procedural-demo',
-  category: 'hoodie',
-  palette: ['#f4f4ee', '#ed7199', '#23222a'],
+  id: 'fallback-proxy-top',
+  productId: 'fallback-proxy-top',
+  name: 'Fallback 漫画感上衣',
+  brand: 'AI Meow',
+  category: 'top',
+  previewImage: 'https://picsum.photos/seed/fallback-proxy-top/400/500',
+  assetFormat: 'procedural-proxy',
+  compatibleAvatarType: 'stylized-humanoid-lite',
+  fittingMode: 'skinned-compatible',
+  skeletonCompatibility: {
+    boneMapVersion: 'humanoid-lite-v0.1',
+    requiredBones: ['Spine', 'Chest', 'LeftUpperArm', 'LeftLowerArm', 'RightUpperArm', 'RightLowerArm'],
+  },
+  materialConfig: {
+    baseColor: '#f4f4ee',
+    secondaryColor: '#ed7199',
+    trimColor: '#23222a',
+    toonShading: true,
+    outline: true,
+  },
+  source: 'fallback',
+  providerStage: 'fallback',
 };
 
 export function createDefaultAppearance(measurements: BodyMeasurements): AvatarAppearance {
@@ -123,6 +171,7 @@ export class AigcStylizedAvatarProvider implements StylizedAvatarProvider {
       method: result.method,
       status: 'ready',
       providerStage: 'aigc-gateway',
+      runtimeMetadata: result.vrm_ready_metadata ?? result.avatar_runtime_metadata ?? DEFAULT_VRM_READY_METADATA,
     };
 
     return { avatar, rawProviderResult: { result, stylizedHead } };

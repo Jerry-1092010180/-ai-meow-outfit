@@ -632,6 +632,22 @@ def reconstruct(manifest: ManifestRequest):
                 "pose_presets": rigged_asset.animation_clips + ["ootd", "duo-frame"],
                 "animation_clips": rigged_asset.animation_clips,
                 "expression_blendshapes": ["neutral", "smile", "cool", "surprised"],
+                "vrm_ready_metadata": {
+                    "humanoidBoneMap": rigged_asset.bone_map,
+                    "coordinateSystem": {"unit": "meter", "forward": "+Z", "up": "+Y"},
+                    "runtimeLayers": ["identity", "canonical-body", "hair", "outfit", "accessory"],
+                    "expressions": ["neutral", "smile", "cool", "surprised"],
+                    "springBoneExtensionPoints": {"hair": True, "clothing": True, "accessories": True},
+                    "exportTargets": ["glb-rig-ready", "vrm-1.0-future"],
+                },
+                "avatar_runtime_metadata": {
+                    "humanoidBoneMap": rigged_asset.bone_map,
+                    "coordinateSystem": {"unit": "meter", "forward": "+Z", "up": "+Y"},
+                    "runtimeLayers": ["identity", "canonical-body", "hair", "outfit", "accessory"],
+                    "expressions": ["neutral", "smile", "cool", "surprised"],
+                    "springBoneExtensionPoints": {"hair": True, "clothing": True, "accessories": True},
+                    "exportTargets": ["glb-rig-ready", "vrm-1.0-future"],
+                },
             }
 
         # Legacy fallback only: the product main path is identity-driven stylized avatar.

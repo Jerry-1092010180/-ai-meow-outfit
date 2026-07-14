@@ -4,16 +4,18 @@ import { AnimatePresence, motion } from 'framer-motion';
 import GLBModelViewer from '@/components/outfit/GLBModelViewer';
 import { createBodyModelManifest, downloadBodyModelManifest, estimateBodyModelQuality } from '@/services/bodyModelService';
 import { getPresetModelPath } from '@/services/avatarApi';
+import { avatarOutfitProvider } from '@/services/avatarOutfitProvider';
 import {
   createDefaultAppearance,
   DEFAULT_DEMO_OUTFIT,
+  DEFAULT_VRM_READY_METADATA,
   faceIdentityProvider,
   stylizedAvatarProvider,
 } from '@/services/avatarPipeline';
 import { analyzeSelfieFrame, type SelfieAnalysis } from '@/services/selfieAnalysis';
 import type { BodyMeasurements, BodyModelManifest, SelfieFrame } from '@/types/bodyModel';
 import type { BodyType } from '@/types';
-import type { StylizedAvatar } from '@/types/avatarSystem';
+import type { AvatarOutfit, StylizedAvatar } from '@/types/avatarSystem';
 
 type TryOnStep = 'profile' | 'selfie' | 'review' | 'reconstructing' | 'result';
 type NumericKey = Exclude<keyof BodyMeasurements, 'bodyType' | 'skinTone'>;
@@ -72,6 +74,8 @@ export default function TryOnPage() {
   const [manualCaptureAvailable, setManualCaptureAvailable] = useState(false);
   const [manifest, setManifest] = useState<BodyModelManifest | null>(null);
   const [stylizedAvatar, setStylizedAvatar] = useState<StylizedAvatar | null>(null);
+  const [outfitOptions, setOutfitOptions] = useState<AvatarOutfit[]>([]);
+  const [selectedOutfitId, setSelectedOutfitId] = useState<string>('');
   const [apiAvailable, setApiAvailable] = useState(false);
 
   useEffect(() => {
@@ -327,6 +331,24 @@ export default function TryOnPage() {
     setStep('result');
   };
 
+  useEffect(() => {
+    if (step !== 'result') return;
+    let cancelled = false;
+    avatarOutfitProvider.listDemoOutfits()
+      .then((outfits) => {
+        if (cancelled) return;
+        setOutfitOptions(outfits);
+        setSelectedOutfitId((current) => current || outfits[0]?.id || '');
+      })
+      .catch((err) => {
+        console.warn('[AvatarOutfit] Product Load FAILED', err);
+        if (!cancelled) setOutfitOptions([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [step]);
+
   const qualityScore = useMemo(
     () => estimateBodyModelQuality(measurements, [], selfieFrame ?? selfieFrames[0] ?? undefined),
     [measurements, selfieFrame, selfieFrames]
@@ -339,6 +361,10 @@ export default function TryOnPage() {
         ['清晰', selfieAnalysis.sharpnessScore],
       ] as const)
     : [];
+  const selectedOutfit = useMemo(
+    () => outfitOptions.find((outfit) => outfit.id === selectedOutfitId) ?? outfitOptions[0] ?? null,
+    [outfitOptions, selectedOutfitId]
+  );
 
   return (
     <div className="min-h-screen pb-8 safe-top safe-bottom bg-gray-950">
@@ -570,11 +596,49 @@ export default function TryOnPage() {
               </div>
               <div className="mb-5">
                 {apiAvailable && stylizedAvatar ? (
-                  <GLBModelViewer modelPath={stylizedAvatar.cdnUrl || stylizedAvatar.modelUrl || getPresetModelPath(measurements.bodyType)} renderStyle={stylizedAvatar.appearance.style} />
+                  <GLBModelViewer
+                    modelPath={stylizedAvatar.cdnUrl || stylizedAvatar.modelUrl || getPresetModelPath(measurements.bodyType)}
+                    renderStyle={stylizedAvatar.appearance.style}
+                    outfit={selectedOutfit}
+                    runtimeMetadata={stylizedAvatar.runtimeMetadata}
+                  />
                 ) : (
-                  <GLBModelViewer modelPath={getPresetModelPath(measurements.bodyType)} renderStyle={createDefaultAppearance(measurements).style} />
+                  <GLBModelViewer
+                    modelPath={getPresetModelPath(measurements.bodyType)}
+                    renderStyle={createDefaultAppearance(measurements).style}
+                    outfit={selectedOutfit}
+                    runtimeMetadata={DEFAULT_VRM_READY_METADATA}
+                  />
                 )}
               </div>
+              {outfitOptions.length > 0 && (
+                <div className="mb-4">
+                  <div className="mb-2 flex items-center justify-between">
+                    <p className="text-sm font-semibold text-white">银泰商品换装</p>
+                    <p className="text-[11px] text-gray-500">proxy-from-product · 不重生成 Avatar</p>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {outfitOptions.map((outfit) => {
+                      const active = selectedOutfit?.id === outfit.id;
+                      return (
+                        <button
+                          key={outfit.id}
+                          type="button"
+                          className={`overflow-hidden rounded-xl border text-left transition-all ${active ? 'border-pink-400 bg-pink-500/15' : 'border-white/10 bg-white/5'}`}
+                          onClick={() => setSelectedOutfitId(outfit.id)}
+                        >
+                          <img src={outfit.previewImage} alt={outfit.name} className="h-24 w-full object-cover" />
+                          <div className="p-2">
+                            <p className="truncate text-[11px] font-semibold text-white">{outfit.brand}</p>
+                            <p className="truncate text-[10px] text-gray-400">{outfit.name}</p>
+                            <p className="mt-1 text-[9px] text-pink-300">{outfit.category} · {outfit.fittingMode}</p>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
               {stylizedAvatar && (
                 <p className="text-center text-xs text-gray-500 mb-4">
                   method: {stylizedAvatar.method} · rig: {stylizedAvatar.rig.format} · style: {stylizedAvatar.appearance.style.id}
