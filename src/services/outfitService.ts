@@ -135,13 +135,14 @@ export async function generateOutfit(
         };
       }
     }
-  } catch {
-    console.warn('Mock outfits failed to load, using fallback');
+  } catch (e) {
+    console.warn('[Avatar] Outfit Mock FAILED', e);
   }
 
   // 兜底：使用内置模板
   const moodMatches = FALLBACK_OUTFITS.filter((o) => o.mood === mood);
   const pool = moodMatches.length > 0 ? moodMatches : FALLBACK_OUTFITS;
+  if (moodMatches.length === 0) console.warn('[Avatar] Outfit Fallback no mood match for', mood);
   const outfit = pickOne(pool)!;
   return {
     ...outfit,

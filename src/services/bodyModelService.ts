@@ -3,14 +3,15 @@ import type {
   BodyModelManifest,
   BodyModelRequest,
   CaptureFrame,
+  SelfieFrame,
 } from '@/types/bodyModel';
 
 const PIPELINE_STEPS = [
-  'paper-measurement-normalization',
-  'guided-360-frame-alignment',
-  'silhouette-and-pose-estimation',
-  'parametric-avatar-fitting',
-  'garment-try-on-ready-glb-export',
+  'guided-head-scan-frame-selection',
+  'anime-face-beautification',
+  'stylized-character-generation',
+  'face-hair-body-fusion',
+  'pose-and-try-on-ready-glb-export',
 ];
 
 function clamp(value: number, min: number, max: number) {
@@ -19,14 +20,20 @@ function clamp(value: number, min: number, max: number) {
 
 export function estimateBodyModelQuality(
   measurements: BodyMeasurements,
-  frames: CaptureFrame[]
+  frames: CaptureFrame[],
+  selfieFrame?: SelfieFrame
 ) {
   const measurementScore =
-    45 +
+    42 +
+    (measurements.headCm ? 5 : 0) +
     (measurements.shoulderCm ? 8 : 0) +
+    (measurements.bustCm ? 8 : 0) +
     (measurements.waistCm ? 8 : 0) +
     (measurements.hipCm ? 8 : 0) +
-    (measurements.inseamCm ? 6 : 0);
+    (measurements.armCm ? 5 : 0) +
+    (measurements.legCm || measurements.inseamCm ? 6 : 0) +
+    (measurements.skinTone ? 4 : 0);
+  const selfieScore = selfieFrame ? selfieFrame.qualityScore * 0.35 : 0;
   const frameScore = frames.length >= 12 ? 25 : frames.length * 2;
   const averageFrameQuality =
     frames.length > 0
@@ -35,7 +42,7 @@ export function estimateBodyModelQuality(
       : 0;
 
   return Math.round(
-    clamp(measurementScore + frameScore + averageFrameQuality * 0.15, 0, 100)
+    clamp(measurementScore + selfieScore + frameScore + averageFrameQuality * 0.08, 0, 100)
   );
 }
 
@@ -44,7 +51,8 @@ export function createBodyModelManifest(
 ): BodyModelManifest {
   const qualityScore = estimateBodyModelQuality(
     request.measurements,
-    request.captureFrames
+    request.captureFrames,
+    request.selfieFrame
   );
   const id = `ym-avatar-${Date.now().toString(36)}`;
 
@@ -63,7 +71,7 @@ export function createBodyModelManifest(
     },
     createdAt: request.createdAt,
     note:
-      'This manifest is ready to submit to a photogrammetry or neural avatar service. The browser prototype stores captured frames locally and renders a fitted procedural preview.',
+      'Anime avatar request: guided head-scan frames drive a beautified recognizable manga-style character, with optional style measurements only used as light preferences.',
   };
 }
 

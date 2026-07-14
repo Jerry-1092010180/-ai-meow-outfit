@@ -57,6 +57,7 @@ export function getCurrentPosition(): Promise<GeoCoords> {
       },
       (err) => {
         reject(new Error(`定位失败: ${err.message}`));
+      console.warn('[Avatar] Weather GPS FAILED', err.message);
       },
       { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 } // 10分钟缓存
     );
@@ -110,7 +111,8 @@ export async function getCurrentWeather(
     const city = await reverseGeocode(lat, lon);
 
     return { temperature: temp, condition, city, season, humidity };
-  } catch {
+  } catch (e) {
+    console.warn('[Avatar] Weather OpenMeteo FAILED', e);
     // 兜底 mock
     const month = new Date().getMonth();
     const isSummer = month >= 5 && month <= 9;
