@@ -7,7 +7,14 @@ import type {
 } from '@/types/avatarSystem';
 import { getMockItems } from '@/utils/mock';
 
-const CATEGORY_PRIORITY: AvatarOutfitCategory[] = ['top', 'bottom', 'outerwear', 'dress'];
+const CATEGORY_PRIORITY: AvatarOutfitCategory[] = ['top', 'outerwear', 'dress', 'bottom'];
+const BASE = import.meta.env.BASE_URL;
+
+const REAL_GARMENT_ASSETS: Record<string, string> = {
+  'item-001': `${BASE}garments/theory-silk-blouse.glb`,
+  'item-004': `${BASE}garments/burberry-trench-coat.glb`,
+  'item-012': `${BASE}garments/sandro-satin-slip-dress.glb`,
+};
 
 const COLOR_HEX: Record<string, string> = {
   白色: '#f4f4ee',
@@ -75,7 +82,7 @@ function attachBoneFor(category: AvatarOutfitCategory) {
 }
 
 export class ProductToOutfitProvider {
-  fromProduct(item: StoreItem): AvatarOutfit {
+  fromProduct(item: StoreItem, assetUrl?: string): AvatarOutfit {
     const category = item.category as AvatarOutfitCategory;
     const fittingMode = fittingModeFor(category);
 
@@ -86,8 +93,8 @@ export class ProductToOutfitProvider {
       brand: item.brand,
       category,
       previewImage: item.imageUrl,
-      assetUrl: undefined,
-      assetFormat: 'procedural-proxy',
+      assetUrl,
+      assetFormat: assetUrl ? 'glb' : 'procedural-proxy',
       compatibleAvatarType: 'stylized-humanoid-lite',
       fittingMode,
       skeletonCompatibility: {
@@ -104,8 +111,27 @@ export class ProductToOutfitProvider {
         outline: true,
       },
       source: 'mock-product',
-      providerStage: 'proxy-from-product',
+      providerStage: assetUrl ? 'real-asset' : 'proxy-from-product',
     };
+  }
+}
+
+export class RealGarmentProvider implements AvatarOutfitProvider {
+  private productProvider = new ProductToOutfitProvider();
+
+  async listDemoOutfits(): Promise<AvatarOutfit[]> {
+    const items = await getMockItems();
+    const realItems = Object.keys(REAL_GARMENT_ASSETS)
+      .map((id) => items.find((item) => item.id === id))
+      .filter(Boolean) as StoreItem[];
+    return realItems.map((item) => this.productProvider.fromProduct(item, REAL_GARMENT_ASSETS[item.id]));
+  }
+
+  async resolve(productId: string): Promise<AvatarOutfit> {
+    const items = await getMockItems();
+    const item = items.find((candidate) => candidate.id === productId);
+    if (!item) throw new Error(`Product not found for outfit: ${productId}`);
+    return this.productProvider.fromProduct(item, REAL_GARMENT_ASSETS[item.id]);
   }
 }
 
@@ -122,14 +148,14 @@ export class ProceduralProxyOutfitProvider implements AvatarOutfitProvider {
       if (selected.length >= 3) break;
     }
 
-    return selected.map((item) => this.productProvider.fromProduct(item));
+    return selected.map((item) => this.productProvider.fromProduct(item, REAL_GARMENT_ASSETS[item.id]));
   }
 
   async resolve(productId: string): Promise<AvatarOutfit> {
     const items = await getMockItems();
     const item = items.find((candidate) => candidate.id === productId);
     if (!item) throw new Error(`Product not found for outfit: ${productId}`);
-    return this.productProvider.fromProduct(item);
+    return this.productProvider.fromProduct(item, REAL_GARMENT_ASSETS[item.id]);
   }
 }
 
@@ -143,4 +169,4 @@ export class FutureRealGarmentProvider implements AvatarOutfitProvider {
   }
 }
 
-export const avatarOutfitProvider = new ProceduralProxyOutfitProvider();
+export const avatarOutfitProvider = new RealGarmentProvider();

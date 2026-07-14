@@ -9,6 +9,7 @@ import {
   createDefaultAppearance,
   DEFAULT_DEMO_OUTFIT,
   DEFAULT_VRM_READY_METADATA,
+  DEFAULT_COMIC_RENDER_STYLE,
   faceIdentityProvider,
   stylizedAvatarProvider,
 } from '@/services/avatarPipeline';
@@ -77,6 +78,68 @@ export default function TryOnPage() {
   const [outfitOptions, setOutfitOptions] = useState<AvatarOutfit[]>([]);
   const [selectedOutfitId, setSelectedOutfitId] = useState<string>('');
   const [apiAvailable, setApiAvailable] = useState(false);
+
+  useEffect(() => {
+    if (!window.location.hash.includes('demo=1')) return;
+    const demoManifest: BodyModelManifest = {
+      id: 'runtime-demo',
+      status: 'ready',
+      measurements: DEFAULT_MEASUREMENTS,
+      captureFrameCount: 5,
+      qualityScore: 88,
+      pipeline: ['enhanced-local-stylized-head', 'humanoid-lite-runtime', 'real-garment-provider'],
+      output: {
+        format: 'glb',
+        fileName: 'runtime-demo.glb',
+        previewFileName: 'runtime-demo.png',
+        yintaiAppScene: 'stylized-avatar-runtime-demo',
+      },
+      createdAt: new Date().toISOString(),
+      note: 'Runtime demo shortcut for validating outfit, pose and expression layers without camera permission.',
+    };
+    setManifest(demoManifest);
+    setStylizedAvatar({
+      id: 'runtime-demo-avatar',
+      pipeline: 'identity-driven-stylized-avatar',
+      identity: {
+        id: 'runtime-demo-identity',
+        createdAt: new Date().toISOString(),
+        deviceHint: navigator.userAgent.slice(0, 80),
+        face: {
+          sourceFrames: [],
+          primaryFrame: {
+            imageDataUrl: '',
+            capturedAt: new Date().toISOString(),
+            qualityScore: 88,
+            source: 'guided-head-scan',
+            poseLabel: 'front',
+          },
+          captureMode: 'guided-head-scan',
+          confidence: 0.88,
+          identityNotes: ['runtime-demo-enhanced-local-head'],
+        },
+      },
+      appearance: {
+        style: DEFAULT_COMIC_RENDER_STYLE,
+        bodyPreference: DEFAULT_MEASUREMENTS,
+        expressionHint: 'friendly-confident',
+      },
+      outfit: DEFAULT_DEMO_OUTFIT,
+      rig: {
+        format: 'glb-rig-ready',
+        skeleton: 'humanoid-lite',
+        expressionBlendshapes: ['neutral', 'smile', 'cool', 'surprised'],
+        posePresets: ['idle', 'confident-pose'],
+      },
+      modelUrl: `${import.meta.env.BASE_URL}models/runtime-demo-rigged.glb`,
+      method: 'runtime-demo-shortcut',
+      status: 'ready',
+      providerStage: 'procedural-mock',
+      runtimeMetadata: DEFAULT_VRM_READY_METADATA,
+    });
+    setApiAvailable(true);
+    setStep('result');
+  }, []);
 
   useEffect(() => {
     countdownRef.current = countdown;
@@ -615,7 +678,7 @@ export default function TryOnPage() {
                 <div className="mb-4">
                   <div className="mb-2 flex items-center justify-between">
                     <p className="text-sm font-semibold text-white">银泰商品换装</p>
-                    <p className="text-[11px] text-gray-500">proxy-from-product · 不重生成 Avatar</p>
+                    <p className="text-[11px] text-gray-500">{selectedOutfit?.providerStage ?? 'outfit'} · 不重生成 Avatar</p>
                   </div>
                   <div className="grid grid-cols-3 gap-2">
                     {outfitOptions.map((outfit) => {
@@ -631,7 +694,7 @@ export default function TryOnPage() {
                           <div className="p-2">
                             <p className="truncate text-[11px] font-semibold text-white">{outfit.brand}</p>
                             <p className="truncate text-[10px] text-gray-400">{outfit.name}</p>
-                            <p className="mt-1 text-[9px] text-pink-300">{outfit.category} · {outfit.fittingMode}</p>
+                            <p className="mt-1 text-[9px] text-pink-300">{outfit.category} · {outfit.providerStage}</p>
                           </div>
                         </button>
                       );

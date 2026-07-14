@@ -422,6 +422,56 @@ function buildProxyOutfit(outfit: AvatarOutfit, skeleton: THREE.Skeleton) {
   return group;
 }
 
+function cloneMaterialForGarment(material: THREE.Material, outfit: AvatarOutfit) {
+  const source = material as THREE.MeshStandardMaterial;
+  return new THREE.MeshToonMaterial({
+    name: `${outfit.id}-${source.name || 'real-garment-material'}`,
+    color: source.color ?? new THREE.Color(outfit.materialConfig.baseColor),
+    map: source.map ?? null,
+    side: THREE.DoubleSide,
+    transparent: source.transparent,
+    opacity: source.opacity,
+  });
+}
+
+function RealGarmentLayer({
+  outfit,
+  skeleton,
+  onReady,
+}: {
+  outfit: AvatarOutfit;
+  skeleton: THREE.Skeleton;
+  onReady: (state: { meshes: number; skinned: boolean }) => void;
+}) {
+  const { scene } = useGLTF(outfit.assetUrl || '');
+  const { group, meta } = useMemo(() => {
+    const garmentGroup = new THREE.Group();
+    garmentGroup.name = `real-garment-${outfit.productId}`;
+    let meshCount = 0;
+    let skinned = true;
+
+    scene.traverse((child) => {
+      if (!(child instanceof THREE.Mesh)) return;
+      const geometry = child.geometry.clone();
+      const material = Array.isArray(child.material)
+        ? cloneMaterialForGarment(child.material[0], outfit)
+        : cloneMaterialForGarment(child.material, outfit);
+      const mesh = makeSkinnedMesh(`real-${child.name}`, geometry, material, skeleton, outfit);
+      meshCount += 1;
+      skinned = skinned && geometry.hasAttribute('skinIndex') && geometry.hasAttribute('skinWeight');
+      garmentGroup.add(mesh);
+    });
+
+    return { group: garmentGroup, meta: { meshes: meshCount, skinned } };
+  }, [outfit, scene, skeleton]);
+
+  useEffect(() => {
+    onReady(meta);
+  }, [meta, onReady]);
+
+  return <primitive object={group} />;
+}
+
 function Model({
   path,
   renderStyle,
@@ -447,6 +497,7 @@ function Model({
   const outfitGroupRef = useRef<THREE.Group | null>(null);
   const expressionProxyRef = useRef<ExpressionProxy | null>(null);
   const expressionRef = useRef<AvatarExpressionName>('neutral');
+  const [avatarSkeleton, setAvatarSkeleton] = useState<THREE.Skeleton | null>(null);
 
   useFrame((_, delta) => mixer.update(delta));
 
@@ -481,6 +532,7 @@ function Model({
     });
     bonesRef.current = bones;
     avatarSkeletonRef.current = avatarSkeleton;
+    setAvatarSkeleton(avatarSkeleton);
     if (bones.Head && !expressionProxyRef.current) {
       const proxy = createExpressionProxy();
       bones.Head.add(proxy.group);
@@ -593,6 +645,24 @@ function Model({
   return (
     <Center position={[0, -0.1, 0]}>
       <primitive object={cloned} />
+      {outfit?.assetFormat === 'glb' && outfit.assetUrl && avatarSkeleton && (
+        <RealGarmentLayer
+          outfit={outfit}
+          skeleton={avatarSkeleton}
+          onReady={({ meshes, skinned }) => {
+            onRigState({
+              bones: Object.keys(bonesRef.current).length,
+              skinnedMeshes: 1,
+              animations: animations.map((clip) => clip.name),
+              outfitMeshes: meshes,
+              outfitSkinned: skinned,
+              outfitName: outfit.name,
+              expression: expressionRef.current,
+              bodyMask: createBodyMaskReport([]),
+            });
+          }}
+        />
+      )}
     </Center>
   );
 }

@@ -24,6 +24,11 @@ export interface FaceIdentityFeatures {
   mouthLineEstimateY: number;
   skinToneHex?: string;
   hairToneHex?: string;
+  eyeDistanceRatio?: number;
+  noseWidthRatio?: number;
+  mouthWidthRatio?: number;
+  browTilt?: number;
+  hairlineY?: number;
   poseCoverage: {
     front: boolean;
     left: boolean;
@@ -183,13 +188,22 @@ export interface VrmReadyMetadata {
 
 export interface StylizedHead {
   id: string;
-  providerStage: 'local-experimental' | 'mock-placeholder' | 'future-aigc-provider';
+  providerStage: 'enhanced-local' | 'local-experimental' | 'mock-placeholder' | 'future-aigc-provider';
   representation: 'stylized-face-texture+head-fit-params' | 'stylized-head-mesh' | 'head-parameters-only';
   textureDataUrl?: string;
   previewDataUrl?: string;
   sourceFrameCount: number;
   confidence: number;
   identityFeatures: FaceIdentityFeatures;
+  multiViewCoverage?: {
+    front: boolean;
+    left: boolean;
+    right: boolean;
+    up: boolean;
+    down: boolean;
+    score: number;
+  };
+  fallbackReason?: string;
   headFit: {
     facePlaneScale: number;
     verticalOffset: number;
