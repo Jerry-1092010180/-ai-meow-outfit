@@ -220,6 +220,7 @@ export interface StylizedAvatar {
   pipeline: AvatarPipelineMode;
   identity: AvatarIdentity;
   appearance: AvatarAppearance;
+  stylizedHead?: StylizedHead;
   outfit: AvatarOutfit;
   rig: AvatarRig;
   modelUrl?: string;

@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import GLBModelViewer from '@/components/outfit/GLBModelViewer';
+import AnimeAvatarViewer from '@/components/outfit/AnimeAvatarViewer';
 import { createBodyModelManifest, downloadBodyModelManifest, estimateBodyModelQuality } from '@/services/bodyModelService';
-import { getPresetModelPath } from '@/services/avatarApi';
 import { avatarOutfitProvider } from '@/services/avatarOutfitProvider';
 import {
   createDefaultAppearance,
@@ -13,10 +12,11 @@ import {
   faceIdentityProvider,
   stylizedAvatarProvider,
 } from '@/services/avatarPipeline';
+import { stylizedHeadProvider } from '@/services/stylizedHeadProvider';
 import { analyzeSelfieFrame, type SelfieAnalysis } from '@/services/selfieAnalysis';
 import type { BodyMeasurements, BodyModelManifest, SelfieFrame } from '@/types/bodyModel';
 import type { BodyType } from '@/types';
-import type { AvatarOutfit, StylizedAvatar } from '@/types/avatarSystem';
+import type { AvatarIdentity, AvatarOutfit, StylizedAvatar } from '@/types/avatarSystem';
 
 type TryOnStep = 'profile' | 'selfie' | 'review' | 'reconstructing' | 'result';
 type NumericKey = Exclude<keyof BodyMeasurements, 'bodyType' | 'skinTone'>;
@@ -124,6 +124,36 @@ export default function TryOnPage() {
         bodyPreference: DEFAULT_MEASUREMENTS,
         expressionHint: 'friendly-confident',
       },
+      stylizedHead: {
+        id: 'runtime-demo-head',
+        providerStage: 'enhanced-local',
+        representation: 'stylized-face-texture+head-fit-params',
+        sourceFrameCount: 5,
+        confidence: 0.72,
+        identityFeatures: {
+          faceAspectRatio: 1.28,
+          faceWidthRatio: 0.44,
+          eyeLineEstimateY: 0.37,
+          mouthLineEstimateY: 0.63,
+          skinToneHex: '#e5aa82',
+          hairToneHex: '#6a3827',
+          eyeDistanceRatio: 0.34,
+          noseWidthRatio: 0.13,
+          mouthWidthRatio: 0.25,
+          hairlineY: 0.11,
+          poseCoverage: { front: true, left: true, right: true, up: true, down: true },
+        },
+        multiViewCoverage: { front: true, left: true, right: true, up: true, down: true, score: 1 },
+        headFit: {
+          facePlaneScale: 1,
+          verticalOffset: 0,
+          headWidthScale: 1,
+          headHeightScale: 1,
+          hairVolume: 1.12,
+        },
+        style: DEFAULT_COMIC_RENDER_STYLE,
+        notes: ['runtime-demo-full-anime-character'],
+      },
       outfit: DEFAULT_DEMO_OUTFIT,
       rig: {
         format: 'glb-rig-ready',
@@ -182,10 +212,7 @@ export default function TryOnPage() {
     canvas.height = video.videoHeight || 720;
     const ctx = canvas.getContext('2d');
     if (!ctx) return null;
-    ctx.translate(canvas.width, 0);
-    ctx.scale(-1, 1);
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
     return canvas.toDataURL('image/jpeg', 0.9);
   }, []);
 
@@ -375,11 +402,13 @@ export default function TryOnPage() {
     });
     setManifest(avatarManifest);
     setStep('reconstructing');
+    let identity: AvatarIdentity | null = null;
+    const appearance = createDefaultAppearance(measurements);
     try {
-      const identity = await faceIdentityProvider.extract(selfieFrames.length > 0 ? selfieFrames : [primarySelfie], navigator.userAgent.slice(0, 80));
+      identity = await faceIdentityProvider.extract(selfieFrames.length > 0 ? selfieFrames : [primarySelfie], navigator.userAgent.slice(0, 80));
       const { avatar } = await stylizedAvatarProvider.build({
         identity,
-        appearance: createDefaultAppearance(measurements),
+        appearance,
         outfit: DEFAULT_DEMO_OUTFIT,
         measurements,
       });
@@ -387,9 +416,32 @@ export default function TryOnPage() {
       setStylizedAvatar(avatar);
       setApiAvailable(true);
     } catch (err: any) {
-      console.warn('[Avatar] Submit FAILED fallback-to-preset', err?.message || err);
-      setStylizedAvatar(null);
-      setApiAvailable(false);
+      console.warn('[Avatar] Submit FAILED fallback-to-local-full-anime', err?.message || err);
+      if (identity) {
+        const stylizedHead = await stylizedHeadProvider.generate(identity, appearance.style);
+        setStylizedAvatar({
+          id: `local-anime-avatar-${Date.now().toString(36)}`,
+          pipeline: 'identity-driven-stylized-avatar',
+          identity,
+          appearance,
+          stylizedHead,
+          outfit: DEFAULT_DEMO_OUTFIT,
+          rig: {
+            format: 'vrm-ready',
+            skeleton: 'humanoid-lite',
+            expressionBlendshapes: ['neutral', 'smile', 'cool', 'surprised'],
+            posePresets: ['idle', 'confident-pose', 'wave', 'share'],
+          },
+          method: 'local-full-anime-character-renderer',
+          status: 'ready',
+          providerStage: 'procedural-mock',
+          runtimeMetadata: DEFAULT_VRM_READY_METADATA,
+        });
+        setApiAvailable(true);
+      } else {
+        setStylizedAvatar(null);
+        setApiAvailable(false);
+      }
     }
     setStep('result');
   };
@@ -659,20 +711,8 @@ export default function TryOnPage() {
               </div>
               <div className="mb-5">
                 {apiAvailable && stylizedAvatar ? (
-                  <GLBModelViewer
-                    modelPath={stylizedAvatar.cdnUrl || stylizedAvatar.modelUrl || getPresetModelPath(measurements.bodyType)}
-                    renderStyle={stylizedAvatar.appearance.style}
-                    outfit={selectedOutfit}
-                    runtimeMetadata={stylizedAvatar.runtimeMetadata}
-                  />
-                ) : (
-                  <GLBModelViewer
-                    modelPath={getPresetModelPath(measurements.bodyType)}
-                    renderStyle={createDefaultAppearance(measurements).style}
-                    outfit={selectedOutfit}
-                    runtimeMetadata={DEFAULT_VRM_READY_METADATA}
-                  />
-                )}
+                  <AnimeAvatarViewer avatar={stylizedAvatar} outfit={selectedOutfit} />
+                ) : null}
               </div>
               {outfitOptions.length > 0 && (
                 <div className="mb-4">

@@ -159,6 +159,7 @@ export class AigcStylizedAvatarProvider implements StylizedAvatarProvider {
       pipeline: 'identity-driven-stylized-avatar',
       identity: request.identity,
       appearance: request.appearance,
+      stylizedHead,
       outfit: request.outfit,
       rig: {
         format: result.rig_format === 'vrm-ready' ? 'vrm-ready' : result.rig_ready ? 'glb-rig-ready' : 'glb-static',
