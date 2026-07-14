@@ -1,6 +1,7 @@
 import { useState, useEffect, Component, type ReactNode } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, ContactShadows } from '@react-three/drei';
+import { OrbitControls } from '@react-three/drei/core/OrbitControls.js';
+import { ContactShadows } from '@react-three/drei/core/ContactShadows.js';
 import * as THREE from 'three';
 import ProceduralAvatar from './ProceduralAvatar';
 import type { BodyMeasurements } from '@/types/bodyModel';
