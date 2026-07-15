@@ -6,6 +6,7 @@ import Loading from '@/components/common/Loading';
 import Toast from '@/components/common/Toast';
 
 const HomePage = lazy(() => import('@/pages/HomePage'));
+const DailyQuestPage = lazy(() => import('@/pages/DailyQuestPage'));
 const OnboardingPage = lazy(() => import('@/pages/OnboardingPage'));
 const DiaryPage = lazy(() => import('@/pages/DiaryPage'));
 const ChallengeListPage = lazy(() => import('@/pages/ChallengeListPage'));
@@ -39,8 +40,11 @@ export default function App() {
       <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path={ROUTES.ONBOARDING} element={<OnboardingPage />} />
+          {/* Competition demo and friend-assist links must open without onboarding. */}
+          <Route path={ROUTES.GAME} element={<DailyQuestPage />} />
+          <Route path={ROUTES.HOME} element={<Navigate to={ROUTES.GAME} replace />} />
           <Route
-            path={ROUTES.HOME}
+            path={ROUTES.OUTFIT}
             element={
               <OnboardingGuard>
                 <HomePage />
@@ -116,7 +120,7 @@ export default function App() {
               </OnboardingGuard>
             }
           />
-          <Route path="*" element={<Navigate to={ROUTES.HOME} replace />} />
+          <Route path="*" element={<Navigate to={ROUTES.GAME} replace />} />
         </Routes>
       </Suspense>
       <Toast />

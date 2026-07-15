@@ -12,7 +12,7 @@ OPC 2026 商业比赛项目。为银泰百货喵街 APP 4500 万会员设计 AI 
 入口上下文：`CONTEXT.md`（项目结构 + AIGC 连接方式）
 架构设计：`ARCHITECTURE.md`、`next-gen-architecture.md`
 文档：`docs/`（avatar-pipeline-design.md、database-design.md、avatar-platform-design.md 等）
-AIGC 服务器：`jerry@100.114.7.5` / 密码 `0` / 4090D GPU / conda DeepLearning
+AIGC 服务器：Tailscale 私网主机 / 4090D GPU / conda DeepLearning。登录凭据仅存本地密钥链或 secret manager，禁止写入仓库。
 
 ## 当前状态
 

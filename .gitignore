@@ -5,5 +5,7 @@ dist-ssr/
 *.local
 .DS_Store
 *.log
+__pycache__/
+*.py[cod]
 .vercel
 .env

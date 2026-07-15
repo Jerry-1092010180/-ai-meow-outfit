@@ -1,13 +1,14 @@
 import { useNavigate, useLocation } from 'react-router-dom';
+import { BookOpen, Flame, ShoppingBag, Sparkles, Swords } from 'lucide-react';
 import { ROUTES } from '@/config/routes';
 
 /** 所有页面的统一底部导航 — 保证一致的用户体验 */
 const TABS = [
-  { path: ROUTES.HOME, label: '今日穿搭', icon: '🏠' },
-  { path: ROUTES.TRY_ON, label: '虚拟试穿', icon: '✨' },
-  { path: ROUTES.DIARY, label: '穿搭日记', icon: '📖' },
-  { path: ROUTES.CHALLENGES, label: 'PK挑战', icon: '⚡' },
-  { path: ROUTES.STORE, label: '门店好物', icon: '🛍️' },
+  { path: ROUTES.GAME, label: '今日副本', icon: Flame },
+  { path: ROUTES.TRY_ON, label: 'AI分身', icon: Sparkles },
+  { path: ROUTES.DIARY, label: '穿搭日记', icon: BookOpen },
+  { path: ROUTES.CHALLENGES, label: '好友PK', icon: Swords },
+  { path: ROUTES.STORE, label: '门店好物', icon: ShoppingBag },
 ] as const;
 
 interface BottomNavProps {
@@ -30,6 +31,7 @@ export default function BottomNav({ dark = false }: BottomNavProps) {
       <div className="flex items-center justify-around py-2">
         {TABS.map((tab) => {
           const isActive = location.pathname === tab.path;
+          const Icon = tab.icon;
           return (
             <button
               key={tab.path}
@@ -44,7 +46,7 @@ export default function BottomNav({ dark = false }: BottomNavProps) {
               }`}
               onClick={() => navigate(tab.path)}
             >
-              <span className="text-xl">{tab.icon}</span>
+              <Icon size={20} strokeWidth={isActive ? 2.6 : 2} aria-hidden="true" />
               <span className={`text-[10px] ${isActive ? 'font-medium' : ''}`}>
                 {tab.label}
               </span>
