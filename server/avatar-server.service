@@ -1,0 +1,15 @@
+[Unit]
+Description=AI Meow Avatar reconstruction API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/jerry/avatar-server
+ExecStart=/home/jerry/anaconda3/envs/DeepLearning/bin/python /home/jerry/avatar-server/avatar_server.py
+Restart=always
+RestartSec=5
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,20 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "avatar-gateway",
+  "main": "server/gateway-worker.js",
+  "compatibility_date": "2026-07-13",
+  "workers_dev": true,
+  "observability": {
+    "enabled": true
+  },
+  "vpc_services": [
+    {
+      "binding": "AIGC_PRIVATE",
+      "service_id": "019f5c8d-22ec-7981-af27-1d1f7a643efa",
+      "remote": true
+    }
+  ],
+  "vars": {
+    "ALLOWED_ORIGIN": "https://ai-meow-outfit.pages.dev"
+  }
+}

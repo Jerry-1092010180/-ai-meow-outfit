@@ -14,11 +14,15 @@ export interface BodyMeasurements {
   heightCm: number;
   weightKg: number;
   bodyType: BodyType;
+  headCm?: number;
   shoulderCm?: number;
   bustCm?: number;
   waistCm?: number;
   hipCm?: number;
+  armCm?: number;
+  legCm?: number;
   inseamCm?: number;
+  skinTone?: string;
 }
 
 export interface CaptureFrame {
@@ -28,10 +32,22 @@ export interface CaptureFrame {
   qualityScore: number;
 }
 
+export interface SelfieFrame {
+  imageDataUrl: string;
+  capturedAt: string;
+  qualityScore: number;
+  faceBox?: { x: number; y: number; width: number; height: number };
+  skinToneHex?: string;
+  source: 'camera-selfie' | 'manual-upload' | 'guided-head-scan';
+  poseLabel?: 'front' | 'left' | 'right' | 'up' | 'down';
+}
+
 export interface BodyModelRequest {
   measurements: BodyMeasurements;
   captureFrames: CaptureFrame[];
-  captureMode: 'guided-360-phone-stand';
+  selfieFrame?: SelfieFrame;
+  selfieFrames?: SelfieFrame[];
+  captureMode: 'guided-360-phone-stand' | 'selfie-face-first' | 'guided-head-scan';
   deviceHint: string;
   createdAt: string;
 }

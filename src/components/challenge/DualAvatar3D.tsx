@@ -1,6 +1,7 @@
 import { Component, type ReactNode } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, ContactShadows, Text } from '@react-three/drei';
+import { OrbitControls } from '@react-three/drei/core/OrbitControls.js';
+import { ContactShadows } from '@react-three/drei/core/ContactShadows.js';
 import * as THREE from 'three';
 import ProceduralAvatar from '@/components/outfit/ProceduralAvatar';
 import type { AvatarOutfit } from '@/components/outfit/ProceduralAvatar';
@@ -34,24 +35,6 @@ function Floor() {
       <planeGeometry args={[12, 12]} />
       <shadowMaterial transparent opacity={0.12} />
     </mesh>
-  );
-}
-
-// ── VS 标签 ──
-function VSLabel() {
-  return (
-    <Text
-      position={[0, 0.5, 0]}
-      fontSize={0.5}
-      color="#FF6B8A"
-      anchorX="center"
-      anchorY="middle"
-      font="/fonts/NotoSansSC-Bold.woff2"
-      outlineColor="#000000"
-      outlineWidth={0.05}
-    >
-      VS
-    </Text>
   );
 }
 
