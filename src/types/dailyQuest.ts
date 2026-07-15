@@ -13,6 +13,8 @@ export interface DailyStyleQuest {
   id: string;
   date: string;
   issue: string;
+  episodeNumber: number;
+  weeklyArc: string;
   title: string;
   scene: string;
   story: string;
@@ -25,6 +27,7 @@ export interface DailyStyleQuest {
     couponLabel: string;
     collectible: string;
   };
+  nextTeaser: string;
   aigcInputs: string[];
   rounds: DailyQuestRound[];
   providerStage: 'demo-personalized-provider' | 'gateway-aigc-provider';
@@ -40,6 +43,18 @@ export interface DailyQuestScoreDimension {
   score: number;
 }
 
+export type GeneratedQuestCandidateId = 'A' | 'B';
+
+export interface GeneratedQuestCandidate {
+  id: GeneratedQuestCandidateId;
+  label: string;
+  title: string;
+  strategy: string;
+  score: number;
+  reason: string;
+  items: StoreItem[];
+}
+
 export interface GeneratedQuestLook {
   id: string;
   title: string;
@@ -49,6 +64,7 @@ export interface GeneratedQuestLook {
   tags: string[];
   dimensions: DailyQuestScoreDimension[];
   selections: DailyQuestSelection[];
+  candidateLooks: [GeneratedQuestCandidate, GeneratedQuestCandidate];
   alternativeItems: StoreItem[];
   generationTrace: string[];
   providerStage: 'demo-personalized-provider' | 'gateway-aigc-provider';

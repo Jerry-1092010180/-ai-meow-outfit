@@ -33,6 +33,8 @@ import type {
   DailyQuestSelection,
   DailyQuestStage,
   DailyStyleQuest,
+  GeneratedQuestCandidate,
+  GeneratedQuestCandidateId,
   GeneratedQuestLook,
 } from '@/types/dailyQuest';
 import type { StoreItem } from '@/types/store';
@@ -50,7 +52,7 @@ const GENERATION_STEPS = [
   '融合天气与今晚场景',
   '读取你的风格 DNA',
   '核对银泰门店库存',
-  '生成个性化大片与文案',
+  '生成 A/B 策略与效果海报',
 ];
 
 const DAY_LABELS = ['一', '二', '三', '四', '五', '六', '今'];
@@ -150,6 +152,7 @@ function QuestLobby({
             <p className="inline-flex items-center gap-1 border border-white bg-black px-2 py-1 text-[10px] font-black tracking-[0.16em]">
               <Sparkles size={12} /> {quest.issue}
             </p>
+            <p className="mt-2 text-[10px] font-black tracking-[0.12em] text-[#dfff3f]">{quest.weeklyArc}</p>
             <h1 className="mt-4 max-w-[290px] text-[34px] font-black leading-[1.02]">今日 AI<br />变装副本</h1>
           </div>
           <div className="grid h-[74px] w-[74px] rotate-6 place-items-center border-2 border-black bg-[#dfff3f] text-center text-black shadow-[5px_5px_0_#111]">
@@ -179,7 +182,7 @@ function QuestLobby({
           </div>
           <div className="flex min-h-14 items-center gap-2 border border-black bg-white p-2">
             <Users size={18} className="shrink-0 text-[#ff386d]" />
-            <span><b className="block">好友最终裁决</b><span className="text-[10px] text-gray-500">分享后解锁奖励</span></span>
+            <span><b className="block">好友二选一封面</b><span className="text-[10px] text-gray-500">A 保留选择 · B AI 反转</span></span>
           </div>
         </div>
       </section>
@@ -221,7 +224,7 @@ function QuestLobby({
           <div>
             <p className="text-xs font-black">{completedToday ? '今日奖励已领取' : '今日通关奖励'}</p>
             <p className="mt-1 text-2xl font-black">{completedToday ? '可重玩刷新大片' : `+${quest.reward.inspiration} 灵感值`}</p>
-            <p className="mt-1 text-xs text-black/70">好友完成裁决，再解锁 {quest.reward.couponLabel}</p>
+            <p className="mt-1 text-xs text-black/70">基础通关不强制分享；好友投票加成解锁 {quest.reward.couponLabel}</p>
           </div>
           <Gift size={38} strokeWidth={1.8} />
         </div>
@@ -233,7 +236,7 @@ function QuestLobby({
           <span>{completedToday ? '再玩一次 · 刷新大片' : '60 秒开局'}</span>
           <ArrowRight size={22} />
         </button>
-        <p className="mt-3 text-center text-[10px] font-bold text-black/55">明日预告：天台落日音乐局 · 完成今日后开启</p>
+        <p className="mt-3 text-center text-[10px] font-bold text-black/55">明日预告：{quest.nextTeaser}</p>
       </section>
     </motion.main>
   );
@@ -324,7 +327,7 @@ function QuestSelector({
   );
 }
 
-function GeneratingView({ activeStep }: { activeStep: number }) {
+function GeneratingView({ activeStep, questTitle }: { activeStep: number; questTitle: string }) {
   return (
     <motion.main key="generating" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid min-h-[calc(100dvh-62px)] place-items-center bg-black px-6 text-white quest-halftone-dark">
       <div className="w-full">
@@ -332,7 +335,7 @@ function GeneratingView({ activeStep }: { activeStep: number }) {
           <WandSparkles size={44} className="animate-pulse" />
         </div>
         <p className="mt-9 text-center text-xs font-black tracking-[0.2em] text-[#dfff3f]">AI STYLE AGENT</p>
-        <h1 className="mt-2 text-center text-3xl font-black">正在生成你的<br />雨夜主角大片</h1>
+        <h1 className="mt-2 text-center text-3xl font-black">正在生成你的<br />{questTitle}</h1>
         <div className="mt-8 border-y border-white/30">
           {GENERATION_STEPS.map((step, index) => (
             <div key={step} className="flex h-12 items-center gap-3 border-b border-white/15 last:border-b-0">
@@ -344,20 +347,20 @@ function GeneratingView({ activeStep }: { activeStep: number }) {
             </div>
           ))}
         </div>
-        <p className="mt-5 text-center text-[10px] text-white/45">本轮会生成专属评分、社交海报文案与可购同款，不是固定模板抽签。</p>
+        <p className="mt-5 text-center text-[10px] text-white/45">A 保留你的三轮选择；B 由 AI 保留身份单品并反转两件。两套都来自本轮输入。</p>
       </div>
     </motion.main>
   );
 }
 
-function LookPoster({ look }: { look: GeneratedQuestLook }) {
-  const [first, second, third] = look.selections.map((selection) => selection.item);
+function LookPoster({ candidate, issue }: { candidate: GeneratedQuestCandidate; issue: string }) {
+  const [first, second, third] = candidate.items;
   return (
     <div id="daily-look-poster" className="relative aspect-[4/5] overflow-hidden border-2 border-black bg-[#ff5b88] shadow-[6px_6px_0_#111]">
       <div className="absolute inset-0 quest-poster-grid opacity-35" />
-      <div className="absolute left-3 top-3 z-20 border border-black bg-[#dfff3f] px-2 py-1 text-[10px] font-black">AI LOOK · 0715</div>
+      <div className="absolute left-3 top-3 z-20 border border-black bg-[#dfff3f] px-2 py-1 text-[10px] font-black">AI LOOK {candidate.id} · {issue.replace('ISSUE ', '')}</div>
       <div className="absolute right-3 top-3 z-20 grid h-16 w-16 rotate-6 place-items-center border-2 border-black bg-white text-center shadow-[3px_3px_0_#111]">
-        <span className="text-[9px] font-black leading-none">STYLE<br /><b className="text-2xl leading-none">{look.score}</b></span>
+        <span className="text-[9px] font-black leading-none">STYLE<br /><b className="text-2xl leading-none">{candidate.score}</b></span>
       </div>
       <div className="absolute left-4 top-16 h-[55%] w-[64%] -rotate-2 overflow-hidden border-2 border-black bg-gray-200 shadow-[5px_5px_0_#2455ff]">
         {first && <ProductImage item={first} />}
@@ -370,10 +373,41 @@ function LookPoster({ look }: { look: GeneratedQuestLook }) {
       </div>
       <div className="absolute inset-x-0 bottom-0 z-20 border-t-2 border-black bg-black p-3 text-white">
         <p className="text-[10px] font-black tracking-[0.16em] text-[#dfff3f]">YOUR NIGHT, YOUR FRAME</p>
-        <h2 className="mt-1 text-xl font-black leading-tight">{look.title}</h2>
-        <p className="mt-1 line-clamp-2 text-[10px] leading-4 text-white/65">{look.storyCaption}</p>
+        <h2 className="mt-1 text-xl font-black leading-tight">{candidate.title}</h2>
+        <p className="mt-1 line-clamp-2 text-[10px] leading-4 text-white/65">{candidate.reason}</p>
       </div>
     </div>
+  );
+}
+
+function CandidateCard({
+  candidate,
+  active,
+  onSelect,
+}: {
+  candidate: GeneratedQuestCandidate;
+  active: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-pressed={active}
+      className={`overflow-hidden border-2 border-black text-left transition-transform ${active ? 'translate-y-[-2px] bg-black text-white shadow-[4px_4px_0_#2455ff]' : 'bg-white text-black'}`}
+    >
+      <div className={`flex items-center justify-between border-b-2 border-black px-2 py-1.5 ${candidate.id === 'A' ? 'bg-[#dfff3f] text-black' : 'bg-[#ff5b88] text-black'}`}>
+        <span className="text-sm font-black">LOOK {candidate.id}</span>
+        <span className="text-[10px] font-black">{candidate.score} 分</span>
+      </div>
+      <div className="grid h-20 grid-cols-3 border-b border-black bg-[#f6f4ee]">
+        {candidate.items.map((item) => <div key={item.id} className="min-w-0 overflow-hidden border-r border-black last:border-r-0"><ProductImage item={item} /></div>)}
+      </div>
+      <div className="p-2">
+        <p className="text-[11px] font-black">{candidate.label}</p>
+        <p className={`mt-1 line-clamp-2 text-[9px] leading-4 ${active ? 'text-white/65' : 'text-gray-500'}`}>{candidate.strategy}</p>
+      </div>
+    </button>
   );
 }
 
@@ -400,21 +434,28 @@ function QuestResult({
   onReplay: () => void;
   showStore: boolean;
 }) {
+  const [activeCandidateId, setActiveCandidateId] = useState<GeneratedQuestCandidateId>('A');
+  const activeCandidate = look.candidateLooks.find((candidate) => candidate.id === activeCandidateId) ?? look.candidateLooks[0];
   return (
     <motion.main key="result" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-[#f6f4ee] pb-28">
       <section className="border-b border-black bg-white px-4 pb-5 pt-5">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs font-black tracking-[0.14em] text-[#2455ff]">MISSION COMPLETE</p>
-            <h1 className="mt-1 text-3xl font-black">今晚你是主角</h1>
+            <h1 className="mt-1 text-3xl font-black">AI 给你两种答案</h1>
           </div>
           <Trophy size={38} className="text-[#ff386d]" />
         </div>
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          {look.candidateLooks.map((candidate) => (
+            <CandidateCard key={candidate.id} candidate={candidate} active={candidate.id === activeCandidateId} onSelect={() => setActiveCandidateId(candidate.id)} />
+          ))}
+        </div>
         <div className="mt-4">
-          <LookPoster look={look} />
+          <LookPoster candidate={activeCandidate} issue={quest.issue} />
         </div>
         <div className="mt-5 border-l-4 border-[#2455ff] pl-3">
-          <p className="text-sm font-black">{look.verdict}</p>
+          <p className="text-sm font-black">{activeCandidate.reason}</p>
           <div className="mt-3 flex flex-wrap gap-1.5">
             {look.tags.map((tag) => <span key={tag} className="border border-black bg-[#dfff3f] px-2 py-1 text-[10px] font-black">#{tag}</span>)}
           </div>
@@ -447,8 +488,8 @@ function QuestResult({
           <div className="grid h-11 w-11 shrink-0 place-items-center border border-black bg-white"><UserRoundCheck size={24} /></div>
           <div>
             <p className="text-xs font-black tracking-[0.12em]">FINAL JUDGE</p>
-            <h2 className="mt-1 text-xl font-black">差一位好友，完成最终裁决</h2>
-            <p className="mt-1 text-xs leading-5 text-black/65">好友不是只看广告：TA 必须在 A/B 造型中投票，你才能解锁到店券和限定卡。</p>
+            <h2 className="mt-1 text-xl font-black">让好友选最终封面</h2>
+            <p className="mt-1 text-xs leading-5 text-black/65">A 是你亲手选的三件，AI 负责精修表达；B 保留你的身份单品，再由 AI 按场景反转两件。好友只决定哪套成为今日封面。</p>
           </div>
         </div>
 
@@ -464,7 +505,7 @@ function QuestResult({
           </div>
         ) : (
           <div className="mt-4 border-2 border-black bg-[#dfff3f] p-3 shadow-[4px_4px_0_#111]">
-            <p className="flex items-center gap-2 text-base font-black"><Check size={20} strokeWidth={3} /> 好友选择了 A：雨幕主角</p>
+            <p className="flex items-center gap-2 text-base font-black"><Check size={20} strokeWidth={3} /> 好友选择了 A：保留版</p>
             <p className="mt-1 text-xs">奖励已解锁：{quest.reward.couponLabel} + {quest.reward.collectible}</p>
           </div>
         )}
@@ -479,7 +520,7 @@ function QuestResult({
           <Store size={28} />
         </div>
         <div className="mt-4 flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-          {look.selections.map(({ item }) => (
+          {activeCandidate.items.map((item) => (
             <div key={item.id} className="w-[132px] shrink-0 border border-black bg-[#f6f4ee]">
               <div className="aspect-[4/3] overflow-hidden border-b border-black"><ProductImage item={item} /></div>
               <div className="p-2"><p className="text-[9px] font-black text-[#2455ff]">{item.brand}</p><p className="truncate text-xs font-bold">{item.name}</p><p className="mt-1 text-xs font-black">¥{item.price}</p></div>
@@ -508,7 +549,7 @@ function QuestResult({
       <section className="bg-black px-4 py-5 text-white">
         <div className="flex items-center gap-3 border border-white/25 p-3">
           <LockKeyhole size={22} className="text-[#dfff3f]" />
-          <div className="min-w-0 flex-1"><p className="text-xs font-black text-[#dfff3f]">明日副本预告</p><p className="truncate text-sm font-bold">天台落日音乐局 · 新商品池 08:00 更新</p></div>
+          <div className="min-w-0 flex-1"><p className="text-xs font-black text-[#dfff3f]">明日副本预告</p><p className="truncate text-sm font-bold">{quest.nextTeaser}</p></div>
         </div>
         <button type="button" onClick={onReplay} className="mt-4 flex h-10 w-full items-center justify-center gap-2 border border-white/40 text-xs font-bold text-white/70"><RotateCcw size={15} /> 重玩今日副本</button>
       </section>
@@ -518,13 +559,23 @@ function QuestResult({
 
 function AssistView({ quest }: { quest: DailyStyleQuest }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const recordAssist = useDailyQuestStore((state) => state.recordAssist);
   const [choice, setChoice] = useState<'A' | 'B' | null>(null);
   const looks = useMemo(() => {
-    const a = quest.rounds.map((round) => round.candidates[0]).filter(Boolean);
-    const b = quest.rounds.map((round) => round.candidates[1]).filter(Boolean);
+    const params = new URLSearchParams(location.search);
+    const itemMap = new Map(quest.rounds.flatMap((round) => round.candidates).map((item) => [item.id, item]));
+    const resolve = (key: 'a' | 'b', fallbackIndex: number) => {
+      const sharedIds = params.get(key)?.split('.').filter(Boolean) ?? [];
+      const sharedItems = sharedIds.map((id) => itemMap.get(id)).filter((item): item is StoreItem => Boolean(item));
+      return sharedItems.length === quest.rounds.length
+        ? sharedItems
+        : quest.rounds.map((round) => round.candidates[fallbackIndex]).filter(Boolean);
+    };
+    const a = resolve('a', 0);
+    const b = resolve('b', 1);
     return { A: a, B: b };
-  }, [quest]);
+  }, [location.search, quest]);
 
   const vote = (value: 'A' | 'B') => {
     if (!choice) recordAssist();
@@ -536,8 +587,8 @@ function AssistView({ quest }: { quest: DailyStyleQuest }) {
     <main className="min-h-screen bg-[#f6f4ee] pb-8">
       <section className="border-b border-black bg-black px-4 pb-5 pt-5 text-white safe-top quest-halftone-dark">
         <p className="inline-flex items-center gap-1 border border-white/50 px-2 py-1 text-[10px] font-black"><Users size={12} /> 好友最终裁决</p>
-        <h1 className="mt-4 text-3xl font-black leading-tight">Miya 的雨夜造型<br />由你拍板</h1>
-        <p className="mt-2 text-xs text-white/60">选出更像今晚主角的一套。你的选择会直接为好友解锁到店奖励。</p>
+        <h1 className="mt-4 text-3xl font-black leading-tight">Miya 的今日封面<br />由你拍板</h1>
+        <p className="mt-2 text-xs text-white/60">A 是她亲手选择的精修版，B 是 AI 替换两件后的反转版。选出更像她的一套。</p>
       </section>
 
       {!choice ? (
@@ -548,7 +599,7 @@ function AssistView({ quest }: { quest: DailyStyleQuest }) {
               <div className="grid h-60 grid-rows-3">
                 {looks[label].map((item) => <div key={item.id} className="min-h-0 overflow-hidden border-b border-black last:border-b-0"><ProductImage item={item} /></div>)}
               </div>
-              <div className="p-3"><p className="text-sm font-black">{label === 'A' ? '雨幕主角' : '展厅焦点'}</p><p className="mt-1 text-[10px] text-gray-500">AI 匹配：{label === 'A' ? 94 : 89} 分</p><span className="mt-3 flex h-10 items-center justify-center gap-1 border border-black bg-black text-xs font-black text-white">投这一套 <ArrowRight size={14} /></span></div>
+              <div className="p-3"><p className="text-sm font-black">{label === 'A' ? '保留版 · 她的选择' : '反转版 · AI 换两件'}</p><p className="mt-1 text-[10px] text-gray-500">{label === 'A' ? '保留个人直觉，优化封面表达' : '保留身份单品，强化今日场景'}</p><span className="mt-3 flex h-10 items-center justify-center gap-1 border border-black bg-black text-xs font-black text-white">选为最终封面 <ArrowRight size={14} /></span></div>
             </button>
           ))}
         </section>
@@ -672,7 +723,13 @@ export default function DailyQuestPage() {
     }
   };
 
-  const inviteUrl = useMemo(() => `${window.location.origin}${window.location.pathname}#${ROUTES.GAME}?assist=rain-night-${look?.id ?? 'preview'}`, [look?.id]);
+  const inviteUrl = useMemo(() => {
+    const params = new URLSearchParams({ assist: look?.id ?? 'preview' });
+    const [candidateA, candidateB] = look?.candidateLooks ?? [];
+    if (candidateA) params.set('a', candidateA.items.map((item) => item.id).join('.'));
+    if (candidateB) params.set('b', candidateB.items.map((item) => item.id).join('.'));
+    return `${window.location.origin}${window.location.pathname}#${ROUTES.GAME}?${params.toString()}`;
+  }, [look]);
 
   const markShared = () => {
     if (!shared) recordShare();
@@ -683,7 +740,7 @@ export default function DailyQuestPage() {
   const shareInvite = async () => {
     try {
       if (navigator.share) {
-        await navigator.share({ title: '帮我裁决今晚的 AI 造型', text: 'A/B 两套只能留一套，你来拍板，我才能解锁银泰到店券。', url: inviteUrl });
+        await navigator.share({ title: '帮我选今天的 AI 穿搭封面', text: 'A 是我的选择，B 是 AI 反转两件。你觉得哪套更像我？', url: inviteUrl });
       } else {
         await navigator.clipboard.writeText(inviteUrl);
       }
@@ -697,8 +754,10 @@ export default function DailyQuestPage() {
   };
 
   const copyInvite = async () => {
-    await navigator.clipboard.writeText(inviteUrl).catch(() => undefined);
     markShared();
+    if (navigator.clipboard) {
+      await navigator.clipboard.writeText(inviteUrl).catch(() => undefined);
+    }
   };
 
   const simulateAssist = () => {
@@ -744,7 +803,7 @@ export default function DailyQuestPage() {
       <AnimatePresence mode="wait">
         {stage === 'lobby' && <QuestLobby quest={quest} streak={streak} completedToday={completedDate === quest.date} onStart={startQuest} />}
         {stage === 'selecting' && <QuestSelector quest={quest} roundIndex={roundIndex} selections={selections} timeLeft={timeLeft} onSelect={selectItem} onBack={() => setStage('lobby')} />}
-        {stage === 'generating' && <GeneratingView activeStep={generationStep} />}
+        {stage === 'generating' && <GeneratingView activeStep={generationStep} questTitle={quest.title} />}
         {stage === 'result' && look && <QuestResult quest={quest} look={look} shared={shared} assisted={assisted} onShare={() => void shareInvite()} onCopy={() => void copyInvite()} onSimulateAssist={simulateAssist} onOpenStore={toggleStoreTask} onReplay={replay} showStore={showStore} />}
       </AnimatePresence>
       {error && <div className="fixed bottom-24 left-1/2 z-50 w-[calc(100%-32px)] max-w-[398px] -translate-x-1/2 border border-black bg-[#ff5b88] px-3 py-2 text-center text-xs font-black">{error}</div>}
