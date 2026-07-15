@@ -36,6 +36,7 @@ import type {
   GeneratedQuestLook,
 } from '@/types/dailyQuest';
 import type { StoreItem } from '@/types/store';
+import { track } from '@/utils/analytics';
 
 const QUEST_CONTEXT = {
   city: '杭州',
@@ -527,6 +528,7 @@ function AssistView({ quest }: { quest: DailyStyleQuest }) {
 
   const vote = (value: 'A' | 'B') => {
     if (!choice) recordAssist();
+    track('daily_quest_assist', { questId: quest.id, choice: value });
     setChoice(value);
   };
 
@@ -592,10 +594,11 @@ export default function DailyQuestPage() {
       if (active) {
         setQuest(dailyQuest);
         setTimeLeft(dailyQuest.timeLimitSeconds);
+        track('daily_quest_view', { questId: dailyQuest.id, assistMode: isAssistMode });
       }
     }).catch(() => active && setError('今日副本加载失败，请稍后重试'));
     return () => { active = false; };
-  }, []);
+  }, [isAssistMode]);
 
   const runGeneration = useCallback(async (finalSelections: DailyQuestSelection[]) => {
     if (!quest || generationRunning.current) return;
@@ -608,6 +611,11 @@ export default function DailyQuestPage() {
       const generatedLook = await dailyQuestAigcProvider.generateLook(quest, finalSelections);
       setLook(generatedLook);
       completeQuest(generatedLook.score, quest.reward.inspiration);
+      track('daily_quest_complete', {
+        questId: quest.id,
+        score: generatedLook.score,
+        providerStage: generatedLook.providerStage,
+      });
       setGenerationStep(3);
       window.setTimeout(() => setStage('result'), 320);
     } catch (generationError) {
@@ -647,6 +655,7 @@ export default function DailyQuestPage() {
     setAssisted(false);
     setShowStore(false);
     setError(null);
+    track('daily_quest_start', { questId: quest.id, replay: completedDate === quest.date });
     setStage('selecting');
   };
 
@@ -655,6 +664,7 @@ export default function DailyQuestPage() {
     const round = quest.rounds[roundIndex];
     const nextSelections = [...selections.filter((entry) => entry.roundId !== round.id), { roundId: round.id, item }];
     setSelections(nextSelections);
+    track('daily_quest_select', { questId: quest.id, roundId: round.id, productId: item.id });
     if (roundIndex < quest.rounds.length - 1) {
       setRoundIndex((index) => index + 1);
     } else {
@@ -666,6 +676,7 @@ export default function DailyQuestPage() {
 
   const markShared = () => {
     if (!shared) recordShare();
+    if (!shared && quest) track('daily_quest_share', { questId: quest.id, lookId: look?.id ?? 'preview' });
     setShared(true);
   };
 
@@ -692,7 +703,19 @@ export default function DailyQuestPage() {
 
   const simulateAssist = () => {
     if (!assisted) recordAssist();
+    if (!assisted && quest) track('daily_quest_assist', { questId: quest.id, choice: 'A', demoReturn: true });
     setAssisted(true);
+  };
+
+  const toggleStoreTask = () => {
+    if (!assisted) {
+      void shareInvite();
+      return;
+    }
+    if (!showStore && quest && look) {
+      track('daily_quest_store_unlock', { questId: quest.id, lookId: look.id, store: quest.storeName });
+    }
+    setShowStore((value) => !value);
   };
 
   const replay = () => {
@@ -722,7 +745,7 @@ export default function DailyQuestPage() {
         {stage === 'lobby' && <QuestLobby quest={quest} streak={streak} completedToday={completedDate === quest.date} onStart={startQuest} />}
         {stage === 'selecting' && <QuestSelector quest={quest} roundIndex={roundIndex} selections={selections} timeLeft={timeLeft} onSelect={selectItem} onBack={() => setStage('lobby')} />}
         {stage === 'generating' && <GeneratingView activeStep={generationStep} />}
-        {stage === 'result' && look && <QuestResult quest={quest} look={look} shared={shared} assisted={assisted} onShare={() => void shareInvite()} onCopy={() => void copyInvite()} onSimulateAssist={simulateAssist} onOpenStore={() => assisted ? setShowStore((value) => !value) : void shareInvite()} onReplay={replay} showStore={showStore} />}
+        {stage === 'result' && look && <QuestResult quest={quest} look={look} shared={shared} assisted={assisted} onShare={() => void shareInvite()} onCopy={() => void copyInvite()} onSimulateAssist={simulateAssist} onOpenStore={toggleStoreTask} onReplay={replay} showStore={showStore} />}
       </AnimatePresence>
       {error && <div className="fixed bottom-24 left-1/2 z-50 w-[calc(100%-32px)] max-w-[398px] -translate-x-1/2 border border-black bg-[#ff5b88] px-3 py-2 text-center text-xs font-black">{error}</div>}
       {(stage === 'lobby' || stage === 'result') && <BottomNav />}
