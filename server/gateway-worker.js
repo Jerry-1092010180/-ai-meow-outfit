@@ -5,6 +5,8 @@
 
 const MAX_REQUEST_BYTES = 8 * 1024 * 1024;
 const MODEL_NAME = /^[a-zA-Z0-9._-]+\.glb$/;
+const HEAD_JOB_NAME = /^head-[0-9]{10}-[a-f0-9]{12}$/;
+const HEAD_ASSET_NAME = /^[a-zA-Z0-9._-]+\.(glb|png|jpg|jpeg|mp4|json|zip|gz|zst)$/i;
 
 function isAllowedOrigin(origin, env) {
   if (!origin) return true;
@@ -76,6 +78,72 @@ async function serveModel(env, filename, origin, request, ctx) {
   return response;
 }
 
+function contentTypeForHeadAsset(filename) {
+  const extension = filename.split('.').pop()?.toLowerCase();
+  return {
+    glb: 'model/gltf-binary',
+    png: 'image/png',
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    mp4: 'video/mp4',
+    json: 'application/json',
+    zip: 'application/zip',
+    gz: 'application/gzip',
+    zst: 'application/zstd',
+  }[extension] || 'application/octet-stream';
+}
+
+function publicHeadAssetUrl(origin, upstreamPath) {
+  if (!upstreamPath?.startsWith('/head-assets/')) return upstreamPath;
+  return `${origin}/api/avatar${upstreamPath}`;
+}
+
+function rewriteHeadJobResult(data, origin) {
+  if (!data?.result) return data;
+  for (const key of ['meshUrl', 'neuralFieldUrl', 'canonicalTextureUrl', 'previewUrl', 'reportUrl', 'animeReferenceUrl']) {
+    data.result[key] = publicHeadAssetUrl(origin, data.result[key]);
+  }
+  return data;
+}
+
+async function serveHeadAsset(env, jobId, filename, origin, request, ctx) {
+  if (!HEAD_JOB_NAME.test(jobId) || !HEAD_ASSET_NAME.test(filename)) {
+    return json({ error: 'invalid_head_asset_name' }, 400, origin, env);
+  }
+  const key = `heads/${jobId}/${filename}`;
+  const stored = await env.AVATAR_MODELS?.get(key);
+  if (stored) {
+    const headers = new Headers(corsHeaders(origin, env));
+    stored.writeHttpMetadata(headers);
+    headers.set('ETag', stored.httpEtag);
+    headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+    return new Response(request.method === 'HEAD' ? null : stored.body, { headers });
+  }
+
+  const cache = caches.default;
+  const cacheKey = new Request(request.url, { method: 'GET' });
+  const cached = await cache.match(cacheKey);
+  if (cached) return request.method === 'HEAD' ? new Response(null, cached) : cached;
+
+  const upstream = await fetchAigc(env, `/head-assets/${jobId}/${filename}`);
+  if (!upstream.ok || !upstream.body) return json({ error: 'head_asset_not_found' }, upstream.status, origin, env);
+  const contentType = contentTypeForHeadAsset(filename);
+  const headers = new Headers(corsHeaders(origin, env));
+  headers.set('Content-Type', contentType);
+  headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+  if (request.method === 'HEAD') return new Response(null, { status: 200, headers });
+
+  const response = new Response(upstream.body, { status: 200, headers });
+  ctx.waitUntil(cache.put(cacheKey, response.clone()));
+  if (env.AVATAR_MODELS) {
+    ctx.waitUntil(env.AVATAR_MODELS.put(key, response.clone().body, {
+      httpMetadata: { contentType, cacheControl: 'public, max-age=31536000, immutable' },
+      customMetadata: { jobId, assetType: filename.split('.').pop() || '' },
+    }));
+  }
+  return response;
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -116,6 +184,32 @@ export default {
         if (filename) data.cdn_url = `${url.origin}/api/avatar/models/${filename}`;
         console.log('[Gateway] Reconstruct Complete', data.job_id, filename || 'upstream-only');
         return json(data, 200, origin, env);
+      }
+
+      if (url.pathname === '/api/avatar/stylized-head/jobs' && request.method === 'POST') {
+        const contentLength = Number(request.headers.get('Content-Length') || 0);
+        if (contentLength > MAX_REQUEST_BYTES) return json({ error: 'request_too_large' }, 413, origin, env);
+        const body = await request.text();
+        if (new TextEncoder().encode(body).byteLength > MAX_REQUEST_BYTES) return json({ error: 'request_too_large' }, 413, origin, env);
+        const upstream = await fetchAigc(env, '/stylized-head/jobs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body,
+        });
+        const data = await upstream.json();
+        return json(data, upstream.status, origin, env);
+      }
+
+      const headJobMatch = url.pathname.match(/^\/api\/avatar\/stylized-head\/jobs\/(head-[0-9]{10}-[a-f0-9]{12})$/);
+      if (headJobMatch && request.method === 'GET') {
+        const upstream = await fetchAigc(env, `/stylized-head/jobs/${headJobMatch[1]}`);
+        const data = await upstream.json();
+        return json(rewriteHeadJobResult(data, url.origin), upstream.status, origin, env);
+      }
+
+      const headAssetMatch = url.pathname.match(/^\/api\/avatar\/head-assets\/(head-[0-9]{10}-[a-f0-9]{12})\/([^/]+)$/);
+      if (headAssetMatch && (request.method === 'GET' || request.method === 'HEAD')) {
+        return serveHeadAsset(env, headAssetMatch[1], headAssetMatch[2], origin, request, ctx);
       }
 
       if (url.pathname.startsWith('/api/avatar/models/') && (request.method === 'GET' || request.method === 'HEAD')) {
