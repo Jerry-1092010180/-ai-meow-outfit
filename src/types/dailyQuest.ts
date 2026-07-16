@@ -31,7 +31,7 @@ export interface DailyStyleQuest {
   weather: string;
   storeName: string;
   deadline: string;
-  timeLimitSeconds: number;
+  estimatedCompletionSeconds: number;
   reward: {
     inspiration: number;
     couponLabel: string;

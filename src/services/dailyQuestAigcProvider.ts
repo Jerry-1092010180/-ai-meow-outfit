@@ -76,7 +76,7 @@ const DAILY_EPISODES = [
     title: '下班即刻派对局',
     scene: '20:00 · 城市露台生日派对',
     story: '没有回家换装的时间。AI 要把你的通勤选择改写成一套能直接进入派对镜头的造型。',
-    prompts: ['从办公室出发，先选可转场的外层', '派对灯亮起，决定今晚的主视觉', '合照倒计时，选最后一个高光细节'],
+    prompts: ['从办公室出发，先选可转场的外层', '派对灯亮起，决定今晚的主视觉', '合照前，选最后一个高光细节'],
     collectible: '「即刻派对」数字衣橱卡',
   },
   {
@@ -224,7 +224,7 @@ export class DemoPersonalizedQuestProvider implements DailyQuestAigcProvider {
       weather: `${context.city} ${context.temperature}°C · ${context.weather}`,
       storeName: context.preferredStore,
       deadline: '今晚 22:00 前',
-      timeLimitSeconds: 90,
+      estimatedCompletionSeconds: 60,
       reward: {
         inspiration: 120,
         couponLabel: '到店试穿 ¥80 券',

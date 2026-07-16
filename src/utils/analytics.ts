@@ -23,6 +23,7 @@ type EventName =
   | 'daily_quest_complete'
   | 'daily_quest_share'
   | 'daily_quest_friend_join'
+  | 'daily_quest_publication_toggle'
   | 'daily_quest_store_unlock';
 
 interface EventParams {

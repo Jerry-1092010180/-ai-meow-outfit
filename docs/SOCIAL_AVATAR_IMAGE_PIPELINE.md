@@ -65,6 +65,22 @@ The contracts are `SocialSceneInvite`, `SocialSceneSession`, and
 `SocialScenePlatformProvider` in `src/types/socialAvatar.ts`. The browser Demo
 provider persists sessions locally; production uses the Gateway provider.
 
+## Public Look Plaza
+
+Publishing is opt-in. A generated avatar remains private unless the user turns
+on the public switch.
+
+The public feed may expose:
+
+- The generated stylized poster.
+- The display nickname.
+- Selected product and SKU references.
+- Public scene, pose, and interaction metadata.
+
+It must not expose the original identity photos, biometric embeddings, private
+drafts, or invite-only scene members. Removing a post from the plaza must not
+delete the user's reusable private avatar asset.
+
 ## Required Production Endpoints
 
 ```text

@@ -14,6 +14,7 @@ import {
   Footprints,
   Gift,
   Glasses,
+  Heart,
   ImageIcon,
   Info,
   LayoutGrid,
@@ -256,6 +257,109 @@ function IdentityPicker({
   );
 }
 
+function PublicLookGallery({ quest }: { quest: DailyStyleQuest }) {
+  const previewItems = quest.rounds.flatMap((round) => round.candidates).slice(0, 9);
+  const publicLooks = [
+    {
+      user: 'Miya',
+      title: '雨夜画廊漫游',
+      tag: '法式复古',
+      likes: 328,
+      background: STUDIO_BACKGROUNDS.neon.style,
+      filter: 'hue-rotate(12deg) saturate(1.05)',
+      itemOffset: 0,
+    },
+    {
+      user: 'Leo',
+      title: '武林夜游搭子装',
+      tag: '城市机能',
+      likes: 216,
+      background: STUDIO_BACKGROUNDS.rooftop.style,
+      filter: 'hue-rotate(185deg) saturate(.82) brightness(1.03)',
+      itemOffset: 3,
+    },
+    {
+      user: 'Yuki',
+      title: '周末新品开箱',
+      tag: '轻甜漫画',
+      likes: 451,
+      background: STUDIO_BACKGROUNDS.mint.style,
+      filter: 'hue-rotate(295deg) saturate(.88)',
+      itemOffset: 6,
+    },
+  ];
+
+  return (
+    <section className="mt-6 -mx-4 border-y border-black bg-[#10131d] py-5 text-white">
+      <div className="flex items-end justify-between px-4">
+        <div>
+          <p className="text-[10px] font-black tracking-[0.16em] text-[#dfff3f]">YINTAI LOOK PLAZA</p>
+          <h2 className="mt-1 text-xl font-black">银泰穿搭广场</h2>
+          <p className="mt-1 text-[10px] text-white/55">看看其他用户主动公开的动漫穿搭海报</p>
+        </div>
+        <Users size={25} className="text-[#ff5b88]" />
+      </div>
+
+      <div className="mt-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2 no-scrollbar">
+        {publicLooks.map((entry) => {
+          const outfitItems = previewItems.slice(entry.itemOffset, entry.itemOffset + 3);
+          return (
+            <article
+              key={entry.user}
+              className="min-w-[72%] snap-center overflow-hidden border border-white/40 bg-white text-black"
+            >
+              <div className="relative aspect-[4/5] overflow-hidden" style={{ background: entry.background }}>
+                <div
+                  className="absolute inset-0 opacity-20"
+                  style={{
+                    backgroundImage: 'radial-gradient(circle, rgba(255,255,255,.9) 1px, transparent 1px)',
+                    backgroundSize: '9px 9px',
+                  }}
+                />
+                <span className="absolute left-2 top-2 z-20 border border-black bg-white px-2 py-1 text-[9px] font-black">
+                  用户公开作品
+                </span>
+                <img
+                  src={AVATAR_PREVIEW_URL}
+                  alt={`${entry.user} 公开的穿搭海报效果示意`}
+                  className="absolute inset-x-0 bottom-0 mx-auto h-[92%] w-auto max-w-none object-contain"
+                  style={{ filter: entry.filter }}
+                />
+                <div className="absolute bottom-2 left-2 right-2 z-20 grid grid-cols-3 gap-1 bg-black/70 p-1.5 backdrop-blur">
+                  {outfitItems.map((item) => (
+                    <div key={item.id} className="aspect-square overflow-hidden border border-white/50">
+                      <ProductImage item={item} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="p-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-black text-[#2455ff]">@{entry.user}</p>
+                    <p className="mt-1 truncate text-sm font-black">{entry.title}</p>
+                    <p className="mt-1 text-[10px] text-gray-500">#{entry.tag} · 同款商品可回到银泰详情</p>
+                  </div>
+                  <span className="inline-flex shrink-0 items-center gap-1 text-[10px] font-black">
+                    <Heart size={13} fill="#ff5b88" className="text-[#ff5b88]" /> {entry.likes}
+                  </span>
+                </div>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+
+      <div className="mx-4 mt-3 flex items-center justify-between border-t border-white/25 pt-3">
+        <p className="text-[9px] leading-4 text-white/45">仅展示用户主动选择公开的作品，身份照片默认不公开。</p>
+        <span className="inline-flex items-center gap-1 text-[10px] font-black text-[#dfff3f]">
+          发现更多 <ChevronRight size={13} />
+        </span>
+      </div>
+    </section>
+  );
+}
+
 function QuestLobby({
   quest,
   streak,
@@ -302,7 +406,7 @@ function QuestLobby({
           </p>
           <div className="mt-5 inline-flex items-center gap-2 border border-white/30 bg-white/10 px-3 py-2 text-xs font-bold backdrop-blur">
             <Clock3 size={15} className="text-[#dfff3f]" />
-            {quest.timeLimitSeconds} 秒 · 5 个穿搭槽位
+            约 {quest.estimatedCompletionSeconds} 秒完成 · 不限时
           </div>
         </div>
       </section>
@@ -359,6 +463,8 @@ function QuestLobby({
             </div>
           </div>
         </div>
+
+        <PublicLookGallery quest={quest} />
 
         <button
           type="button"
@@ -466,7 +572,7 @@ function ProductDetailSheet({
               onClick={() => onChoose(item)}
               className="mt-5 flex h-14 w-full items-center justify-between border border-black bg-black px-4 text-base font-black text-white shadow-[4px_4px_0_#2455ff]"
             >
-              <span>加入{slotLabel ? `「${slotLabel}」` : '本次穿搭'}</span>
+              <span>{slotLabel ? `选中这件「${slotLabel}」并返回` : '选中这件商品'}</span>
               <Check size={21} />
             </button>
           )}
@@ -480,20 +586,25 @@ function QuestSelector({
   quest,
   roundIndex,
   selections,
-  timeLeft,
   onSelect,
   onBack,
 }: {
   quest: DailyStyleQuest;
   roundIndex: number;
   selections: DailyQuestSelection[];
-  timeLeft: number;
   onSelect: (item: StoreItem) => void;
   onBack: () => void;
 }) {
   const [detailItem, setDetailItem] = useState<StoreItem | null>(null);
   const round = quest.rounds[roundIndex];
+  const selectedForRound = selections.find((entry) => entry.roundId === round.id)?.item ?? null;
+  const [pendingItem, setPendingItem] = useState<StoreItem | null>(selectedForRound);
   const progress = ((roundIndex + 1) / quest.rounds.length) * 100;
+
+  useEffect(() => {
+    setPendingItem(selectedForRound);
+    setDetailItem(null);
+  }, [round.id, selectedForRound]);
 
   return (
     <>
@@ -501,7 +612,7 @@ function QuestSelector({
         key={`selecting-${round.id}`}
         initial={{ opacity: 0, x: 12 }}
         animate={{ opacity: 1, x: 0 }}
-        className="mx-auto min-h-[calc(100dvh-62px)] max-w-[520px] bg-[#f6f4ee] pb-10"
+        className="mx-auto min-h-[calc(100dvh-62px)] max-w-[520px] bg-[#f6f4ee] pb-28"
       >
         <div className="border-b border-black bg-black px-4 pb-4 pt-3 text-white">
           <div className="flex items-center justify-between">
@@ -509,9 +620,9 @@ function QuestSelector({
               <ChevronLeft size={20} />
             </button>
             <p className="text-xs font-black tracking-[0.16em]">完整穿搭 {roundIndex + 1} / {quest.rounds.length}</p>
-            <div className={`inline-flex h-9 min-w-16 items-center justify-center gap-1 border px-2 text-sm font-black ${timeLeft <= 20 ? 'border-[#ff386d] bg-[#ff386d]' : 'border-white/40'}`}>
-              <Clock3 size={15} /> {timeLeft}s
-            </div>
+            <span className="inline-flex h-9 items-center justify-center gap-1 border border-white/40 px-2 text-[10px] font-black">
+              <Clock3 size={14} /> 不限时
+            </span>
           </div>
           <div className="mt-4 h-1 bg-white/20">
             <motion.div className="h-full bg-[#dfff3f]" animate={{ width: `${progress}%` }} />
@@ -522,41 +633,66 @@ function QuestSelector({
           <p className="text-xs font-black text-[#2455ff]">{round.label}</p>
           <h1 className="mt-2 text-2xl font-black leading-tight">{round.prompt}</h1>
           <p className="mt-2 text-xs leading-5 text-gray-500">
-            先看商品实拍和详情，再确认加入。AI 会把完整商品组合到同一动漫角色中。
+            先凭直觉点选喜欢的实拍图，选中的卡片会下沉。需要了解价格、尺码和门店时，再点卡片下方的“查看详情”。
           </p>
         </section>
 
-        <section className="flex snap-x gap-3 overflow-x-auto px-4 pb-5 no-scrollbar">
-          {round.candidates.map((item, index) => (
-            <motion.button
-              key={item.id}
-              type="button"
-              onClick={() => setDetailItem(item)}
-              whileTap={{ scale: 0.98 }}
-              className="min-w-[76%] snap-center overflow-hidden border border-black bg-white text-left shadow-[4px_4px_0_#111] sm:min-w-[46%]"
-            >
-              <div className="relative aspect-[4/5] overflow-hidden border-b border-black bg-gray-200">
-                <ProductImage item={item} eager={index === 0} />
-                <span className="absolute left-2 top-2 grid h-7 w-7 place-items-center border border-black bg-[#dfff3f] text-[10px] font-black">
-                  0{index + 1}
-                </span>
-                <span className="absolute bottom-2 left-2 border border-black bg-white px-2 py-1 text-[9px] font-black">
-                  商品实拍示意
-                </span>
-              </div>
-              <div className="p-3">
-                <p className="text-[10px] font-black uppercase tracking-[0.1em] text-[#2455ff]">{item.brand}</p>
-                <h2 className="mt-1 min-h-10 text-base font-black leading-5">{item.name}</h2>
-                <div className="mt-3 flex items-center justify-between">
-                  <span className="text-lg font-black">¥{item.price}</span>
-                  <span className="inline-flex items-center gap-1 text-xs font-black">
-                    查看详情 <Info size={14} />
-                  </span>
+        <section className="flex snap-x gap-4 overflow-x-auto px-4 pb-6 pr-8 no-scrollbar">
+          {round.candidates.map((item, index) => {
+            const selected = pendingItem?.id === item.id;
+            return (
+              <motion.article
+                key={item.id}
+                animate={{ x: selected ? 4 : 0, y: selected ? 4 : 0 }}
+                transition={{ duration: 0.14 }}
+                className={`min-w-[82%] snap-center overflow-hidden border border-black bg-white sm:min-w-[48%] ${
+                  selected ? 'shadow-none' : 'shadow-[5px_5px_0_#111]'
+                }`}
+              >
+                <motion.button
+                  type="button"
+                  onClick={() => setPendingItem(item)}
+                  whileTap={{ scale: 0.99, y: 2 }}
+                  className="block w-full text-left"
+                  aria-pressed={selected}
+                >
+                  <div className="relative aspect-[3/4] overflow-hidden border-b border-black bg-gray-200">
+                    <ProductImage item={item} eager={index === 0} />
+                    <span className="absolute left-2 top-2 grid h-7 w-7 place-items-center border border-black bg-white text-[10px] font-black">
+                      0{index + 1}
+                    </span>
+                    {selected && (
+                      <span className="absolute right-2 top-2 inline-flex h-8 items-center gap-1 border border-black bg-[#dfff3f] px-2 text-[10px] font-black shadow-[2px_2px_0_#111]">
+                        <Check size={14} /> 已选中
+                      </span>
+                    )}
+                    <span className="absolute bottom-2 left-2 border border-black bg-white px-2 py-1 text-[9px] font-black">
+                      商品实拍示意
+                    </span>
+                  </div>
+                  <div className={selected ? 'bg-[#f5ffd0] p-3' : 'p-3'}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-black uppercase tracking-[0.1em] text-[#2455ff]">{item.brand}</p>
+                        <h2 className="mt-1 truncate text-base font-black">{item.name}</h2>
+                      </div>
+                      <span className="shrink-0 text-lg font-black">¥{item.price}</span>
+                    </div>
+                  </div>
+                </motion.button>
+                <div className={`border-t border-black p-2 ${selected ? 'bg-[#f5ffd0]' : 'bg-white'}`}>
+                  <button
+                    type="button"
+                    onClick={() => setDetailItem(item)}
+                    className="flex h-9 w-full items-center justify-between px-2 text-xs font-black"
+                  >
+                    <span>查看详情</span>
+                    <Info size={15} />
+                  </button>
                 </div>
-                <p className="mt-2 truncate text-[10px] text-gray-400">{item.storeName} · {item.floorLocation}</p>
-              </div>
-            </motion.button>
-          ))}
+              </motion.article>
+            );
+          })}
           <div className="w-1 shrink-0" />
         </section>
 
@@ -577,6 +713,24 @@ function QuestSelector({
             })}
           </div>
         </section>
+
+        <section className="sticky bottom-0 z-30 border-t border-black bg-[#f6f4ee]/95 px-4 pb-[calc(12px+env(safe-area-inset-bottom))] pt-3 backdrop-blur">
+          <div className="flex items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-[9px] font-black tracking-[0.12em] text-gray-400">当前选择</p>
+              <p className="mt-1 truncate text-sm font-black">{pendingItem?.name ?? '先点选一件喜欢的商品'}</p>
+            </div>
+            <button
+              type="button"
+              disabled={!pendingItem}
+              onClick={() => pendingItem && onSelect(pendingItem)}
+              className="flex h-12 min-w-32 items-center justify-between gap-3 border border-black bg-black px-3 text-sm font-black text-white shadow-[3px_3px_0_#ff386d] disabled:bg-gray-300 disabled:text-gray-500 disabled:shadow-none"
+            >
+              <span>{roundIndex === quest.rounds.length - 1 ? '确认并生成' : '确认这件'}</span>
+              <ArrowRight size={18} />
+            </button>
+          </div>
+        </section>
       </motion.main>
 
       <AnimatePresence>
@@ -587,7 +741,7 @@ function QuestSelector({
             onClose={() => setDetailItem(null)}
             onChoose={(item) => {
               setDetailItem(null);
-              onSelect(item);
+              setPendingItem(item);
             }}
           />
         )}
@@ -1193,6 +1347,7 @@ function QuestResult({
   const [interactionId, setInteractionId] = useState<SocialSceneInteractionId>('side-by-side');
   const [detailItem, setDetailItem] = useState<StoreItem | null>(null);
   const [saved, setSaved] = useState(false);
+  const [publishedToPlaza, setPublishedToPlaza] = useState(false);
   const memberCount = 1 + joinedFriendCount;
   const openSocialStudio = () => {
     setTab('social');
@@ -1376,6 +1531,48 @@ function QuestResult({
               <ImageIcon size={16} /> {saved ? '已存数字衣橱' : '保存效果图'}
             </button>
           </div>
+
+          <div className="mt-4 flex items-center gap-3 border border-black bg-white p-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-black">发布到银泰穿搭广场</p>
+              <p className="mt-1 text-[10px] leading-4 text-gray-500">
+                默认仅自己可见。开启后公开动漫海报、商品清单和昵称，不公开原始身份照片。
+              </p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={publishedToPlaza}
+              onClick={() => {
+                setPublishedToPlaza((published) => {
+                  const next = !published;
+                  track('daily_quest_publication_toggle', {
+                    questId: quest.id,
+                    lookId: look.id,
+                    published: next,
+                  });
+                  return next;
+                });
+              }}
+              className={`relative h-8 w-14 shrink-0 rounded-full border border-black transition-colors ${
+                publishedToPlaza ? 'bg-[#dfff3f]' : 'bg-gray-200'
+              }`}
+              aria-label="切换是否公开到银泰穿搭广场"
+            >
+              <span
+                className={`absolute top-1 grid h-5 w-5 place-items-center rounded-full border border-black bg-white transition-transform ${
+                  publishedToPlaza ? 'translate-x-7' : 'translate-x-1'
+                }`}
+              >
+                {publishedToPlaza && <Check size={12} />}
+              </span>
+            </button>
+          </div>
+          {publishedToPlaza && (
+            <div className="border-x border-b border-black bg-[#dfff3f] px-3 py-2 text-[10px] font-black">
+              已公开到穿搭广场，其他用户可以查看海报并进入同款商品详情。
+            </div>
+          )}
 
           {shared && (
             <div className="mt-4 border border-black bg-[#ffebf1] p-3">
@@ -1764,7 +1961,6 @@ export default function DailyQuestPage() {
   const [stage, setStage] = useState<DailyQuestStage>('lobby');
   const [roundIndex, setRoundIndex] = useState(0);
   const [selections, setSelections] = useState<DailyQuestSelection[]>([]);
-  const [timeLeft, setTimeLeft] = useState(90);
   const [look, setLook] = useState<GeneratedQuestLook | null>(null);
   const [generationStep, setGenerationStep] = useState(0);
   const [identityImage, setIdentityImage] = useState<string | null>(null);
@@ -1788,7 +1984,6 @@ export default function DailyQuestPage() {
     dailyQuestAigcProvider.createDailyQuest(QUEST_CONTEXT).then((dailyQuest) => {
       if (!active) return;
       setQuest(dailyQuest);
-      setTimeLeft(dailyQuest.timeLimitSeconds);
       track('daily_quest_view', { questId: dailyQuest.id, joinMode: isJoinMode });
     }).catch(() => active && setError('今日副本加载失败，请稍后重试'));
     return () => {
@@ -1843,31 +2038,11 @@ export default function DailyQuestPage() {
     }
   }, [completeQuest, identityImage, quest]);
 
-  const completeMissingSelections = useCallback(() => {
-    if (!quest || stage !== 'selecting' || generationRunning.current) return;
-    const completed = quest.rounds.map((round) => (
-      selections.find((entry) => entry.roundId === round.id) ?? { roundId: round.id, item: round.candidates[0] }
-    ));
-    setSelections(completed);
-    void runGeneration(completed);
-  }, [quest, runGeneration, selections, stage]);
-
-  useEffect(() => {
-    if (stage !== 'selecting') return;
-    if (timeLeft <= 0) {
-      completeMissingSelections();
-      return;
-    }
-    const timer = window.setTimeout(() => setTimeLeft((value) => Math.max(0, value - 1)), 1000);
-    return () => window.clearTimeout(timer);
-  }, [completeMissingSelections, stage, timeLeft]);
-
   const startQuest = () => {
     if (!quest) return;
     setSelections([]);
     setLook(null);
     setRoundIndex(0);
-    setTimeLeft(quest.timeLimitSeconds);
     setShared(false);
     setJoinedFriendCount(0);
     setShowStore(false);
@@ -2037,7 +2212,6 @@ export default function DailyQuestPage() {
             quest={quest}
             roundIndex={roundIndex}
             selections={selections}
-            timeLeft={timeLeft}
             onSelect={selectItem}
             onBack={() => setStage('lobby')}
           />
