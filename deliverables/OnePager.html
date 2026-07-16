@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI喵搭 — OPC 2026 One-Pager</title>
+<style>
+  @page { size: A4; margin: 0; }
+  @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #f5f5f5; display: flex; flex-direction: column; align-items: center; padding: 20px 0; }
+  .page { width: 210mm; min-height: 297mm; background: #fff; padding: 40px 36px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,.1); }
+  h1 { font-size: 28px; margin-bottom: 4px; }
+  h2 { font-size: 18px; color: #FF6B8A; margin: 20px 0 10px; border-bottom: 2px solid #FF6B8A; padding-bottom: 4px; }
+  h3 { font-size: 14px; color: #333; margin: 12px 0 6px; }
+  p { font-size: 11px; line-height: 1.7; color: #444; margin-bottom: 6px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; margin-right: 4px; background: #FF6B8A20; color: #FF6B8A; }
+  .tag-blue { background: #4A90D920; color: #4A90D9; }
+  .tag-green { background: #4CAF5020; color: #4CAF50; }
+  .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+  .header-right { text-align: right; font-size: 11px; color: #888; line-height: 1.6; }
+  .stat { text-align: center; padding: 10px; background: #f8f8f8; border-radius: 8px; }
+  .stat-num { font-size: 24px; font-weight: 900; color: #FF6B8A; }
+  .stat-label { font-size: 10px; color: #888; }
+  table { width: 100%; border-collapse: collapse; font-size: 10px; margin: 8px 0; }
+  th { text-align: left; padding: 6px 8px; background: #f8f8f8; font-weight: 700; }
+  td { padding: 6px 8px; border-bottom: 1px solid #eee; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 10px; font-weight: 700; }
+  .badge-pink { background: #FF6B8A; color: #fff; }
+  .footer { margin-top: 24px; padding-top: 12px; border-top: 1px solid #ddd; text-align: center; font-size: 10px; color: #aaa; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="header">
+  <div>
+    <h1>AI喵搭</h1>
+    <p style="font-size:14px;color:#666;margin-top:2px">银泰百货喵街APP · AI原生互动玩法</p>
+  </div>
+  <div class="header-right">
+    <div><span class="badge badge-pink">创想家</span></div>
+    <div style="margin-top:4px">OPC 2026 · Bounty 03</div>
+    <div>命题方：银泰商业</div>
+  </div>
+</div>
+
+<p style="font-size:13px;font-weight:700;color:#333;background:#f0f0f0;padding:10px;border-radius:8px;text-align:center">
+  每日变装副本 + AI双方案生成 + 好友共创 + 即看即买
+</p>
+
+<div class="grid-2" style="margin-top:16px">
+  <div>
+    <h2>🎯 目标用户与问题</h2>
+    <p><strong>用户</strong>：18-40岁喵街中低频会员，月均打开不足5次。</p>
+    <p><strong>痛点</strong>：没有每日打开理由；商城内容同质化；分享缺少关系价值；线上浏览到店消费割裂。</p>
+    <p><strong>机会</strong>：把"今天穿什么"变成每天更新、可让好友参与、能兑换真实权益的轻游戏。</p>
+  </div>
+  <div>
+    <h2>💡 解决方案</h2>
+    <p><strong>AI喵搭</strong> = 每日变装副本 + AI双方案生成 + 好友投票共创 + 门店权益闭环。</p>
+    <p>每天一个角色副本 → 5类商品不限时挑选 → AI生成"保留版A/反转版B" → 好友投票选封面 → 解锁到店优惠券。</p>
+    <p>AI承担核心决策引擎：决定每日任务、生成差异化方案、输出效果图、驱动分享传播。</p>
+  </div>
+</div>
+
+<h2>🤖 AIGC 实质应用</h2>
+<div class="grid-3">
+  <div>
+    <div class="stat">
+      <div class="stat-num">A/B</div>
+      <div class="stat-label">双方案差异生成</div>
+    </div>
+    <p style="font-size:10px;margin-top:4px">LOOK A保留用户三件选择，LOOK B替换两件——AI在"保留自我表达"和"提供情境建议"之间做决策。</p>
+  </div>
+  <div>
+    <div class="stat">
+      <div class="stat-num">5维</div>
+      <div class="stat-label">场景/风格/天气/库存/好友</div>
+    </div>
+    <p style="font-size:10px;margin-top:4px">AI输入五维特征，输出评分、解释、效果图、标题、文案和商品映射。移除AI，核心冲突"我vsAI"不再成立。</p>
+  </div>
+  <div>
+    <div class="stat">
+      <div class="stat-num">4人</div>
+      <div class="stat-label">好友共创同框</div>
+    </div>
+    <p style="font-size:10px;margin-top:4px">邀请链接支持最多4人房间，各自上传照片生成独立卡通角色，4种互动模板（并肩/击掌/走秀/合照）。</p>
+  </div>
+</div>
+
+<h2>📱 产品体验</h2>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:10px">
+  <div style="background:#f8f8f8;padding:10px;border-radius:8px">
+    <strong style="color:#FF6B8A">① 每日副本</strong>
+    <p>每天唯一的角色场景和商品池，七日连续剧。首页展示下一集标题和商品更新时间，建立回访期待。</p>
+  </div>
+  <div style="background:#f8f8f8;padding:10px;border-radius:8px">
+    <strong style="color:#4A90D9">② 不限时挑选</strong>
+    <p>内搭→外套→下装/连衣裙→鞋履→配饰，5类商品全覆盖。点击选中下沉，确认后进入下一类。</p>
+  </div>
+  <div style="background:#f8f8f8;padding:10px;border-radius:8px">
+    <strong style="color:#4CAF50">③ AI角色生成</strong>
+    <p>面部特征提取+风格化卡通渲染。可编辑发型、表情、动作、背景。可公开到穿搭广场。</p>
+  </div>
+  <div style="background:#f8f8f8;padding:10px;border-radius:8px">
+    <strong style="color:#FF9800">④ 好友共创</strong>
+    <p>邀请链接分享→好友上传照片→各自生成角色→2-4人同框互动海报→分享朋友圈→解锁门店券。</p>
+  </div>
+</div>
+
+<h2>📊 当前进展</h2>
+<table>
+  <tr><th>模块</th><th>状态</th><th>说明</th></tr>
+  <tr><td>每日副本+5类商品挑选</td><td>✅ 完成</td><td>不限时，选中确认后进入下一类</td></tr>
+  <tr><td>AI双方案（A保留/B反转）</td><td>✅ 完成</td><td>确定性逻辑模拟，生产版换真实AI</td></tr>
+  <tr><td>好友投票+奖励</td><td>✅ 完成</td><td>分享链接携带商品ID，好友二选一</td></tr>
+  <tr><td>风格化卡通角色</td><td>✅ 完成</td><td>前端Canvas渲染+面部特征提取</td></tr>
+  <tr><td>穿搭广场</td><td>✅ 完成</td><td>用户公开发布开关，默认关闭</td></tr>
+  <tr><td>多人房间共创</td><td>✅ 完成</td><td>最多4人，4种互动模板</td></tr>
+  <tr><td>3D虚拟试穿</td><td>✅ 兼容保留</td><td>前置摄像头采集+AIGC重建</td></tr>
+  <tr><td>真实AIGC图像生成</td><td>⏳ Gateway待部署</td><td>4090D GPU可用，管道待接通</td></tr>
+</table>
+
+<h2>🏗️ 技术架构</h2>
+<p>
+  <span class="tag">React 18</span><span class="tag">TypeScript</span><span class="tag">Vite 5</span>
+  <span class="tag tag-blue">Three.js</span><span class="tag tag-blue">Canvas API</span>
+  <span class="tag tag-green">MediaPipe WASM</span><span class="tag tag-green">Open-Meteo</span>
+  <span class="tag">Cloudflare Pages</span><span class="tag">Tailscale</span><span class="tag">4090D GPU</span>
+</p>
+<p>前端：React + Three.js + Canvas风格化渲染。后端：FastAPI + OpenCV + trimesh（4090D）。部署：Cloudflare Pages（公网）+ Tailscale（内网AIGC）。入口：<code>/#/game</code>。</p>
+
+<h2>📈 商业价值</h2>
+<div class="grid-3">
+  <div class="stat">
+    <div class="stat-num">每日副本</div>
+    <div class="stat-label">7日连续剧情+角色卡+进度</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">好友共创</div>
+    <div class="stat-label">最多4人同框，4种互动模板</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">即看即买</div>
+    <div class="stat-label">品牌/价格/门店/到店券全链路</div>
+  </div>
+</div>
+<p style="font-size:10px;color:#666;margin-top:8px">穿戴商品均为银泰真实在售品牌（Burberry/Sandro/Theory/ZARA/UNIQLO等），结果页展示同款商品信息和门店楼层，好友投票解锁到店试穿券。</p>
+
+<h2>📦 交付物</h2>
+<table>
+  <tr><th>交付物</th><th>位置</th></tr>
+  <tr><td>可运行H5原型</td><td><code>https://c04a54c9.ai-meow-outfit.pages.dev/#/game</code></td></tr>
+  <tr><td>源代码</td><td><code>https://github.com/Jerry-1092010180/-ai-meow-outfit</code>（分支：next-gen-avatar）</td></tr>
+  <tr><td>商业玩法说明 v2</td><td><code>deliverables/比赛玩法说明-v2.md</code></td></tr>
+  <tr><td>AIGC应用说明 v2</td><td><code>deliverables/AIGC应用说明-v2.md</code></td></tr>
+  <tr><td>演示视频</td><td><code>deliverables/video/喵街AI今日角色-比赛Demo-v1.mp4</code></td></tr>
+  <tr><td>UI截图（6张）</td><td><code>deliverables/ui/</code></td></tr>
+  <tr><td>路演Deck</td><td><code>deliverables/路演Deck.html</code></td></tr>
+</table>
+
+<div class="footer">
+  参赛者：Jerry · 单人参赛 · AI辅助开发 · OPC 2026 Bounty 03 · 银泰商业 · 2026年7月
+</div>
+</div>
+</body>
+</html>
