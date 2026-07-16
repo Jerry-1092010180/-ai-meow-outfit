@@ -7,5 +7,6 @@ dist-ssr/
 *.log
 __pycache__/
 *.py[cod]
+deliverables/video/build/
 .vercel
 .env
