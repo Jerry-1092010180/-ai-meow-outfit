@@ -18,10 +18,12 @@ type EventName =
   | 'streak_milestone'
   | 'daily_quest_view'
   | 'daily_quest_start'
+  | 'daily_quest_identity_upload'
   | 'daily_quest_select'
   | 'daily_quest_complete'
   | 'daily_quest_share'
   | 'daily_quest_assist'
+  | 'daily_quest_friend_verdict'
   | 'daily_quest_store_unlock';
 
 interface EventParams {

@@ -1,11 +1,14 @@
 import type { StoreItem } from './store';
 
 export type DailyQuestStage = 'lobby' | 'selecting' | 'generating' | 'result';
+export type DailyQuestOutfitSlot = 'inner' | 'outerwear' | 'base' | 'shoes' | 'accessory';
 
 export interface DailyQuestRound {
   id: string;
+  slot: DailyQuestOutfitSlot;
   label: string;
   prompt: string;
+  optional?: boolean;
   candidates: StoreItem[];
 }
 

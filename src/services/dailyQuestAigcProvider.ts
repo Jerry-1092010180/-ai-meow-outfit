@@ -10,10 +10,43 @@ import type {
   GeneratedQuestLook,
 } from '@/types/dailyQuest';
 
-const ROUND_ITEM_IDS = [
-  ['item-004', 'item-011', 'item-022'],
-  ['item-003', 'item-012', 'item-029'],
-  ['item-005', 'item-010', 'item-018'],
+const ROUND_CONFIG = [
+  {
+    id: 'inner',
+    slot: 'inner',
+    label: '内搭',
+    prompt: '先选贴近自己的第一层，决定整套造型的气质底色',
+    ids: ['item-001', 'item-013', 'item-041'],
+  },
+  {
+    id: 'outerwear',
+    slot: 'outerwear',
+    label: '外套',
+    prompt: '为室内外转场加一层轮廓，也可以把它当成镜头里的主角',
+    ids: ['item-004', 'item-011', 'item-022'],
+  },
+  {
+    id: 'base',
+    slot: 'base',
+    label: '下装 / 连衣裙',
+    prompt: '选择下装或连衣裙，完成角色的主要比例与动势',
+    ids: ['item-002', 'item-003', 'item-029'],
+  },
+  {
+    id: 'shoes',
+    slot: 'shoes',
+    label: '鞋履',
+    prompt: '今晚要走路也要出片，选一双能接住整套造型的鞋',
+    ids: ['item-005', 'item-009', 'item-018'],
+  },
+  {
+    id: 'accessory',
+    slot: 'accessory',
+    label: '配饰',
+    prompt: '最后加一个好友能立刻记住的细节',
+    optional: true,
+    ids: ['item-006', 'item-010', 'item-031'],
+  },
 ] as const;
 
 const DAILY_EPISODES = [
@@ -173,12 +206,14 @@ export class DemoPersonalizedQuestProvider implements DailyQuestAigcProvider {
     const episode = DAILY_EPISODES[episodeIndex];
     const nextEpisode = DAILY_EPISODES[(episodeIndex + 1) % DAILY_EPISODES.length];
     const byId = indexItems(items);
-    const rounds = ROUND_ITEM_IDS.map((ids, index) => ({
-      id: `round-${index + 1}`,
-      label: ['定下轮廓', '决定主角', '完成最后一笔'][index],
-      prompt: episode.prompts[index],
+    const rounds = ROUND_CONFIG.map((round, index) => ({
+      id: round.id,
+      slot: round.slot,
+      label: round.label,
+      prompt: round.prompt,
+      optional: 'optional' in round ? round.optional : undefined,
       candidates: rotateItems(
-        ids.map((id) => byId.get(id)).filter((item): item is StoreItem => Boolean(item)),
+        round.ids.map((id) => byId.get(id)).filter((item): item is StoreItem => Boolean(item)),
         episodeIndex + index
       ),
     }));
@@ -194,14 +229,14 @@ export class DemoPersonalizedQuestProvider implements DailyQuestAigcProvider {
       weather: `${context.city} ${context.temperature}°C · ${context.weather}`,
       storeName: context.preferredStore,
       deadline: '今晚 22:00 前',
-      timeLimitSeconds: 60,
+      timeLimitSeconds: 90,
       reward: {
         inspiration: 120,
         couponLabel: '到店试穿 ¥80 券',
         collectible: episode.collectible,
       },
       nextTeaser: `${nextEpisode.title} · 明早 08:00 更新商品池`,
-      aigcInputs: [context.weather, context.styleTags.join('×'), '门店实时库存', '今日社交场景'],
+      aigcInputs: [context.weather, context.styleTags.join('×'), '用户照片身份', '五层完整穿搭', '门店在售商品'],
       rounds,
       providerStage: 'demo-personalized-provider',
     };
@@ -229,7 +264,7 @@ export class DemoPersonalizedQuestProvider implements DailyQuestAigcProvider {
       id: 'A',
       label: '你的选择 · AI 精修版',
       title: '保留你的直觉',
-      strategy: '完整保留三轮选择，AI 只优化组合叙事、场景适配与封面表达。',
+      strategy: '完整保留五个穿搭槽位，AI 只负责身份漫画化、商品合成与海报表达。',
       score,
       reason: `保留 ${names.join('、')}，因为这组选择最能体现你的个人风格。`,
       items: selections.map((selection) => selection.item),
@@ -239,9 +274,9 @@ export class DemoPersonalizedQuestProvider implements DailyQuestAigcProvider {
       id: 'B',
       label: 'AI 反转 · 情境改写版',
       title: '让场景替你改两件',
-      strategy: '保留你最有辨识度的 1 件，AI 根据天气、场景和库存替换另外 2 件。',
+      strategy: '保留你的身份锚点和 3 件核心选择，AI 根据天气、场景与库存替换 2 件。',
       score: candidateBScore,
-      reason: `保留 ${strongestSelection?.item.name ?? names[0]} 作为身份锚点，再用两件在售商品强化今日场景。`,
+      reason: `保留 ${strongestSelection?.item.name ?? names[0]} 作为风格锚点，再用两件在售商品强化今日场景。`,
       items: alternativeItems,
     };
     return {
@@ -249,7 +284,7 @@ export class DemoPersonalizedQuestProvider implements DailyQuestAigcProvider {
       title: score >= 90 ? '雨幕里的开场人物' : '展厅外的松弛主角',
       score,
       verdict: score >= 90 ? 'AI 判定：今晚最容易被记住的不是盛装，而是你对光泽与轮廓的克制。' : 'AI 判定：气质成立，再加一个有光泽的细节会更抓镜头。',
-      storyCaption: `${names[0]}稳住雨夜轮廓，${names[1]}接住展厅灯光，${names[2]}把视线留在合影里。`,
+      storyCaption: `${names.slice(0, 2).join('与')}定下角色气质，${names.slice(2).join('、')}补完整套镜头语言。`,
       tags: ['雨夜电影感', '不费力精致', '合影高识别'],
       dimensions: [
         { label: '场景适配', score: Math.min(98, 84 + matchPoints * 2) },
@@ -260,7 +295,7 @@ export class DemoPersonalizedQuestProvider implements DailyQuestAigcProvider {
       selections,
       candidateLooks: [candidateA, candidateB],
       alternativeItems,
-      generationTrace: ['融合天气与今日场景', '读取风格 DNA', '核对银泰在售库存', '生成 A/B 策略与效果示意海报'],
+      generationTrace: ['提取用户照片身份特征', '将身份统一为漫画动画风格', '把五层银泰商品合成到同一角色', '生成动作、背景与好友共创海报'],
       providerStage: quest.providerStage,
     };
   }
