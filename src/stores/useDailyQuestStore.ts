@@ -7,11 +7,11 @@ interface DailyQuestState {
   inspiration: number;
   completedDate: string | null;
   shareCount: number;
-  assistCount: number;
+  collaborationCount: number;
   lastLookScore: number | null;
   completeQuest: (score: number, reward: number) => void;
   recordShare: () => void;
-  recordAssist: () => void;
+  recordCollaboration: () => void;
   resetDemo: () => void;
 }
 
@@ -22,7 +22,7 @@ export const useDailyQuestStore = create<DailyQuestState>()(
       inspiration: 380,
       completedDate: null,
       shareCount: 0,
-      assistCount: 0,
+      collaborationCount: 0,
       lastLookScore: null,
       completeQuest: (score, reward) =>
         set((state) => {
@@ -35,8 +35,8 @@ export const useDailyQuestStore = create<DailyQuestState>()(
           };
         }),
       recordShare: () => set((state) => ({ shareCount: state.shareCount + 1 })),
-      recordAssist: () => set((state) => ({ assistCount: state.assistCount + 1 })),
-      resetDemo: () => set({ completedDate: null, shareCount: 0, assistCount: 0, lastLookScore: null }),
+      recordCollaboration: () => set((state) => ({ collaborationCount: state.collaborationCount + 1 })),
+      resetDemo: () => set({ completedDate: null, shareCount: 0, collaborationCount: 0, lastLookScore: null }),
     }),
     { name: 'aimm-daily-quest-v1' }
   )

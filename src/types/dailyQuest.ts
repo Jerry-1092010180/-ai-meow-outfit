@@ -1,4 +1,11 @@
 import type { StoreItem } from './store';
+import type {
+  AvatarBackgroundId,
+  AvatarExpressionId,
+  AvatarHairStyleId,
+  AvatarPoseId,
+  StylizedAvatarImageAsset,
+} from './socialAvatar';
 
 export type DailyQuestStage = 'lobby' | 'selecting' | 'generating' | 'result';
 export type DailyQuestOutfitSlot = 'inner' | 'outerwear' | 'base' | 'shoes' | 'accessory';
@@ -46,18 +53,6 @@ export interface DailyQuestScoreDimension {
   score: number;
 }
 
-export type GeneratedQuestCandidateId = 'A' | 'B';
-
-export interface GeneratedQuestCandidate {
-  id: GeneratedQuestCandidateId;
-  label: string;
-  title: string;
-  strategy: string;
-  score: number;
-  reason: string;
-  items: StoreItem[];
-}
-
 export interface GeneratedQuestLook {
   id: string;
   title: string;
@@ -67,10 +62,18 @@ export interface GeneratedQuestLook {
   tags: string[];
   dimensions: DailyQuestScoreDimension[];
   selections: DailyQuestSelection[];
-  candidateLooks: [GeneratedQuestCandidate, GeneratedQuestCandidate];
-  alternativeItems: StoreItem[];
+  items: StoreItem[];
+  avatar: StylizedAvatarImageAsset;
   generationTrace: string[];
   providerStage: 'demo-personalized-provider' | 'gateway-aigc-provider';
+}
+
+export interface DailyQuestGenerationOptions {
+  identityImageUrl: string | null;
+  poseId: AvatarPoseId;
+  expressionId: AvatarExpressionId;
+  hairStyleId: AvatarHairStyleId;
+  backgroundId: AvatarBackgroundId;
 }
 
 export interface DailyQuestContext {
@@ -85,6 +88,7 @@ export interface DailyQuestAigcProvider {
   createDailyQuest(context: DailyQuestContext): Promise<DailyStyleQuest>;
   generateLook(
     quest: DailyStyleQuest,
-    selections: DailyQuestSelection[]
+    selections: DailyQuestSelection[],
+    options: DailyQuestGenerationOptions
   ): Promise<GeneratedQuestLook>;
 }

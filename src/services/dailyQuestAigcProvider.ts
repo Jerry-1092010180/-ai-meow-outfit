@@ -1,12 +1,13 @@
 import { getMockItems } from '@/utils/mock';
 import { getToday } from '@/utils/date';
+import { socialAvatarImageProvider } from '@/services/socialAvatarImageProvider';
 import type { StoreItem } from '@/types/store';
 import type {
   DailyQuestAigcProvider,
   DailyQuestContext,
+  DailyQuestGenerationOptions,
   DailyQuestSelection,
   DailyStyleQuest,
-  GeneratedQuestCandidate,
   GeneratedQuestLook,
 } from '@/types/dailyQuest';
 
@@ -187,12 +188,6 @@ function rotateItems<T>(items: T[], offset: number) {
   return [...items.slice(normalized), ...items.slice(0, normalized)];
 }
 
-function scoreCandidate(items: StoreItem[], base: number) {
-  const matchPoints = items.reduce((sum, item) => sum + calculateMatch(item), 0);
-  const stockPoints = items.filter((item) => item.stockStatus === 'in_stock').length;
-  return Math.min(98, base + matchPoints * 3 + stockPoints);
-}
-
 export class DemoPersonalizedQuestProvider implements DailyQuestAigcProvider {
   async createDailyQuest(context: DailyQuestContext): Promise<DailyStyleQuest> {
     let items: StoreItem[] = [];
@@ -244,41 +239,61 @@ export class DemoPersonalizedQuestProvider implements DailyQuestAigcProvider {
 
   async generateLook(
     quest: DailyStyleQuest,
-    selections: DailyQuestSelection[]
+    selections: DailyQuestSelection[],
+    options: DailyQuestGenerationOptions
   ): Promise<GeneratedQuestLook> {
     await new Promise((resolve) => window.setTimeout(resolve, 2200));
     const matchPoints = selections.reduce((sum, selection) => sum + calculateMatch(selection.item), 0);
     const stockPoints = selections.filter((selection) => selection.item.stockStatus === 'in_stock').length;
     const score = Math.min(97, 78 + matchPoints * 3 + stockPoints);
-    const selectedIds = new Set(selections.map((selection) => selection.item.id));
-    const strongestSelection = [...selections].sort((a, b) => calculateMatch(b.item) - calculateMatch(a.item))[0];
-    const alternativeItems = quest.rounds.map((round) => {
-      const selected = selections.find((selection) => selection.roundId === round.id);
-      if (selected?.item.id === strongestSelection?.item.id) return selected.item;
-      return [...round.candidates]
-        .filter((item) => !selectedIds.has(item.id))
-        .sort((a, b) => calculateMatch(b) - calculateMatch(a))[0] ?? selected?.item ?? round.candidates[0];
-    }).filter((item): item is StoreItem => Boolean(item));
     const names = selections.map((selection) => selection.item.name);
-    const candidateA: GeneratedQuestCandidate = {
-      id: 'A',
-      label: '你的选择 · AI 精修版',
-      title: '保留你的直觉',
-      strategy: '完整保留五个穿搭槽位，AI 只负责身份漫画化、商品合成与海报表达。',
-      score,
-      reason: `保留 ${names.join('、')}，因为这组选择最能体现你的个人风格。`,
-      items: selections.map((selection) => selection.item),
-    };
-    const candidateBScore = Math.max(82, Math.min(98, scoreCandidate(alternativeItems, 79) + (score < 92 ? 2 : -1)));
-    const candidateB: GeneratedQuestCandidate = {
-      id: 'B',
-      label: 'AI 反转 · 情境改写版',
-      title: '让场景替你改两件',
-      strategy: '保留你的身份锚点和 3 件核心选择，AI 根据天气、场景与库存替换 2 件。',
-      score: candidateBScore,
-      reason: `保留 ${strongestSelection?.item.name ?? names[0]} 作为风格锚点，再用两件在售商品强化今日场景。`,
-      items: alternativeItems,
-    };
+    const layerOrder = new Map(quest.rounds.map((round, index) => [round.id, index]));
+    const avatar = await socialAvatarImageProvider.generateAvatar({
+      requestId: `avatar-request-${Date.now().toString(36)}`,
+      identity: {
+        primaryPhotoUrl: options.identityImageUrl,
+        additionalPhotoUrls: [],
+        preserveFeatures: ['face-shape', 'eyes', 'nose', 'mouth', 'eyebrows', 'hairline', 'skin-tone'],
+        beautification: {
+          skinSmoothing: 'light',
+          removeTemporaryBlemishes: true,
+          eyeEnhancement: 'subtle',
+          preserveRecognition: true,
+        },
+      },
+      garments: selections.map((selection) => {
+        const item = selection.item;
+        return {
+          slot: selection.roundId as 'inner' | 'outerwear' | 'base' | 'shoes' | 'accessory',
+          layerOrder: layerOrder.get(selection.roundId) ?? 0,
+          productId: item.id,
+          skuId: item.skuId,
+          name: item.name,
+          brand: item.brand,
+          category: item.category,
+          sourceImageUrl: item.imageUrl,
+          sourceImageRole: item.imageUrl.startsWith('/product-shots/')
+            ? 'demo-licensed-placeholder' as const
+            : 'yintai-pim-primary' as const,
+          colors: item.colors,
+          fittingInstruction: 'preserve-design-and-color' as const,
+        };
+      }),
+      controls: {
+        poseId: options.poseId,
+        expressionId: options.expressionId,
+        hairStyleId: options.hairStyleId,
+        backgroundId: options.backgroundId,
+      },
+      renderPolicy: {
+        style: 'premium-comic-animation',
+        preserveIdentity: true,
+        preserveGarmentDesign: true,
+        coherentLayering: true,
+        fullBody: true,
+        fixedPoseForbidden: true,
+      },
+    });
     return {
       id: `look-${Date.now().toString(36)}`,
       title: score >= 90 ? '雨幕里的开场人物' : '展厅外的松弛主角',
@@ -293,8 +308,8 @@ export class DemoPersonalizedQuestProvider implements DailyQuestAigcProvider {
         { label: '门店可得', score: 82 + stockPoints * 5 },
       ],
       selections,
-      candidateLooks: [candidateA, candidateB],
-      alternativeItems,
+      items: selections.map((selection) => selection.item),
+      avatar,
       generationTrace: ['提取用户照片身份特征', '将身份统一为漫画动画风格', '把五层银泰商品合成到同一角色', '生成动作、背景与好友共创海报'],
       providerStage: quest.providerStage,
     };
@@ -314,11 +329,15 @@ export class GatewayDailyQuestAigcProvider implements DailyQuestAigcProvider {
     return response.json() as Promise<DailyStyleQuest>;
   }
 
-  async generateLook(quest: DailyStyleQuest, selections: DailyQuestSelection[]): Promise<GeneratedQuestLook> {
+  async generateLook(
+    quest: DailyStyleQuest,
+    selections: DailyQuestSelection[],
+    options: DailyQuestGenerationOptions
+  ): Promise<GeneratedQuestLook> {
     const response = await fetch(`${this.endpoint}/daily-quest/${encodeURIComponent(quest.id)}/look`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ selections }),
+      body: JSON.stringify({ selections, options }),
     });
     if (!response.ok) throw new Error(`Daily look provider failed: ${response.status}`);
     return response.json() as Promise<GeneratedQuestLook>;

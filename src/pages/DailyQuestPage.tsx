@@ -16,6 +16,7 @@ import {
   Glasses,
   ImageIcon,
   Info,
+  LayoutGrid,
   MapPin,
   Move,
   Palette,
@@ -26,6 +27,7 @@ import {
   Sparkles,
   Store,
   Upload,
+  UserPlus,
   UserRound,
   Users,
   WandSparkles,
@@ -35,16 +37,23 @@ import {
 import BottomNav from '@/components/common/BottomNav';
 import { ROUTES } from '@/config/routes';
 import { dailyQuestAigcProvider } from '@/services/dailyQuestAigcProvider';
+import { socialAvatarImageProvider } from '@/services/socialAvatarImageProvider';
+import { socialScenePlatformProvider } from '@/services/socialScenePlatformProvider';
 import { useDailyQuestStore } from '@/stores/useDailyQuestStore';
 import type {
   DailyQuestOutfitSlot,
   DailyQuestSelection,
   DailyQuestStage,
   DailyStyleQuest,
-  GeneratedQuestCandidate,
-  GeneratedQuestCandidateId,
   GeneratedQuestLook,
 } from '@/types/dailyQuest';
+import type {
+  AvatarExpressionId,
+  AvatarHairStyleId,
+  AvatarPoseId,
+  SocialAvatarMember,
+  SocialSceneInteractionId,
+} from '@/types/socialAvatar';
 import type { StoreItem } from '@/types/store';
 import { track } from '@/utils/analytics';
 
@@ -97,9 +106,34 @@ const STUDIO_BACKGROUNDS = {
 } as const;
 
 type StudioBackgroundId = keyof typeof STUDIO_BACKGROUNDS;
-type StudioTab = 'appearance' | 'pose' | 'background';
-type PoseId = 'editorial' | 'confident' | 'street' | 'wave';
+type StudioTab = 'appearance' | 'pose' | 'background' | 'social';
+type PoseId = Extract<AvatarPoseId, 'editorial' | 'confident' | 'street' | 'wave'>;
 type AppearanceCategory = 'all' | DailyQuestOutfitSlot | 'hair';
+
+const HAIR_STYLES: { id: AvatarHairStyleId; label: string; color: string }[] = [
+  { id: 'high-ponytail', label: '高马尾', color: '#38241f' },
+  { id: 'soft-wave', label: '松弛波浪', color: '#5a3024' },
+  { id: 'short-bob', label: '利落短发', color: '#18191d' },
+  { id: 'long-straight', label: '柔顺长发', color: '#2c2020' },
+];
+
+const EXPRESSIONS: { id: AvatarExpressionId; label: string }[] = [
+  { id: 'natural', label: '自然' },
+  { id: 'smile', label: '微笑' },
+  { id: 'cool', label: '酷感' },
+  { id: 'surprised', label: '惊喜' },
+];
+
+const SOCIAL_INTERACTIONS: {
+  id: SocialSceneInteractionId;
+  label: string;
+  hint: string;
+}[] = [
+  { id: 'side-by-side', label: '并肩逛街', hint: '稳定双人/多人构图' },
+  { id: 'high-five', label: '碰拳击掌', hint: '好友互动动作' },
+  { id: 'shopping-walk', label: '一起走秀', hint: '完整穿搭展示' },
+  { id: 'group-selfie', label: '合照自拍', hint: '适合 3—4 人分享' },
+];
 
 const POSES: { id: PoseId; label: string; hint: string; transform: string }[] = [
   { id: 'editorial', label: '杂志站姿', hint: '默认', transform: 'translate3d(0,0,0) scale(1)' },
@@ -264,7 +298,7 @@ function QuestLobby({
             让 AI 画成你
           </h1>
           <p className="mt-4 max-w-[235px] text-xs leading-5 text-white/70">
-            选完整银泰穿搭，生成同一身份的动漫角色海报，再邀请好友一起决定今日封面。
+            选完整银泰穿搭，生成保留本人特征的动漫角色，再邀请好友带着自己的角色加入同框。
           </p>
           <div className="mt-5 inline-flex items-center gap-2 border border-white/30 bg-white/10 px-3 py-2 text-xs font-bold backdrop-blur">
             <Clock3 size={15} className="text-[#dfff3f]" />
@@ -318,9 +352,9 @@ function QuestLobby({
           <div className="flex items-start gap-3">
             <Users className="mt-0.5 shrink-0" size={22} />
             <div>
-              <p className="text-sm font-black">好友共创不是猜谜</p>
+              <p className="text-sm font-black">好友共创是角色同框</p>
               <p className="mt-1 text-[11px] leading-4 text-black/65">
-                A 是你亲手选的完整穿搭；B 是 AI 保留身份和 3 件核心单品后，按天气与场景替换 2 件。好友选择最终分享封面。
+                好友打开邀请后，也要上传自己的照片、独立挑一套完整穿搭并生成角色。双方角色资产再进入双人或多人互动海报。
               </p>
             </div>
           </div>
@@ -618,45 +652,32 @@ function GeneratingView({
   );
 }
 
-function CandidateToggle({
-  candidateId,
-  onChange,
-}: {
-  candidateId: GeneratedQuestCandidateId;
-  onChange: (id: GeneratedQuestCandidateId) => void;
-}) {
-  return (
-    <div className="grid grid-cols-2 border border-black bg-white">
-      {([
-        ['A', '我的完整搭配'],
-        ['B', 'AI 场景优化'],
-      ] as const).map(([id, label]) => (
-        <button
-          key={id}
-          type="button"
-          onClick={() => onChange(id)}
-          className={`min-h-11 border-r border-black px-2 text-xs font-black last:border-r-0 ${candidateId === id ? 'bg-black text-[#dfff3f]' : 'bg-white text-black'}`}
-        >
-          {id} · {label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 function AvatarCanvas({
-  candidate,
+  look,
   identityImage,
   pose,
   background,
+  hairStyle,
+  expression,
 }: {
-  candidate: GeneratedQuestCandidate;
+  look: GeneratedQuestLook;
   identityImage: string | null;
   pose: PoseId;
   background: StudioBackgroundId;
+  hairStyle: AvatarHairStyleId;
+  expression: AvatarExpressionId;
 }) {
   const poseConfig = POSES.find((entry) => entry.id === pose) ?? POSES[0];
   const backgroundConfig = STUDIO_BACKGROUNDS[background];
+  const hairLabel = HAIR_STYLES.find((entry) => entry.id === hairStyle)?.label ?? '高马尾';
+  const expressionLabel = EXPRESSIONS.find((entry) => entry.id === expression)?.label ?? '自然';
+  const avatarFilter = hairStyle === 'short-bob'
+    ? 'saturate(.88) contrast(1.04)'
+    : hairStyle === 'soft-wave'
+      ? 'sepia(.08) saturate(1.08)'
+      : hairStyle === 'long-straight'
+        ? 'saturate(.94) brightness(.98)'
+        : 'none';
 
   return (
     <div
@@ -675,7 +696,7 @@ function AvatarCanvas({
         AIGC 漫画角色效果预览
       </div>
       <div className="absolute right-3 top-3 z-20 border border-white/50 bg-black/65 px-2 py-1 text-[9px] font-black text-white backdrop-blur">
-        LOOK {candidate.id} · {candidate.score}
+        IDENTITY LOOK · {look.score}
       </div>
 
       {identityImage ? (
@@ -690,16 +711,18 @@ function AvatarCanvas({
       )}
 
       <img
-        src={AVATAR_PREVIEW_URL}
+        src={look.avatar.imageUrl}
         alt="完整动漫角色效果预览"
         className="absolute inset-x-0 bottom-0 z-10 mx-auto h-[96%] w-auto max-w-none object-contain transition-transform duration-500"
-        style={{ transform: poseConfig.transform, transformOrigin: '50% 86%' }}
+        style={{ transform: poseConfig.transform, transformOrigin: '50% 86%', filter: avatarFilter }}
       />
 
       <div className="absolute bottom-3 left-3 right-3 z-20 flex items-end justify-between gap-3">
         <div className="min-w-0 bg-black/78 px-2 py-1.5 text-white backdrop-blur">
-          <p className="truncate text-[10px] font-black">{candidate.title}</p>
-          <p className="mt-0.5 text-[8px] text-white/60">{poseConfig.label} · {backgroundConfig.label}</p>
+          <p className="truncate text-[10px] font-black">{look.title}</p>
+          <p className="mt-0.5 text-[8px] text-white/60">
+            {poseConfig.label} · {hairLabel} · {expressionLabel} · {backgroundConfig.label}
+          </p>
         </div>
         <span
           className="h-3 w-10 border border-black"
@@ -712,14 +735,18 @@ function AvatarCanvas({
 }
 
 function AppearancePanel({
-  candidate,
+  items,
   activeCategory,
+  hairStyle,
   onCategoryChange,
+  onHairStyleChange,
   onOpenItem,
 }: {
-  candidate: GeneratedQuestCandidate;
+  items: StoreItem[];
   activeCategory: AppearanceCategory;
+  hairStyle: AvatarHairStyleId;
   onCategoryChange: (category: AppearanceCategory) => void;
+  onHairStyleChange: (hairStyle: AvatarHairStyleId) => void;
   onOpenItem: (item: StoreItem) => void;
 }) {
   const categories: { id: AppearanceCategory; label: string }[] = [
@@ -734,7 +761,7 @@ function AppearancePanel({
 
   const itemForCategory = (category: AppearanceCategory) => {
     if (category === 'all' || category === 'hair') return null;
-    return candidate.items.find((item) => {
+    return items.find((item) => {
       if (category === 'inner') return item.category === 'top';
       if (category === 'base') return item.category === 'bottom' || item.category === 'dress';
       return item.category === category;
@@ -758,11 +785,17 @@ function AppearancePanel({
       </div>
 
       {activeCategory === 'hair' ? (
-        <div className="grid grid-cols-3 gap-2">
-          {['高马尾', '松弛波浪', '利落短发'].map((hair, index) => (
-            <button key={hair} type="button" className={`border border-black bg-white p-3 text-center ${index === 0 ? 'shadow-[3px_3px_0_#2455ff]' : ''}`}>
-              <span className={`mx-auto block h-10 w-10 rounded-full border border-black ${['bg-[#38241f]', 'bg-[#5a3024]', 'bg-[#18191d]'][index]}`} />
-              <span className="mt-2 block text-[10px] font-black">{hair}</span>
+        <div className="grid grid-cols-2 gap-2">
+          {HAIR_STYLES.map((hair) => (
+            <button
+              key={hair.id}
+              type="button"
+              onClick={() => onHairStyleChange(hair.id)}
+              className={`border border-black bg-white p-3 text-center ${hairStyle === hair.id ? 'shadow-[3px_3px_0_#2455ff]' : ''}`}
+            >
+              <span className="mx-auto block h-10 w-10 rounded-full border border-black" style={{ backgroundColor: hair.color }} />
+              <span className="mt-2 block text-[10px] font-black">{hair.label}</span>
+              <span className="mt-1 block text-[8px] text-gray-400">重新生成发型</span>
             </button>
           ))}
         </div>
@@ -784,7 +817,7 @@ function AppearancePanel({
         </button>
       ) : (
         <div className="grid grid-cols-5 gap-2">
-          {candidate.items.map((item) => (
+          {items.map((item) => (
             <button key={item.id} type="button" onClick={() => onOpenItem(item)} className="min-w-0">
               <div className="aspect-[3/4] overflow-hidden border border-black bg-white">
                 <ProductImage item={item} />
@@ -798,16 +831,343 @@ function AppearancePanel({
   );
 }
 
+function SocialScenePoster({
+  hostAvatarUrl,
+  hostItems,
+  background,
+  memberCount = 1,
+  interactionId = 'side-by-side',
+}: {
+  hostAvatarUrl: string;
+  hostItems: StoreItem[];
+  background: StudioBackgroundId;
+  memberCount?: number;
+  interactionId?: SocialSceneInteractionId;
+}) {
+  const backgroundConfig = STUDIO_BACKGROUNDS[background];
+  const safeMemberCount = Math.min(4, Math.max(1, memberCount));
+  const memberNames = ['我', 'Miya', 'Leo', 'Nono'];
+  const layouts: Record<number, { left: string; height: string; bottom: string; filter: string; flip?: boolean }[]> = {
+    1: [
+      { left: '10%', height: '91%', bottom: '4%', filter: 'none' },
+    ],
+    2: [
+      { left: '-14%', height: '87%', bottom: '5%', filter: 'none' },
+      { left: '43%', height: '84%', bottom: '5%', filter: 'hue-rotate(145deg) saturate(.82) brightness(1.04)', flip: true },
+    ],
+    3: [
+      { left: '-25%', height: '78%', bottom: '5%', filter: 'none' },
+      { left: '17%', height: '86%', bottom: '5%', filter: 'hue-rotate(145deg) saturate(.82) brightness(1.04)', flip: true },
+      { left: '52%', height: '75%', bottom: '5%', filter: 'hue-rotate(255deg) saturate(.9) brightness(.98)' },
+    ],
+    4: [
+      { left: '-30%', height: '69%', bottom: '5%', filter: 'none' },
+      { left: '2%', height: '79%', bottom: '5%', filter: 'hue-rotate(145deg) saturate(.82) brightness(1.04)', flip: true },
+      { left: '35%', height: '76%', bottom: '5%', filter: 'hue-rotate(255deg) saturate(.9) brightness(.98)' },
+      { left: '65%', height: '67%', bottom: '5%', filter: 'hue-rotate(55deg) saturate(.78) brightness(1.08)', flip: true },
+    ],
+  };
+  const interactionTransforms: Record<SocialSceneInteractionId, string[]> = {
+    'side-by-side': ['rotate(-1deg)', 'rotate(1deg)', 'rotate(-.5deg)', 'rotate(.5deg)'],
+    'high-five': ['translateX(7px) rotate(2deg)', 'translateX(-7px) rotate(-2deg)', 'rotate(1deg)', 'rotate(-1deg)'],
+    'shopping-walk': ['translateY(-2px) rotate(-2deg)', 'translateY(3px) rotate(2deg)', 'translateY(-4px) rotate(-1deg)', 'translateY(2px) rotate(1deg)'],
+    'group-selfie': ['translateY(4px) rotate(2deg)', 'translateY(-5px) rotate(-2deg)', 'translateY(1px) rotate(2deg)', 'translateY(5px) rotate(-2deg)'],
+  };
+  const interaction = SOCIAL_INTERACTIONS.find((entry) => entry.id === interactionId)
+    ?? SOCIAL_INTERACTIONS[0];
+  const members = layouts[safeMemberCount];
+  return (
+    <div
+      className="relative aspect-[4/5] overflow-hidden border-2 border-black shadow-[6px_6px_0_#111]"
+      style={{ background: backgroundConfig.style }}
+    >
+      <div
+        className="absolute inset-0 opacity-20"
+        style={{
+          backgroundImage: 'radial-gradient(circle, rgba(255,255,255,.85) 1px, transparent 1px)',
+          backgroundSize: '10px 10px',
+        }}
+      />
+      <span className="absolute left-3 top-3 z-30 border border-black bg-[#dfff3f] px-2 py-1 text-[9px] font-black">
+        好友共创场景 · {safeMemberCount}/4
+      </span>
+      {members.map((member, index) => (
+        <div
+          key={memberNames[index]}
+          className="absolute z-10"
+          style={{
+            left: member.left,
+            height: member.height,
+            bottom: member.bottom,
+            transform: interactionTransforms[interactionId][index],
+            transformOrigin: '50% 86%',
+          }}
+        >
+          <img
+            src={hostAvatarUrl}
+            alt={`${memberNames[index]}的动漫角色效果占位`}
+            className={`h-full w-auto max-w-none object-contain ${member.flip ? 'scale-x-[-1]' : ''}`}
+            style={{ filter: member.filter }}
+          />
+          <span className="absolute bottom-16 left-1/2 -translate-x-1/2 border border-white bg-black/75 px-2 py-1 text-[8px] font-black text-white">
+            {memberNames[index]}
+          </span>
+        </div>
+      ))}
+      <div className="absolute bottom-3 left-3 right-3 z-30 grid grid-cols-5 gap-1 bg-black/72 p-2 backdrop-blur">
+        {hostItems.slice(0, 5).map((item) => (
+          <div key={item.id} className="aspect-square overflow-hidden border border-white/50">
+            <ProductImage item={item} />
+          </div>
+        ))}
+      </div>
+      <p className="absolute right-3 top-3 z-30 bg-black/70 px-2 py-1 text-[8px] font-black text-white">
+        {interaction.label} · 构图预览
+      </p>
+    </div>
+  );
+}
+
+function SocialScenePanel({
+  sceneId,
+  inviteUrl,
+  memberCount,
+  interactionId,
+  shared,
+  onInteractionChange,
+  onShare,
+  onCopy,
+  onPreviewNextFriendJoin,
+}: {
+  sceneId: string;
+  inviteUrl: string;
+  memberCount: number;
+  interactionId: SocialSceneInteractionId;
+  shared: boolean;
+  onInteractionChange: (interactionId: SocialSceneInteractionId) => void;
+  onShare: () => void;
+  onCopy: () => void;
+  onPreviewNextFriendJoin: () => void;
+}) {
+  const memberNames = ['我', 'Miya', 'Leo', 'Nono'];
+  const isFull = memberCount >= 4;
+
+  return (
+    <div>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-[10px] font-black tracking-[0.14em] text-[#2455ff]">SOCIAL ROOM</p>
+          <h3 className="mt-1 text-lg font-black">我的多人共创房间</h3>
+          <p className="mt-1 text-[10px] text-gray-500">房间 {sceneId.slice(-8).toUpperCase()} · 同一链接最多连续加入 3 位好友</p>
+        </div>
+        <span className="shrink-0 border border-black bg-[#dfff3f] px-2 py-1 text-xs font-black">
+          {memberCount}/4
+        </span>
+      </div>
+
+      <div className="mt-3 grid grid-cols-4 gap-2">
+        {memberNames.map((member, index) => {
+          const joined = index < memberCount;
+          return (
+            <div
+              key={member}
+              className={`grid aspect-square place-items-center border border-black text-[10px] font-black ${
+                joined
+                  ? index === 0
+                    ? 'bg-black text-[#dfff3f]'
+                    : 'bg-[#2455ff] text-white'
+                  : 'bg-white text-gray-400'
+              }`}
+            >
+              {joined ? member : <UserPlus size={17} />}
+            </div>
+          );
+        })}
+      </div>
+
+      <p className="mb-2 mt-4 text-[10px] font-black tracking-[0.12em] text-gray-500">同框互动模板</p>
+      <div className="grid grid-cols-2 gap-2">
+        {SOCIAL_INTERACTIONS.map((interaction) => (
+          <button
+            key={interaction.id}
+            type="button"
+            onClick={() => onInteractionChange(interaction.id)}
+            className={`min-h-14 border border-black p-2 text-left ${
+              interactionId === interaction.id
+                ? 'bg-black text-white shadow-[3px_3px_0_#ff386d]'
+                : 'bg-white'
+            }`}
+          >
+            <span className="block text-xs font-black">{interaction.label}</span>
+            <span className={`mt-1 block text-[9px] ${interactionId === interaction.id ? 'text-[#dfff3f]' : 'text-gray-400'}`}>
+              {interaction.hint}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-4 border border-black bg-white p-2">
+        <p className="truncate text-[9px] text-gray-500">{inviteUrl}</p>
+        <div className="mt-2 grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={onShare}
+            className="flex h-10 items-center justify-center gap-2 border border-black bg-[#2455ff] text-xs font-black text-white"
+          >
+            <Share2 size={15} /> {shared ? '继续邀请' : '发给好友'}
+          </button>
+          <button
+            type="button"
+            onClick={onCopy}
+            className="flex h-10 items-center justify-center gap-2 border border-black bg-white text-xs font-black"
+          >
+            <Copy size={15} /> 复制链接
+          </button>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={onPreviewNextFriendJoin}
+        disabled={isFull}
+        className="mt-3 flex h-10 w-full items-center justify-between border border-black bg-[#dfff3f] px-3 text-xs font-black disabled:bg-gray-200 disabled:text-gray-400"
+      >
+        <span>{isFull ? '4 人场景已集齐' : `演示第 ${memberCount + 1} 位角色加入`}</span>
+        {isFull ? <Check size={16} /> : <ArrowRight size={16} />}
+      </button>
+      <p className="mt-2 text-[9px] leading-4 text-gray-400">
+        演示版用效果角色展示席位与构图；正式版每位成员都会保存独立身份、穿搭和动作资产。
+      </p>
+    </div>
+  );
+}
+
+function SocialShowcaseBoard({
+  quest,
+  look,
+  memberCount,
+  interactionId,
+  onOpenSocial,
+}: {
+  quest: DailyStyleQuest;
+  look: GeneratedQuestLook;
+  memberCount: number;
+  interactionId: SocialSceneInteractionId;
+  onOpenSocial: () => void;
+}) {
+  const interactionLabel = SOCIAL_INTERACTIONS.find((entry) => entry.id === interactionId)?.label
+    ?? SOCIAL_INTERACTIONS[0].label;
+  const scenes = [
+    {
+      title: '今日湖滨共创',
+      subtitle: `${memberCount}/4 人 · ${interactionLabel}`,
+      accent: 'bg-[#2455ff] text-white',
+      members: memberCount,
+      status: memberCount > 1 ? '进行中' : '待好友加入',
+    },
+    {
+      title: '武林夜游搭子局',
+      subtitle: '3 人 · 一起走秀',
+      accent: 'bg-[#ff5b88] text-white',
+      members: 3,
+      status: '场景模板',
+    },
+    {
+      title: '周末新品开箱',
+      subtitle: '2 人 · 合照自拍',
+      accent: 'bg-[#dfff3f] text-black',
+      members: 2,
+      status: '场景模板',
+    },
+  ];
+
+  return (
+    <section className="mt-6 border-y border-black bg-[#10131d] px-3 py-4 text-white">
+      <div className="flex items-center gap-3">
+        <div className="h-16 w-14 shrink-0 overflow-hidden border border-white/45 bg-black">
+          <img src={look.avatar.imageUrl} alt="我的角色主页" className="h-full w-full object-cover object-top" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-[10px] font-black tracking-[0.14em] text-[#dfff3f]">MY AVATAR STAGE</p>
+          <h2 className="mt-1 text-xl font-black">我的角色社交展示板</h2>
+          <p className="mt-1 truncate text-[10px] text-white/55">{quest.storeName} · {look.title}</p>
+        </div>
+        <LayoutGrid size={24} className="text-[#ff5b88]" />
+      </div>
+
+      <div className="mt-4 grid grid-cols-3 border-y border-white/25 py-3 text-center">
+        <div>
+          <p className="text-lg font-black">1</p>
+          <p className="text-[9px] text-white/45">个人角色</p>
+        </div>
+        <div className="border-x border-white/25">
+          <p className="text-lg font-black">{Math.max(0, memberCount - 1)}</p>
+          <p className="text-[9px] text-white/45">共创好友</p>
+        </div>
+        <div>
+          <p className="text-lg font-black">3</p>
+          <p className="text-[9px] text-white/45">可用场景</p>
+        </div>
+      </div>
+
+      <div className="mt-4 flex snap-x gap-3 overflow-x-auto pb-2 no-scrollbar">
+        {scenes.map((scene, sceneIndex) => (
+          <button
+            key={scene.title}
+            type="button"
+            onClick={sceneIndex === 0 ? onOpenSocial : undefined}
+            className="min-w-[72%] snap-center border border-white/35 bg-white text-left text-black"
+          >
+            <div className={`flex h-9 items-center justify-between px-3 ${scene.accent}`}>
+              <span className="text-[10px] font-black">{scene.status}</span>
+              <span className="text-[10px] font-black">{scene.members}/4</span>
+            </div>
+            <div className="relative h-28 overflow-hidden bg-[#ece9e1]">
+              {Array.from({ length: scene.members }).map((_, index) => (
+                <img
+                  key={`${scene.title}-${index}`}
+                  src={look.avatar.imageUrl}
+                  alt=""
+                  className="absolute bottom-0 h-[105%] w-auto max-w-none object-contain"
+                  style={{
+                    left: `${-10 + index * (scene.members === 2 ? 42 : 27)}%`,
+                    filter: index === 0 ? 'none' : `hue-rotate(${index * 115}deg) saturate(.82)`,
+                    transform: index % 2 === 1 ? 'scaleX(-1)' : undefined,
+                  }}
+                />
+              ))}
+            </div>
+            <div className="p-3">
+              <p className="text-sm font-black">{scene.title}</p>
+              <p className="mt-1 text-[10px] text-gray-500">{scene.subtitle}</p>
+            </div>
+          </button>
+        ))}
+      </div>
+
+      <button
+        type="button"
+        onClick={onOpenSocial}
+        className="mt-3 flex h-11 w-full items-center justify-between border border-white bg-white px-3 text-xs font-black text-black"
+      >
+        <span>打开多人共创台</span>
+        <Users size={16} />
+      </button>
+    </section>
+  );
+}
+
 function QuestResult({
   quest,
   look,
   identityImage,
   shared,
-  assisted,
+  joinedFriendCount,
+  inviteUrl,
   showStore,
   onShare,
   onCopy,
-  onSimulateAssist,
+  onPreviewFriendJoin,
   onOpenStore,
   onReplay,
 }: {
@@ -815,22 +1175,34 @@ function QuestResult({
   look: GeneratedQuestLook;
   identityImage: string | null;
   shared: boolean;
-  assisted: boolean;
+  joinedFriendCount: number;
+  inviteUrl: string;
   showStore: boolean;
   onShare: () => void;
   onCopy: () => void;
-  onSimulateAssist: () => void;
+  onPreviewFriendJoin: () => void;
   onOpenStore: () => void;
   onReplay: () => void;
 }) {
-  const [candidateId, setCandidateId] = useState<GeneratedQuestCandidateId>('A');
   const [tab, setTab] = useState<StudioTab>('appearance');
   const [pose, setPose] = useState<PoseId>('editorial');
   const [background, setBackground] = useState<StudioBackgroundId>('neon');
+  const [hairStyle, setHairStyle] = useState<AvatarHairStyleId>('high-ponytail');
+  const [expression, setExpression] = useState<AvatarExpressionId>('smile');
   const [appearanceCategory, setAppearanceCategory] = useState<AppearanceCategory>('all');
+  const [interactionId, setInteractionId] = useState<SocialSceneInteractionId>('side-by-side');
   const [detailItem, setDetailItem] = useState<StoreItem | null>(null);
   const [saved, setSaved] = useState(false);
-  const candidate = look.candidateLooks.find((entry) => entry.id === candidateId) ?? look.candidateLooks[0];
+  const memberCount = 1 + joinedFriendCount;
+  const openSocialStudio = () => {
+    setTab('social');
+    window.setTimeout(() => {
+      document.getElementById('avatar-studio-controls')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    }, 0);
+  };
 
   return (
     <>
@@ -849,26 +1221,40 @@ function QuestResult({
         </section>
 
         <section className="bg-[#f6f4ee] px-4 py-4">
-          <CandidateToggle candidateId={candidateId} onChange={setCandidateId} />
-          <div className="mt-3 border border-black bg-white p-3">
-            <p className="text-xs font-black">{candidate.label}</p>
-            <p className="mt-1 text-[11px] leading-4 text-gray-500">{candidate.strategy}</p>
+          <div className="border border-black bg-white p-3">
+            <p className="text-xs font-black">这是一份可持续编辑的个人角色资产</p>
+            <p className="mt-1 text-[11px] leading-4 text-gray-500">
+              当前穿搭由 5 件商品实拍、用户身份、发型、表情、姿势和场景共同定义。好友会创建自己的独立角色，再与你进入同一个场景。
+            </p>
           </div>
 
           <div className="mt-4">
-            <AvatarCanvas
-              candidate={candidate}
-              identityImage={identityImage}
-              pose={pose}
-              background={background}
-            />
+            {tab === 'social' ? (
+              <SocialScenePoster
+                hostAvatarUrl={look.avatar.imageUrl}
+                hostItems={look.items}
+                background={background}
+                memberCount={memberCount}
+                interactionId={interactionId}
+              />
+            ) : (
+              <AvatarCanvas
+                look={look}
+                identityImage={identityImage}
+                pose={pose}
+                background={background}
+                hairStyle={hairStyle}
+                expression={expression}
+              />
+            )}
           </div>
 
-          <div className="mt-5 grid grid-cols-3 border border-black bg-white">
+          <div id="avatar-studio-controls" className="mt-5 grid grid-cols-4 border border-black bg-white">
             {([
               ['appearance', Shirt, '形象'],
               ['pose', Move, '动作'],
               ['background', Palette, '背景'],
+              ['social', Users, '共创'],
             ] as const).map(([id, Icon, label]) => (
               <button
                 key={id}
@@ -884,9 +1270,11 @@ function QuestResult({
           <div className="mt-3 min-h-[160px] border border-black bg-[#ece9e1] p-3">
             {tab === 'appearance' && (
               <AppearancePanel
-                candidate={candidate}
+                items={look.items}
                 activeCategory={appearanceCategory}
+                hairStyle={hairStyle}
                 onCategoryChange={setAppearanceCategory}
+                onHairStyleChange={setHairStyle}
                 onOpenItem={setDetailItem}
               />
             )}
@@ -901,9 +1289,24 @@ function QuestResult({
                     className={`min-h-16 border border-black p-3 text-left ${pose === poseOption.id ? 'bg-black text-white shadow-[3px_3px_0_#ff386d]' : 'bg-white'}`}
                   >
                     <span className="block text-sm font-black">{poseOption.label}</span>
-                    <span className={`mt-1 block text-[10px] ${pose === poseOption.id ? 'text-[#dfff3f]' : 'text-gray-400'}`}>{poseOption.hint}动作效果位</span>
+                    <span className={`mt-1 block text-[10px] ${pose === poseOption.id ? 'text-[#dfff3f]' : 'text-gray-400'}`}>{poseOption.hint} · 重新生成动作画面</span>
                   </button>
                 ))}
+                <div className="col-span-2 mt-1 border-t border-black pt-3">
+                  <p className="mb-2 text-[10px] font-black tracking-[0.12em] text-gray-500">脸部表情</p>
+                  <div className="grid grid-cols-4 gap-2">
+                    {EXPRESSIONS.map((expressionOption) => (
+                      <button
+                        key={expressionOption.id}
+                        type="button"
+                        onClick={() => setExpression(expressionOption.id)}
+                        className={`h-9 border border-black text-[10px] font-black ${expression === expressionOption.id ? 'bg-[#dfff3f]' : 'bg-white'}`}
+                      >
+                        {expressionOption.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             )}
 
@@ -922,6 +1325,20 @@ function QuestResult({
                 ))}
               </div>
             )}
+
+            {tab === 'social' && (
+              <SocialScenePanel
+                sceneId={look.id}
+                inviteUrl={inviteUrl}
+                memberCount={memberCount}
+                interactionId={interactionId}
+                shared={shared}
+                onInteractionChange={setInteractionId}
+                onShare={onShare}
+                onCopy={onCopy}
+                onPreviewNextFriendJoin={onPreviewFriendJoin}
+              />
+            )}
           </div>
 
           <div className="mt-5 border border-black bg-white p-3">
@@ -938,10 +1355,13 @@ function QuestResult({
 
           <button
             type="button"
-            onClick={onShare}
+            onClick={() => {
+              openSocialStudio();
+              onShare();
+            }}
             className="mt-5 flex h-14 w-full items-center justify-between border border-black bg-[#2455ff] px-4 text-base font-black text-white shadow-[4px_4px_0_#111]"
           >
-            <span>{shared ? '好友共创链接已准备好' : '邀请好友共创今日封面'}</span>
+            <span>{shared ? `继续邀请好友 · 当前 ${memberCount}/4` : '创建多人房间并邀请好友'}</span>
             <Share2 size={21} />
           </button>
           <div className="mt-3 grid grid-cols-2 gap-3">
@@ -959,28 +1379,33 @@ function QuestResult({
 
           {shared && (
             <div className="mt-4 border border-black bg-[#ffebf1] p-3">
-              <p className="text-sm font-black">好友看到的内容</p>
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-sm font-black">多人房间链接已生效</p>
+                <span className="border border-black bg-white px-2 py-1 text-[10px] font-black">{memberCount}/4</span>
+              </div>
               <p className="mt-1 text-[11px] leading-4 text-gray-600">
-                A = 你的五件完整选择；B = AI 保留身份和三件核心商品后替换两件。好友投票后，你们共同解锁到店任务。
+                同一个链接可以连续邀请 3 位好友。每位好友上传自己的照片、挑选自己的完整银泰穿搭，生成独立角色后加入当前场景。
               </p>
               <button
                 type="button"
-                onClick={onSimulateAssist}
+                onClick={openSocialStudio}
                 className="mt-3 flex h-10 w-full items-center justify-between border border-black bg-black px-3 text-xs font-black text-white"
               >
-                <span>{assisted ? '好友 Miya 已选择 LOOK A' : '模拟好友完成裁决'}</span>
-                {assisted ? <Check size={16} /> : <ArrowRight size={16} />}
+                <span>查看席位、互动动作与多人构图</span>
+                <ArrowRight size={16} />
               </button>
             </div>
           )}
 
-          {assisted && (
+          {memberCount > 1 && (
             <div className="mt-4 border border-black bg-[#dfff3f] p-3">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs font-black text-[#2455ff]">SOCIAL REWARD UNLOCKED</p>
-                  <h2 className="mt-1 text-xl font-black">{quest.reward.couponLabel}</h2>
-                  <p className="mt-1 text-[11px] text-black/60">好友裁决让线上角色直接连接到线下试穿与复购。</p>
+                  <p className="text-xs font-black text-[#2455ff]">SOCIAL SCENE UNLOCKED</p>
+                  <h2 className="mt-1 text-xl font-black">{memberCount} 人海报 + {quest.reward.couponLabel}</h2>
+                  <p className="mt-1 text-[11px] text-black/60">
+                    每位成员保留自己的脸、穿搭与角色资产，场景只负责组合站位、互动动作和分享画面。
+                  </p>
                 </div>
                 <Gift size={30} />
               </div>
@@ -995,11 +1420,21 @@ function QuestResult({
               {showStore && (
                 <div className="mt-3 border border-black bg-white p-3 text-xs">
                   <p className="font-black">今日线下任务</p>
-                  <p className="mt-1 leading-5 text-gray-600">到任一入选商品专柜试穿并扫码，双方各得 80 元券，再生成一张双人同框海报。</p>
+                  <p className="mt-1 leading-5 text-gray-600">
+                    房间成员各到任一入选商品专柜试穿并扫码，解锁“商场碰面”互动动作与多人到店纪念海报。
+                  </p>
                 </div>
               )}
             </div>
           )}
+
+          <SocialShowcaseBoard
+            quest={quest}
+            look={look}
+            memberCount={memberCount}
+            interactionId={interactionId}
+            onOpenSocial={openSocialStudio}
+          />
 
           <button type="button" onClick={onReplay} className="mt-5 flex h-11 w-full items-center justify-center gap-2 text-xs font-black text-gray-500">
             <RotateCcw size={16} /> 重新选择一套穿搭
@@ -1014,73 +1449,308 @@ function QuestResult({
   );
 }
 
-function AssistView({ quest }: { quest: DailyStyleQuest }) {
+function JoinSceneView({ quest }: { quest: DailyStyleQuest }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const [choice, setChoice] = useState<GeneratedQuestCandidateId | null>(null);
-  const recordAssist = useDailyQuestStore((state) => state.recordAssist);
+  const [identityImage, setIdentityImage] = useState<string | null>(null);
+  const identityObjectUrlRef = useRef<string | null>(null);
+  const [selectedLookIndex, setSelectedLookIndex] = useState(0);
+  const [joinStage, setJoinStage] = useState<'pick' | 'generating' | 'joined'>('pick');
+  const [joinedMemberCount, setJoinedMemberCount] = useState(2);
+  const [joinError, setJoinError] = useState<string | null>(null);
+  const recordCollaboration = useDailyQuestStore((state) => state.recordCollaboration);
   const params = new URLSearchParams(location.search);
+  const sceneId = params.get('join') ?? 'preview-scene';
   const itemIndex = new Map(quest.rounds.flatMap((round) => round.candidates).map((item) => [item.id, item]));
+  const hostItemIds = params.get('host')?.split('.').filter(Boolean) ?? [];
+  const hostItems = hostItemIds
+    .map((id) => itemIndex.get(id))
+    .filter((item): item is StoreItem => Boolean(item));
+  const resolvedHostItems = hostItems.length > 0 ? hostItems : quest.rounds.map((round) => round.candidates[0]);
+  const outfitSets = [0, 1, 2].map((candidateIndex) => (
+    quest.rounds.map((round) => round.candidates[candidateIndex] ?? round.candidates[0])
+  ));
+  const selectedItems = outfitSets[selectedLookIndex];
 
-  const resolve = (key: 'a' | 'b', fallbackIndex: number) => {
-    const ids = params.get(key)?.split('.').filter(Boolean) ?? [];
-    const resolved = ids.map((id) => itemIndex.get(id)).filter((item): item is StoreItem => Boolean(item));
-    return resolved.length > 0 ? resolved : quest.rounds.map((round) => round.candidates[fallbackIndex] ?? round.candidates[0]);
+  useEffect(() => () => {
+    if (identityObjectUrlRef.current) URL.revokeObjectURL(identityObjectUrlRef.current);
+  }, []);
+
+  const pickIdentity = (file: File) => {
+    if (identityObjectUrlRef.current) URL.revokeObjectURL(identityObjectUrlRef.current);
+    const objectUrl = URL.createObjectURL(file);
+    identityObjectUrlRef.current = objectUrl;
+    setIdentityImage(objectUrl);
   };
-  const looks = { A: resolve('a', 0), B: resolve('b', 1) };
 
-  const choose = (id: GeneratedQuestCandidateId) => {
-    if (choice) return;
-    setChoice(id);
-    recordAssist();
-    track('daily_quest_friend_verdict', { questId: quest.id, choice: id });
+  const shareRoom = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: '加入我们的动漫角色同框',
+          text: '上传你的照片并挑一套银泰穿搭，生成自己的角色后加入这个多人场景。',
+          url: window.location.href,
+        });
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+      }
+    } catch (shareError) {
+      if ((shareError as DOMException).name !== 'AbortError') {
+        await navigator.clipboard?.writeText(window.location.href).catch(() => undefined);
+      }
+    }
+  };
+
+  const joinScene = async () => {
+    if (joinStage !== 'pick') return;
+    setJoinStage('generating');
+    setJoinError(null);
+    try {
+      const friendAsset = await socialAvatarImageProvider.generateAvatar({
+        requestId: `friend-avatar-${Date.now().toString(36)}`,
+        identity: {
+          primaryPhotoUrl: identityImage,
+          additionalPhotoUrls: [],
+          preserveFeatures: ['face-shape', 'eyes', 'nose', 'mouth', 'eyebrows', 'hairline', 'skin-tone'],
+          beautification: {
+            skinSmoothing: 'light',
+            removeTemporaryBlemishes: true,
+            eyeEnhancement: 'subtle',
+            preserveRecognition: true,
+          },
+        },
+        garments: selectedItems.map((item, index) => ({
+          slot: quest.rounds[index].id as DailyQuestOutfitSlot,
+          layerOrder: index,
+          productId: item.id,
+          skuId: item.skuId,
+          name: item.name,
+          brand: item.brand,
+          category: item.category,
+          sourceImageUrl: item.imageUrl,
+          sourceImageRole: item.imageUrl.startsWith('/product-shots/')
+            ? 'demo-licensed-placeholder'
+            : 'yintai-pim-primary',
+          colors: item.colors,
+          fittingInstruction: 'preserve-design-and-color',
+        })),
+        controls: {
+          poseId: 'wave',
+          expressionId: 'smile',
+          hairStyleId: 'soft-wave',
+          backgroundId: 'neon',
+        },
+        renderPolicy: {
+          style: 'premium-comic-animation',
+          preserveIdentity: true,
+          preserveGarmentDesign: true,
+          coherentLayering: true,
+          fullBody: true,
+          fixedPoseForbidden: true,
+        },
+      });
+      const hostMember: SocialAvatarMember = {
+        memberId: `host-${sceneId}`,
+        displayName: '好友',
+        avatarAssetId: 'host-shared-avatar',
+        avatarImageUrl: AVATAR_PREVIEW_URL,
+        outfitProductIds: resolvedHostItems.map((item) => item.id),
+        poseId: 'confident',
+        joinedAt: new Date().toISOString(),
+        role: 'host',
+      };
+      const friendMember: SocialAvatarMember = {
+        memberId: `friend-${Date.now().toString(36)}`,
+        displayName: '我',
+        avatarAssetId: friendAsset.assetId,
+        avatarImageUrl: friendAsset.imageUrl,
+        outfitProductIds: selectedItems.map((item) => item.id),
+        poseId: 'wave',
+        joinedAt: new Date().toISOString(),
+        role: 'friend',
+      };
+
+      const invite = await socialScenePlatformProvider.createInvite({
+        sceneId,
+        inviteUrl: window.location.href,
+        host: hostMember,
+        maxMembers: 4,
+        backgroundId: 'neon',
+        interactionId: 'high-five',
+      });
+      const session = await socialScenePlatformProvider.joinInvite(invite.inviteId, friendMember);
+      const layout = session.members.length >= 4
+        ? 'group-four'
+        : session.members.length === 3
+          ? 'trio'
+          : 'duo';
+      const poster = await socialAvatarImageProvider.composeSocialScene({
+        sceneId,
+        layout,
+        backgroundId: session.backgroundId,
+        interactionId: session.interactionId,
+        members: session.members,
+        output: { poster: true, storyImage: true, shortVideoExtension: true },
+      });
+      await socialScenePlatformProvider.updateScene(sceneId, {
+        backgroundId: poster.request.backgroundId,
+        interactionId: poster.request.interactionId,
+      });
+      setJoinedMemberCount(session.members.length);
+      recordCollaboration();
+      track('daily_quest_friend_join', {
+        questId: quest.id,
+        productCount: selectedItems.length,
+        memberCount: session.members.length,
+      });
+      setJoinStage('joined');
+    } catch (sceneError) {
+      console.error('[DailyQuest] Join social scene failed', sceneError);
+      setJoinError(sceneError instanceof Error ? sceneError.message : '加入房间失败，请稍后重试');
+      setJoinStage('pick');
+    }
   };
 
   return (
     <main className="mx-auto min-h-screen max-w-[520px] bg-[#f6f4ee] pb-10">
       <header className="border-b border-black bg-black px-4 pb-5 pt-[calc(14px+env(safe-area-inset-top))] text-white">
-        <p className="text-[10px] font-black tracking-[0.16em] text-[#dfff3f]">FRIEND CO-CREATE</p>
-        <h1 className="mt-2 text-3xl font-black">帮好友决定<br />今天发哪张封面</h1>
-        <p className="mt-3 text-xs leading-5 text-white/65">A 是好友亲手选择的完整穿搭；B 是 AI 根据天气与场景替换两件后的版本。</p>
+        <p className="text-[10px] font-black tracking-[0.16em] text-[#dfff3f]">JOIN FRIEND'S AVATAR SCENE</p>
+        <h1 className="mt-2 text-3xl font-black">好友邀请你<br />带自己的角色入镜</h1>
+        <p className="mt-3 text-xs leading-5 text-white/65">先建立你的身份、挑自己的银泰穿搭，再与好友生成双人互动海报。你们的角色互不覆盖。</p>
       </header>
 
-      {!choice ? (
-        <section className="grid grid-cols-2 gap-3 px-4 py-5">
-          {(['A', 'B'] as const).map((id) => (
-            <button key={id} type="button" onClick={() => choose(id)} className="overflow-hidden border border-black bg-white text-left shadow-[4px_4px_0_#111]">
-              <div className="relative aspect-[3/4] overflow-hidden border-b border-black bg-[#10131d]">
-                <img src={AVATAR_PREVIEW_URL} alt={`LOOK ${id} 动漫角色预览`} className={`absolute inset-0 h-full w-full object-cover object-top ${id === 'B' ? 'hue-rotate-[28deg]' : ''}`} />
-                <span className="absolute left-2 top-2 grid h-8 w-8 place-items-center border border-black bg-[#dfff3f] text-sm font-black">{id}</span>
+      {joinStage === 'pick' && (
+        <section className="px-4 py-5">
+          <div className="border border-black bg-white p-3">
+            <p className="text-xs font-black text-[#2455ff]">好友的角色已在场景中等待</p>
+            <div className="mt-3 flex items-center gap-3">
+              <div className="h-24 w-20 shrink-0 overflow-hidden border border-black bg-[#10131d]">
+                <img src={AVATAR_PREVIEW_URL} alt="好友角色预览" className="h-full w-full object-cover object-top" />
               </div>
-              <div className="grid grid-cols-5 border-b border-black">
-                {looks[id].map((item) => (
-                  <div key={item.id} className="aspect-square overflow-hidden border-r border-black last:border-r-0">
-                    <ProductImage item={item} />
+              <div>
+                <p className="text-base font-black">今晚一起拍「湖滨霓虹」</p>
+                <p className="mt-1 text-[11px] leading-4 text-gray-500">互动动作：碰拳 / 并肩走 / 合照。场景最多可加入 4 位好友。</p>
+              </div>
+            </div>
+            <div className="mt-3 grid grid-cols-4 gap-2">
+              {['好友', '我', '好友 3', '好友 4'].map((member, index) => (
+                <div
+                  key={member}
+                  className={`grid aspect-square place-items-center border border-black text-[9px] font-black ${
+                    index === 0 ? 'bg-black text-[#dfff3f]' : 'bg-white text-gray-400'
+                  }`}
+                >
+                  {index === 0 ? member : <UserPlus size={16} />}
+                </div>
+              ))}
+            </div>
+            <p className="mt-2 text-[9px] text-gray-400">房间号 {sceneId.slice(-8).toUpperCase()} · 该链接可重复分享</p>
+          </div>
+
+          <div className="mt-4">
+            <IdentityPicker identityImage={identityImage} onPick={pickIdentity} />
+          </div>
+
+          <div className="mt-5">
+            <p className="text-[10px] font-black tracking-[0.14em] text-[#ff386d]">PICK MY FULL LOOK</p>
+            <h2 className="mt-1 text-xl font-black">选择我的完整穿搭</h2>
+            <div className="mt-3 flex snap-x gap-3 overflow-x-auto pb-4 no-scrollbar">
+              {outfitSets.map((items, index) => (
+                <button
+                  key={items.map((item) => item.id).join('-')}
+                  type="button"
+                  onClick={() => setSelectedLookIndex(index)}
+                  className={`min-w-[76%] snap-center overflow-hidden border border-black bg-white text-left ${selectedLookIndex === index ? 'shadow-[5px_5px_0_#2455ff]' : 'shadow-[3px_3px_0_#111]'}`}
+                >
+                  <div className="grid grid-cols-5 border-b border-black">
+                    {items.map((item) => (
+                      <div key={item.id} className="aspect-[3/4] overflow-hidden border-r border-black last:border-r-0">
+                        <ProductImage item={item} />
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-              <div className="p-3">
-                <p className="text-sm font-black">{id === 'A' ? '好友原选完整搭配' : 'AI 场景优化版'}</p>
-                <span className="mt-3 flex h-10 items-center justify-center gap-1 border border-black bg-black text-xs font-black text-white">
-                  选为今日封面 <ArrowRight size={14} />
-                </span>
-              </div>
-            </button>
-          ))}
+                  <div className="p-3">
+                    <p className="text-sm font-black">完整穿搭 {index + 1}</p>
+                    <p className="mt-1 text-[10px] text-gray-500">{items.map((item) => item.brand).join(' × ')}</p>
+                    <span className="mt-3 inline-flex items-center gap-1 text-xs font-black">
+                      {selectedLookIndex === index ? <Check size={14} /> : <ChevronRight size={14} />}
+                      {selectedLookIndex === index ? '已选择' : '选择这套'}
+                    </span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => void joinScene()}
+            className="mt-2 flex h-14 w-full items-center justify-between border border-black bg-black px-4 text-base font-black text-white shadow-[4px_4px_0_#ff386d]"
+          >
+            <span>生成我的角色并加入同框</span>
+            <Users size={21} />
+          </button>
+          {joinError && (
+            <p className="mt-3 border border-black bg-[#ffebf1] p-2 text-xs font-bold text-[#b1184c]">
+              {joinError}
+            </p>
+          )}
         </section>
-      ) : (
-        <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="px-4 py-9 text-center">
-          <div className="mx-auto grid h-20 w-20 place-items-center border-2 border-black bg-[#dfff3f] shadow-[5px_5px_0_#111]">
-            <Check size={42} strokeWidth={3} />
+      )}
+
+      {joinStage === 'generating' && (
+        <section className="grid min-h-[70dvh] place-items-center px-5 text-center">
+          <div>
+            <WandSparkles className="mx-auto animate-pulse text-[#2455ff]" size={48} />
+            <h2 className="mt-5 text-2xl font-black">正在生成你的角色</h2>
+            <p className="mt-2 text-xs leading-5 text-gray-500">保留你的脸部特征，合成所选 5 件商品，再计算双人互动姿势。</p>
           </div>
-          <h2 className="mt-6 text-3xl font-black">共创完成</h2>
-          <p className="mt-2 text-sm text-gray-600">你选择了 LOOK {choice}，双方的到店试穿任务已解锁。</p>
+        </section>
+      )}
+
+      {joinStage === 'joined' && (
+        <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="px-4 py-6">
+          <SocialScenePoster
+            hostAvatarUrl={AVATAR_PREVIEW_URL}
+            hostItems={resolvedHostItems}
+            background="neon"
+            memberCount={joinedMemberCount}
+            interactionId="high-five"
+          />
+          <h2 className="mt-6 text-2xl font-black">你已加入 {joinedMemberCount}/4 人角色场景</h2>
+          <p className="mt-2 text-sm leading-5 text-gray-600">每位成员都保留自己的身份和商品穿搭。同一个邀请链接还能继续加入新角色，并重新生成多人互动海报。</p>
+          <div className="mt-4 grid grid-cols-4 gap-2">
+            {['房主', '我', '好友 3', '好友 4'].map((member, index) => (
+              <div
+                key={member}
+                className={`grid aspect-square place-items-center border border-black text-[9px] font-black ${
+                  index < joinedMemberCount
+                    ? index === 0
+                      ? 'bg-black text-[#dfff3f]'
+                      : 'bg-[#2455ff] text-white'
+                    : 'bg-white text-gray-400'
+                }`}
+              >
+                {index < joinedMemberCount ? member : <UserPlus size={16} />}
+              </div>
+            ))}
+          </div>
           <div className="mt-6 border-y border-black bg-white py-4">
-            <p className="text-xs font-black text-[#2455ff]">你也获得</p>
-            <p className="mt-1 text-xl font-black">+20 灵感值 · 好友共创徽章</p>
+            <p className="text-center text-xs font-black text-[#2455ff]">SOCIAL SCENE REWARD</p>
+            <p className="mt-1 text-center text-xl font-black">+20 灵感值 · {joinedMemberCount} 人同框卡</p>
           </div>
+          {joinedMemberCount < 4 && (
+            <button
+              type="button"
+              onClick={() => void shareRoom()}
+              className="mt-6 flex h-12 w-full items-center justify-between border border-black bg-[#2455ff] px-4 text-sm font-black text-white"
+            >
+              <span>继续分享同一链接邀请好友</span>
+              <Share2 size={18} />
+            </button>
+          )}
           <button type="button" onClick={() => navigate(ROUTES.GAME, { replace: true })} className="mt-6 flex h-14 w-full items-center justify-between border border-black bg-black px-4 text-base font-black text-white shadow-[4px_4px_0_#ff386d]">
-            <span>我也生成今日角色</span><ArrowRight size={22} />
+            <span>保存角色并进入我的工作台</span><ArrowRight size={22} />
           </button>
         </motion.section>
       )}
@@ -1100,7 +1770,7 @@ export default function DailyQuestPage() {
   const [identityImage, setIdentityImage] = useState<string | null>(null);
   const identityObjectUrlRef = useRef<string | null>(null);
   const [shared, setShared] = useState(false);
-  const [assisted, setAssisted] = useState(false);
+  const [joinedFriendCount, setJoinedFriendCount] = useState(0);
   const [showStore, setShowStore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const generationRunning = useRef(false);
@@ -1110,8 +1780,8 @@ export default function DailyQuestPage() {
   const completedDate = useDailyQuestStore((state) => state.completedDate);
   const completeQuest = useDailyQuestStore((state) => state.completeQuest);
   const recordShare = useDailyQuestStore((state) => state.recordShare);
-  const recordAssist = useDailyQuestStore((state) => state.recordAssist);
-  const isAssistMode = new URLSearchParams(location.search).has('assist');
+  const recordCollaboration = useDailyQuestStore((state) => state.recordCollaboration);
+  const isJoinMode = new URLSearchParams(location.search).has('join');
 
   useEffect(() => {
     let active = true;
@@ -1119,12 +1789,12 @@ export default function DailyQuestPage() {
       if (!active) return;
       setQuest(dailyQuest);
       setTimeLeft(dailyQuest.timeLimitSeconds);
-      track('daily_quest_view', { questId: dailyQuest.id, assistMode: isAssistMode });
+      track('daily_quest_view', { questId: dailyQuest.id, joinMode: isJoinMode });
     }).catch(() => active && setError('今日副本加载失败，请稍后重试'));
     return () => {
       active = false;
     };
-  }, [isAssistMode]);
+  }, [isJoinMode]);
 
   useEffect(() => () => {
     if (identityObjectUrlRef.current) URL.revokeObjectURL(identityObjectUrlRef.current);
@@ -1146,7 +1816,13 @@ export default function DailyQuestPage() {
     setError(null);
     const stepTimer = window.setInterval(() => setGenerationStep((step) => Math.min(3, step + 1)), 540);
     try {
-      const generatedLook = await dailyQuestAigcProvider.generateLook(quest, finalSelections);
+      const generatedLook = await dailyQuestAigcProvider.generateLook(quest, finalSelections, {
+        identityImageUrl: identityImage,
+        poseId: 'editorial',
+        expressionId: 'smile',
+        hairStyleId: 'high-ponytail',
+        backgroundId: 'neon',
+      });
       setLook(generatedLook);
       completeQuest(generatedLook.score, quest.reward.inspiration);
       track('daily_quest_complete', {
@@ -1193,7 +1869,7 @@ export default function DailyQuestPage() {
     setRoundIndex(0);
     setTimeLeft(quest.timeLimitSeconds);
     setShared(false);
-    setAssisted(false);
+    setJoinedFriendCount(0);
     setShowStore(false);
     setError(null);
     track('daily_quest_start', { questId: quest.id, replay: completedDate === quest.date });
@@ -1206,7 +1882,7 @@ export default function DailyQuestPage() {
     setSelections(demoSelections);
     setRoundIndex(quest.rounds.length - 1);
     setShared(false);
-    setAssisted(false);
+    setJoinedFriendCount(0);
     setShowStore(false);
     void runGeneration(demoSelections);
   };
@@ -1225,12 +1901,34 @@ export default function DailyQuestPage() {
   };
 
   const inviteUrl = useMemo(() => {
-    const params = new URLSearchParams({ assist: look?.id ?? 'preview' });
-    const [candidateA, candidateB] = look?.candidateLooks ?? [];
-    if (candidateA) params.set('a', candidateA.items.map((item) => item.id).join('.'));
-    if (candidateB) params.set('b', candidateB.items.map((item) => item.id).join('.'));
+    const params = new URLSearchParams({
+      join: look?.id ?? 'preview-scene',
+      max: '4',
+    });
+    if (look) params.set('host', look.items.map((item) => item.id).join('.'));
     return `${window.location.origin}${window.location.pathname}#${ROUTES.GAME}?${params.toString()}`;
   }, [look]);
+
+  const ensureSocialInvite = useCallback(async () => {
+    if (!look) return;
+    await socialScenePlatformProvider.createInvite({
+      sceneId: look.id,
+      inviteUrl,
+      maxMembers: 4,
+      backgroundId: 'neon',
+      interactionId: 'side-by-side',
+      host: {
+        memberId: `host-${look.id}`,
+        displayName: '我',
+        avatarAssetId: look.avatar.assetId,
+        avatarImageUrl: look.avatar.imageUrl,
+        outfitProductIds: look.items.map((item) => item.id),
+        poseId: 'confident',
+        joinedAt: new Date().toISOString(),
+        role: 'host',
+      },
+    });
+  }, [inviteUrl, look]);
 
   const markShared = () => {
     if (!shared) recordShare();
@@ -1240,10 +1938,11 @@ export default function DailyQuestPage() {
 
   const shareInvite = async () => {
     try {
+      await ensureSocialInvite();
       if (navigator.share) {
         await navigator.share({
-          title: '帮我共创今天的动漫角色封面',
-          text: 'A 是我亲手选的完整穿搭，B 是 AI 根据今天场景替换两件后的版本。你选哪张？',
+          title: '带你的动漫角色来和我同框',
+          text: '上传你的照片、挑一套银泰穿搭，生成自己的角色后加入我的互动海报。',
           url: inviteUrl,
         });
       } else {
@@ -1259,13 +1958,26 @@ export default function DailyQuestPage() {
   };
 
   const copyInvite = async () => {
+    await ensureSocialInvite().catch((inviteError) => {
+      console.warn('[DailyQuest] Social invite session was not persisted', inviteError);
+    });
     markShared();
     await navigator.clipboard?.writeText(inviteUrl).catch(() => undefined);
   };
 
-  const simulateAssist = () => {
-    if (!assisted) recordAssist();
-    setAssisted(true);
+  const previewFriendJoin = () => {
+    setJoinedFriendCount((count) => {
+      if (count >= 3) return count;
+      recordCollaboration();
+      if (quest) {
+        track('daily_quest_friend_join', {
+          questId: quest.id,
+          memberCount: count + 2,
+          preview: true,
+        });
+      }
+      return count + 1;
+    });
   };
 
   const replay = () => {
@@ -1274,7 +1986,7 @@ export default function DailyQuestPage() {
     setSelections([]);
     setRoundIndex(0);
     setShared(false);
-    setAssisted(false);
+    setJoinedFriendCount(0);
     setShowStore(false);
   };
 
@@ -1303,7 +2015,7 @@ export default function DailyQuestPage() {
     );
   }
 
-  if (isAssistMode) return <AssistView quest={quest} />;
+  if (isJoinMode) return <JoinSceneView quest={quest} />;
 
   return (
     <div className="min-h-screen bg-[#f6f4ee]">
@@ -1339,11 +2051,12 @@ export default function DailyQuestPage() {
             look={look}
             identityImage={identityImage}
             shared={shared}
-            assisted={assisted}
+            joinedFriendCount={joinedFriendCount}
+            inviteUrl={inviteUrl}
             showStore={showStore}
             onShare={() => void shareInvite()}
             onCopy={() => void copyInvite()}
-            onSimulateAssist={simulateAssist}
+            onPreviewFriendJoin={previewFriendJoin}
             onOpenStore={() => setShowStore((value) => !value)}
             onReplay={replay}
           />

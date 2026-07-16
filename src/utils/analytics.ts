@@ -22,8 +22,7 @@ type EventName =
   | 'daily_quest_select'
   | 'daily_quest_complete'
   | 'daily_quest_share'
-  | 'daily_quest_assist'
-  | 'daily_quest_friend_verdict'
+  | 'daily_quest_friend_join'
   | 'daily_quest_store_unlock';
 
 interface EventParams {

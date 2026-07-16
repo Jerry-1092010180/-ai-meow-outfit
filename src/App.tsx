@@ -40,7 +40,7 @@ export default function App() {
       <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path={ROUTES.ONBOARDING} element={<OnboardingPage />} />
-          {/* Competition demo and friend-assist links must open without onboarding. */}
+          {/* Competition demo and friend-collaboration links must open without onboarding. */}
           <Route path={ROUTES.GAME} element={<DailyQuestPage />} />
           <Route path={ROUTES.HOME} element={<Navigate to={ROUTES.GAME} replace />} />
           <Route
