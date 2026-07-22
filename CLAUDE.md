@@ -10,20 +10,14 @@
 
 ## 会话关闭（自动执行）
 
-每次对话结束时，自动执行：
+每次对话结束时，追加本次工作摘要到 `docs/session-log.md`：
 
-```bash
-# 1. 记录当前会话的关键进展到 session-log.md
-echo "- $(date '+%Y-%m-%d %H:%M'): <本次完成的主要工作>" >> docs/session-log.md
-
-# 2. 提交所有修改
-git add -A
-git commit -m "<本次工作的简短描述>"
-git push origin next-gen-avatar
-
-# 3. 同步到 Codex 目录
-rsync -a --exclude node_modules --exclude dist --exclude .env --exclude .git /Users/jerry/PycharmProjects/ai-meow-outfit/ /Users/jerry/Documents/Codex/ai-meow-outfit/
 ```
+- 2026-07-22: <本次完成的主要工作>
+- 2026-07-22: <遗留问题和下一步>
+```
+
+不自动提交 Git，不自动 Push。
 
 ## 项目红线
 
