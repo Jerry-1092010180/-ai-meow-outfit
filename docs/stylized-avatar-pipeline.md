@@ -68,6 +68,13 @@ They should not shape the main product UX. Do not optimize them as the primary p
 4. Attach Yintai catalog outfits as swappable avatar outfits.
 5. Add pose presets and expression blendshapes in the viewer.
 
+## Five-View NeRF Head Focus
+
+The isolated head-reconstruction contracts live in
+`server/nerf_stylized_head_provider.py` and
+`src/services/nerfStylizedHeadProvider.ts`. NeRF remains a supporting content
+capability and does not define the main product UX.
+
 ## StylizedHeadProvider P0
 
 The head provider is the highest-priority module because "looks like the user" is more important than body reconstruction.

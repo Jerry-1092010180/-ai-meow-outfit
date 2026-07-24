@@ -1,66 +1,76 @@
-# Codex 上下文：摄像真人取模 + AIGC 算力
+# Codex 上下文：喵街每日 AI 变装副本
 
-## 摄像头采集 (TryOnPage.tsx)
+## 项目北极星
 
-**关键文件**: `src/pages/TryOnPage.tsx`
+这是银泰商业挑战赛 H5 原型。首要目标不是展示人体重建技术，而是让 18—40 岁喵街中低频会员：
 
-**流程**:
-1. 填身体数据 → 点按钮 → `startCaptureFlow()` → `setStep('capture')`
-2. `useEffect` 检测到 `step==='capture'` → 调 `getUserMedia({video:{facingMode:'user'}})` 
-3. 用 `document.createElement('video')` 命令式创建（**不能**用 React JSX `<video>`，重渲染会断开流）
-4. video append 到 `<div ref={containerRef}>` (line ~260)
-5. `setInterval 400ms` 做帧差分 (`frameDifference()`) 检测转身: diff>0.08=转身中, diff<0.04=停下来了→拍照
-6. 拍照: canvas.drawImage → toDataURL → 存到 `frames[]`
-7. 8 角度拍完 → 预览 → 提交 AIGC
+1. 因每日更新的玩法钩子打开 APP；
+2. 在玩法中完成真实社交动作；
+3. 感知 AI 对内容与决策的实质影响；
+4. 被门店库存、试穿券和任务引导到复购。
 
-**已知可用**: 前置摄像头预览正常 ✅ | 帧差分转身检测 ❓待实测验证
+任何新功能都必须先回答它如何改善日开、分享、活跃或复购。Avatar、NeRF、rig、换装属于内容生产能力，不再主导产品路线。
 
-**类型**: `CaptureFrame {angle, imageDataUrl, capturedAt, qualityScore}` in `src/types/bodyModel.ts`
+## 当前主体验（2026-07-25 更新）
 
-## AIGC 算力调用
+**重要：以下描述反映已发布产品机制。历史版本使用 A/B 裁决、倒计时、assist= 参数等旧机制，已全部替换。**
 
-**AIGC服务器**: `jerry@100.114.7.5` (Tailscale, 密码 `0`, 4090D GPU)
-**API 端口**: `http://100.114.7.5:8765`
+公开入口：`/#/game`，根路由跳转到该页面。
 
-**端点**:
-- `GET /health` → `{"status":"ok","gpu":"4090 D"}`
-- `POST /reconstruct` → 接收 `{measurements, frames: CaptureFrame[]}` → 返回 `{job_id, model_url, vertices, faces, method:"parametric-superellipsoid"}`
-- `GET /models/{job_id}.glb` → 下载生成的 3D 模型
+每日循环：
 
-**服务器代码**: `server/avatar_server.py` — FastAPI + trimesh 参数化人体生成（superellipsoid 截面，14层轮廓）
-
-**前端 API 层**: `src/services/avatarApi.ts`
-- `submitReconstruction(measurements, frames)` → 调 `/reconstruct`
-- `getPresetModelPath(bodyType)` → 返回预置 GLB 路径 `/models/body-{type}.glb`
-
-**预置 GLB**: `public/models/body-{hourglass,pear,apple,rectangle,inverted_triangle}.glb` (32KB each, 897 verts)
-
-**环境**: conda env `DeepLearning` at `/home/jerry/anaconda3/envs/DeepLearning` (CUDA 12.1, torch, trimesh, open3d, fastapi, opencv)
-
-**启动服务器**:
-```bash
-ssh jerry@100.114.7.5 "source ~/anaconda3/etc/profile.d/conda.sh && conda activate DeepLearning && cd ~/avatar-server && nohup python3 avatar_server.py &>/dev/null &"
+```text
+每日城市角色章节（天气 + 商圈 + 商品池）
+  -> 上传照片，建立动漫身份
+  -> 不限时选择 5 层穿搭（内搭/外套/下装/鞋/配饰）
+  -> 编辑发型、动作、表情与背景
+  -> AIGC 生成个人角色与分享海报
+  -> 分享房间链接，好友带自己的身份和 Look 加入
+  -> 2–4 人共创同框（并肩/击掌/走秀/自拍）
+  -> 自愿公开到穿搭广场，其他用户可发现同款
+  -> 看详情 / 门店任务 / 次日章节预告
 ```
 
-## 关键组件
+社交入口：`/#/game?join=<sceneId>&max=4&host=<productIds>`。好友不是评委或投票工具；每位好友独立上传照片、选择完整穿搭，生成统一风格的多人海报。
 
-- `src/components/outfit/GLBModelViewer.tsx` — Three.js GLTFLoader 加载 .glb
-- `src/components/outfit/ProceduralAvatar.tsx` — 程序化人体（纯几何体拼合）
-- `src/services/bodyModelService.ts` — manifest 生成、质量评分
-- `src/hooks/useWeather.ts` — 真实天气 API
+## AIGC 的实质作用
+
+`DailyQuestAigcProvider` 负责两类生成：
+
+- 根据天气、场景、风格标签和库存生成每日任务与候选商品池；
+- 根据用户选择生成个人角色、动作/表情变体、多人构图和广场公开内容。
+
+当前默认实现 `DemoPersonalizedQuestProvider` 是可运行、确定性的演示 Provider，结果会真实随商品标签与库存变化，不冒充远程大模型。`GatewayDailyQuestAigcProvider` 已预留生产 AIGC 接口。
+
+关键文件：
+
+- `src/pages/DailyQuestPage.tsx`：大厅、5 层选搭、角色编辑、生成、分享、好友共创、广场、门店任务；
+- `src/services/dailyQuestAigcProvider.ts`：演示与 Gateway AI Provider；
+- `src/stores/useDailyQuestStore.ts`：连续天数、角色资产与分享状态；
+- `src/types/dailyQuest.ts`：任务、选择和生成结果类型；
+- `src/components/common/BottomNav.tsx`：将"今日副本"设为主入口。
+
+## 商业闭环
+
+- 日开：每日场景、不限时创作、7 日 streak、角色资产成长；
+- 社交：每位好友独立角色，2–4 人同框，双方都有专属内容；
+- 线上活跃：创作、编辑、邀请、广场浏览与点赞；
+- 线下转化：商品映射门店楼层和库存，分享房间后可解锁试穿任务；
+- 复购：商品池按日刷新，角色资产和连续收藏形成次日回访理由。
+
+## Avatar / NeRF 定位
+
+五视角动漫头部生成、stylized avatar、rigged avatar 和 garment 代码可以保留并继续演进，但它们只负责提升未来 AI 海报和角色内容质量。旧 silhouette carving、圆柱人体和低质量 procedural body 只能作为 legacy fallback，禁止重新成为首页或比赛主叙事。
 
 ## 部署
 
 ```bash
-# Cloudflare (主入口，国内可访问)
-source .env && npx wrangler pages deploy dist --project-name=ai-meow-outfit
-
-# GitHub
-git push
+npm run build
+npx wrangler pages deploy dist --project-name=ai-meow-outfit
 ```
 
-## 当前待改进
+生产环境的私有 AIGC 必须经 API Gateway 调用，凭据仅存环境变量或 platform secret，不得写入仓库。开发和部署都只在 `next-gen-avatar` 分支进行，不修改 `main`。
 
-1. 帧差分阈值可能需要根据实际光线环境调参
-2. AIGC 目前只能 Tailscale 内网访问，手机无法直连 → 请求会 fallback 到预置 GLB
-3. 预置 GLB 只有参数化人体，无纹理贴图
+## 下一步原则
+
+优先补真实后端：每日任务配置、好友助力回执、券核销和埋点漏斗。除非它直接改善评审可见体验，不再投入时间打磨旧人体几何。

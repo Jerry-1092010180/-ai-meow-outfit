@@ -36,6 +36,10 @@ export interface SelfieFrame {
   imageDataUrl: string;
   capturedAt: string;
   qualityScore: number;
+  /** True only when the stored pixels, rather than the preview, are mirrored. */
+  mirrored?: boolean;
+  imageWidth?: number;
+  imageHeight?: number;
   faceBox?: { x: number; y: number; width: number; height: number };
   skinToneHex?: string;
   source: 'camera-selfie' | 'manual-upload' | 'guided-head-scan';

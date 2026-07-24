@@ -1,73 +1,62 @@
-# AI喵搭 — 每日AI穿搭灵感
+# AI喵搭 — 每日AI穿搭副本
 
-> OPC 2026 Bounty 03 · 银泰商业 · 为4500万会员设计的AI原生喵街互动玩法
+> OPC 2026 Bounty 03 · 银泰商业 · 为千万级会员设计的AI原生喵街互动玩法
 
-[![Tech Stack](https://img.shields.io/badge/React-18-61DAFB?logo=react)](https://react.dev)
+[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript)](https://www.typescriptlang.org/)
-[![Three.js](https://img.shields.io/badge/Three.js-WebGL-000000?logo=threedotjs)](https://threejs.org/)
 [![Vite](https://img.shields.io/badge/Vite-5-646CFF?logo=vite)](https://vite.dev)
 [![License](https://img.shields.io/badge/license-MIT-blue)](./LICENSE)
 
-**AI天气穿搭 + 3D虚拟试穿 + 好友PK同框 + 即看即买**
+**每日变装副本 + 好友共创 + AI卡通角色 + 即看即买**
+
+裁判入口：**https://next-gen-avatar.ai-meow-outfit.pages.dev** → 打开后进入 `/#/game`
 
 ---
 
-## 🚀 在线体验
+## 🎮 产品简介
 
-> **主链接**：[https://b2efe305.ai-meow-outfit.pages.dev](https://b2efe305.ai-meow-outfit.pages.dev) **← 评委扫码入口**
+**AI喵搭**是银泰百货喵街APP内置的 AI 原生日更互动玩法。用户每天进入一个"变装副本"，在银泰真实商品池中不限时挑选完整穿搭，AI 生成个人卡通角色海报，邀请好友共创多人互动画面，分享到穿搭广场并解锁到店优惠券。
 
-| 备用平台 | 链接 |
-|----------|------|
-| Vercel | [ai-meow-outfit.vercel.app](https://ai-meow-outfit.vercel.app) |
-| GitHub Pages | [jerry1092010180.github.io/-ai-meow-outfit](https://jerry1092010180.github.io/-ai-meow-outfit) |
+### 核心流程
 
-> 建议使用手机模式浏览（Chrome DevTools → iPhone 14 Pro）。
-
----
-
-## 💡 产品简介
-
-**AI喵搭**为银泰百货喵街APP的4500万会员打造。AI根据用户所在地**实时天气**（温度/湿度/天气状况）、个人**身材偏好**（5种身型 × 5种肤色）和银泰**门店新品库存**，每日生成专属穿搭。用户可**360°旋转**查看3D试穿效果，与好友**同框PK**穿搭，一键分享朋友圈，**即看即买**门店在售单品。
+```
+每日副本
+  → 上传身份照片（AI 提取面部特征）
+  → 挑选内搭 → 外套 → 下装/连衣裙 → 鞋履 → 配饰（不限时）
+  → AI 生成个人卡通角色海报（可编辑发型/表情/动作/背景）
+  → 可选择公开到「银泰穿搭广场」
+  → 邀请好友生成各自角色
+  → 2-4 人同框互动（并肩/击掌/走秀/合照）
+  → 分享到朋友圈 → 解锁门店优惠券
+```
 
 ---
 
 ## 🎯 核心功能
 
-| 功能 | 说明 |
-|------|------|
-| 🔮 **每日AI穿搭** | 真实天气API驱动，位置→温湿度→场景化推荐，变量奖励钩子 |
-| 👗 **3D虚拟试穿** | 根据用户身材参数实时生成个性化3D数字人，5套穿搭切换 |
-| ⚡ **PK挑战** | 发起挑战→6位邀请码→好友加入→双人3D同框→投票对决 |
-| 📖 **穿搭日记** | 日历热力图+时间线，连续打卡，积累风格资产 |
-| 🛍️ **即看即买** | 穿搭中每件单品标注门店/楼层/库存/价格，一键购买 |
-| 📤 **AI海报分享** | Canvas合成时尚海报，分享微信/朋友圈/小红书 |
+| 功能 | 入口 | 说明 |
+|------|------|------|
+| 🎮 **每日变装副本** | `/#/game` | 每日场景商品池，5类商品不限时搭配 |
+| 🤖 **AI卡通角色** | 选装完成后自动生成 | 面部特征提取 + 风格化卡通渲染 |
+| 👥 **好友共创** | `/?join=<sceneId>&max=4` | 最多4人同框，4种互动模板 |
+| 🖼️ **穿搭广场** | `/#/game`（广场tab） | 用户公开发布的海报流 |
+| 🛍️ **即看即买** | 角色海报可查看商品详情 | 品牌/价格/门店楼层/到店券 |
+| 👗 **3D虚拟试穿** | `/#/try-on` | 前置摄像头360°采集 + AIGC人体重建 |
 
 ---
 
 ## 🏗️ 技术架构
 
 ```
-React 18 + TypeScript + Vite 5          ← 前端框架
-Three.js (React Three Fiber + Drei)     ← 3D引擎
-TailwindCSS 4 + Framer Motion           ← UI & 动画
-Zustand + localStorage                  ← 状态持久化
-Open-Meteo API                          ← 免费实时天气
-Canvas API                              ← 海报合成
-Web Share API                           ← 社交分享
-```
-
-### AI 管线
-
-```
-实时天气 + 用户风格 + 门店库存
-        ↓
-  LLM 风格策划（Claude/通义千问）
-        ↓
-  Text-to-Image 穿搭生成（SD/Midjourney）
-        ↓
-  3D WebGL 实时渲染（Three.js）
-        ↓
-  每日推送钩子 → 查看 → 分享 → 购买
+React 18 + TypeScript + Vite 5      ← 前端框架
+Three.js (React Three Fiber)        ← 3D引擎
+Three.js GLTFLoader + useGLTF       ← 3D模型加载
+Zustand + localStorage              ← 状态持久化
+Canvas API + CSS Art                ← 卡通角色渲染
+Open-Meteo API                      ← 实时天气
+Cloudflare Pages + Worker           ← 部署 & API Gateway
+Tailscale + 4090D GPU               ← AIGC 私有算力
+MediaPipe Pose (WASM)               ← 人体关键点检测
 ```
 
 ---
@@ -76,18 +65,30 @@ Web Share API                           ← 社交分享
 
 ```
 src/
+├── pages/
+│   ├── DailyQuestPage.tsx    ← 比赛主入口（变装副本+好友共创）
+│   ├── TryOnPage.tsx         ← 3D虚拟试穿（旧版兼容）
+│   ├── HomePage.tsx          ← 天气穿搭首页
+│   └── ...                   ← 其余页面
+├── services/
+│   ├── dailyQuestAigcProvider.ts   ← 副本AI管线
+│   ├── socialAvatarImageProvider.ts ← 社交角色图生成
+│   ├── socialScenePlatformProvider.ts ← 多人房间
+│   ├── stylizedHeadProvider.ts     ← 风格化头像
+│   ├── avatarApi.ts                ← AIGC重建API
+│   └── ...
 ├── components/
-│   ├── common/          # BottomNav, Button, Modal, Toast, StreakBadge
-│   ├── outfit/          # ProceduralAvatar, Model3DViewer, OutfitCard
-│   ├── challenge/       # DualAvatar3D (双人3D同框)
-│   ├── diary/           # OutfitCalendar, DiaryTimeline
-│   └── onboarding/      # StyleQuiz (身型/风格/门店引导)
-├── pages/               # 11 个路由页面
-├── stores/              # 5 个 Zustand stores
-├── services/            # API 服务层 (mock-first, 接口兼容真实API)
-├── hooks/               # 6 个自定义 hooks
-├── types/               # 6 个 TypeScript 类型模块
-└── utils/               # 海报合成, 深度链接, 日期计算, 埋点
+│   ├── outfit/AnimeAvatarViewer.tsx ← 动漫角色渲染器
+│   ├── outfit/GLBModelViewer.tsx    ← 3D GLB查看器
+│   └── ...
+├── types/
+│   ├── dailyQuest.ts         ← 副本数据类型
+│   ├── socialAvatar.ts       ← 社交角色类型
+│   ├── avatarSystem.ts       ← 头像系统类型
+│   └── ...
+├── stores/
+├── config/
+└── utils/
 ```
 
 ---
@@ -97,13 +98,13 @@ src/
 ```bash
 npm install
 npm run dev
-# 打开 http://localhost:5173
+# 打开 http://localhost:5173/#/game
 ```
 
 **生产构建**：
 ```bash
-npm run build     # 输出到 dist/
-npm run preview   # 预览构建产物
+npm run build
+npm run preview
 ```
 
 ---
@@ -113,27 +114,32 @@ npm run preview   # 预览构建产物
 - **赛题**：Bounty 03 — 为4500万会员设计一款AI原生的喵街互动玩法
 - **命题方**：银泰商业
 - **参赛方向**：创想家
-- **项目阶段**：MVP / 原型
+- **项目阶段**：MVP / 原型（可运行H5）
 
 ### 交付物
 
-| 文件 | 位置 |
-|------|------|
-| 专项解决方案（10章） | [`deliverables/`](deliverables/) |
-| 路演Deck大纲（12页） | [`deliverables/`](deliverables/) |
-| 演示视频脚本（3分钟） | [`deliverables/`](deliverables/) |
+| 交付物 | 位置 |
+|--------|------|
+| 商业玩法说明 v2 | [`deliverables/比赛玩法说明-v2.md`](deliverables/比赛玩法说明-v2.md) |
+| AIGC应用说明 v2 | [`deliverables/AIGC应用说明-v2.md`](deliverables/AIGC应用说明-v2.md) |
+| 演示视频 | [`deliverables/video/`](deliverables/video/) |
+| UI截图 | [`deliverables/ui/`](deliverables/ui/) |
+| 短视频硬性清单 | [`deliverables/短视频Demo硬性清单-v2.md`](deliverables/短视频Demo硬性清单-v2.md) |
+| 专项解决方案 | [`deliverables/专项解决方案.md`](deliverables/专项解决方案.md) |
+| 路演Deck | [`deliverables/路演Deck.html`](deliverables/路演Deck.html) |
 
 ---
 
 ## 🔮 路线图
 
 ```
-Q2 原型验证（当前）     Q3 真实AI接入           Q4 3D升级
-├─ H5可运行原型         ├─ 公网部署              ├─ 照片拍照→AI真实3D建模
-├─ 程序化3D建模         ├─ 真实AI图像API         ├─ 真实GLB服装模型库
-├─ 天气驱动推荐          ├─ 喵街会员对接           ├─ 骨骼动画+AR门店试穿
-├─ PK邀请码系统         ├─ 门店库存实时同步        └─ 灰度测试→全量上线
-└─ 本地全流程跑通        └─ 武林店小规模灰度
+当前（MVP）              Q3（真实AI接入）          Q4（产品化）
+├─ 每日变装副本           ├─ AIGC API Gateway      ├─ 门店体测仪对接
+├─ 好友共创多人同框        ├─ 真实AI图像生成         ├─ 用户Avatar系统
+├─ 穿搭广场                ├─ 银泰商品实时同步        ├─ 尺码推荐+购买
+├─ 风格化卡通角色           ├─ NeRF/Gaussian头部重建  ├─ AR门店试穿
+├─ 3D虚拟试穿兼容           └─ 小范围灰度测试          └─ 全量上线
+└─ 本地全流程可运行
 ```
 
 ---

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import AnimeAvatarViewer from '@/components/outfit/AnimeAvatarViewer';
+import StylizedHead3DViewer from '@/components/outfit/StylizedHead3DViewer';
 import { createBodyModelManifest, downloadBodyModelManifest, estimateBodyModelQuality } from '@/services/bodyModelService';
 import { avatarOutfitProvider } from '@/services/avatarOutfitProvider';
 import {
@@ -10,9 +11,11 @@ import {
   DEFAULT_VRM_READY_METADATA,
   DEFAULT_COMIC_RENDER_STYLE,
   faceIdentityProvider,
-  stylizedAvatarProvider,
 } from '@/services/avatarPipeline';
-import { stylizedHeadProvider } from '@/services/stylizedHeadProvider';
+import {
+  NerfStylizedHeadProvider,
+  type NerfStylizedHeadJobStage,
+} from '@/services/nerfStylizedHeadProvider';
 import { analyzeSelfieFrame, type SelfieAnalysis } from '@/services/selfieAnalysis';
 import type { BodyMeasurements, BodyModelManifest, SelfieFrame } from '@/types/bodyModel';
 import type { BodyType } from '@/types';
@@ -38,6 +41,23 @@ const HEAD_SCAN_STEPS: { label: NonNullable<SelfieFrame['poseLabel']>; title: st
   { label: 'up', title: '微微抬头', hint: '下巴稍微抬起，保持脸在框内' },
   { label: 'down', title: '微微低头', hint: '眼睛看屏幕，下巴轻轻收一点' },
 ];
+
+const NERF_STAGE_LABELS: Record<NerfStylizedHeadJobStage, string> = {
+  queued: '等待 4090D 任务',
+  preprocessing: '校正五图方向与头部抠图',
+  'camera-solving': '求解五视角相机位姿',
+  'face-prior-fitting': '建立人脸几何先验',
+  'identity-encoding': '校验身份特征保留',
+  'geometry-training': '训练原始身份 NeRF',
+  'anime-reference-generation': '生成动漫身份参考',
+  'style-distillation': '向 3D 神经场蒸馏动漫风格',
+  'mesh-extraction': '提取连续三维头部网格',
+  'texture-baking': '烘焙动漫 UV 贴图',
+  validation: '验证身份、方向和立体几何',
+  publishing: '发布 GLB 与 360°预览',
+  succeeded: '生成完成',
+  failed: '生成失败',
+};
 
 function speak(text: string) {
   try {
@@ -78,6 +98,9 @@ export default function TryOnPage() {
   const [outfitOptions, setOutfitOptions] = useState<AvatarOutfit[]>([]);
   const [selectedOutfitId, setSelectedOutfitId] = useState<string>('');
   const [apiAvailable, setApiAvailable] = useState(false);
+  const [nerfStage, setNerfStage] = useState<NerfStylizedHeadJobStage>('queued');
+  const [nerfProgress, setNerfProgress] = useState(0);
+  const [nerfError, setNerfError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!window.location.hash.includes('demo=1')) return;
@@ -352,6 +375,9 @@ export default function TryOnPage() {
         imageDataUrl,
         capturedAt: new Date().toISOString(),
         qualityScore: analysis.qualityScore,
+        mirrored: false,
+        imageWidth: canvasRef.current?.width,
+        imageHeight: canvasRef.current?.height,
         faceBox: analysis.faceBox ?? undefined,
         skinToneHex: analysis.skinToneHex,
         source: 'guided-head-scan',
@@ -401,53 +427,71 @@ export default function TryOnPage() {
       createdAt: new Date().toISOString(),
     });
     setManifest(avatarManifest);
+    setNerfError(null);
+    setNerfStage('queued');
+    setNerfProgress(0);
     setStep('reconstructing');
-    let identity: AvatarIdentity | null = null;
     const appearance = createDefaultAppearance(measurements);
     try {
-      identity = await faceIdentityProvider.extract(selfieFrames.length > 0 ? selfieFrames : [primarySelfie], navigator.userAgent.slice(0, 80));
-      const { avatar } = await stylizedAvatarProvider.build({
+      const identity: AvatarIdentity = await faceIdentityProvider.extract(
+        selfieFrames.length > 0 ? selfieFrames : [primarySelfie],
+        navigator.userAgent.slice(0, 80)
+      );
+      const provider = new NerfStylizedHeadProvider({
+        endpoint: import.meta.env.VITE_AVATAR_API_BASE_URL || '/api/avatar',
+        backend: 'nerfacto-face-prior',
+        pollIntervalMs: 2_000,
+        timeoutMs: 45 * 60 * 1_000,
+        minCaptureQuality: 0.18,
+        minIdentityScore: 0.28,
+        minStyleScore: 0.65,
+        minGeometryScore: 0.5,
+        onProgress: (job) => {
+          setNerfStage(job.stage);
+          setNerfProgress(job.progress);
+        },
+      });
+      const stylizedHead = await provider.generate(identity, appearance.style);
+      const avatar: StylizedAvatar = {
+        id: stylizedHead.id,
+        pipeline: 'identity-driven-stylized-avatar',
         identity,
         appearance,
+        stylizedHead,
         outfit: DEFAULT_DEMO_OUTFIT,
-        measurements,
-      });
-      console.log('[Avatar] Submit Success method=' + (avatar.method || 'unknown'));
+        rig: {
+          format: 'glb-static',
+          skeleton: 'none',
+          expressionBlendshapes: [],
+          posePresets: [],
+        },
+        modelUrl: stylizedHead.meshUrl,
+        cdnUrl: stylizedHead.meshUrl,
+        method: 'five-view-nerfacto-anime-head',
+        status: 'ready',
+        providerStage: 'aigc-gateway',
+      };
+      console.log('[NeRFHead] Submit Success model=' + stylizedHead.meshUrl);
       setStylizedAvatar(avatar);
       setApiAvailable(true);
     } catch (err: any) {
-      console.warn('[Avatar] Submit FAILED fallback-to-local-full-anime', err?.message || err);
-      if (identity) {
-        const stylizedHead = await stylizedHeadProvider.generate(identity, appearance.style);
-        setStylizedAvatar({
-          id: `local-anime-avatar-${Date.now().toString(36)}`,
-          pipeline: 'identity-driven-stylized-avatar',
-          identity,
-          appearance,
-          stylizedHead,
-          outfit: DEFAULT_DEMO_OUTFIT,
-          rig: {
-            format: 'vrm-ready',
-            skeleton: 'humanoid-lite',
-            expressionBlendshapes: ['neutral', 'smile', 'cool', 'surprised'],
-            posePresets: ['idle', 'confident-pose', 'wave', 'share'],
-          },
-          method: 'local-full-anime-character-renderer',
-          status: 'ready',
-          providerStage: 'procedural-mock',
-          runtimeMetadata: DEFAULT_VRM_READY_METADATA,
-        });
-        setApiAvailable(true);
-      } else {
-        setStylizedAvatar(null);
-        setApiAvailable(false);
-      }
+      const message = err?.message || 'NeRF 动漫头部生成失败';
+      console.error('[NeRFHead] Submit FAILED', message);
+      setStylizedAvatar(null);
+      setApiAvailable(false);
+      setNerfError(message);
+      setStep('review');
+      return;
     }
     setStep('result');
   };
 
   useEffect(() => {
     if (step !== 'result') return;
+    if (stylizedAvatar?.stylizedHead?.representation === 'neural-field+mesh+texture') {
+      setOutfitOptions([]);
+      return;
+    }
     let cancelled = false;
     avatarOutfitProvider.listDemoOutfits()
       .then((outfits) => {
@@ -462,7 +506,7 @@ export default function TryOnPage() {
     return () => {
       cancelled = true;
     };
-  }, [step]);
+  }, [step, stylizedAvatar?.stylizedHead?.representation]);
 
   const qualityScore = useMemo(
     () => estimateBodyModelQuality(measurements, [], selfieFrame ?? selfieFrames[0] ?? undefined),
@@ -679,9 +723,14 @@ export default function TryOnPage() {
               <div className="rounded-2xl bg-white/5 border border-white/10 p-4 mb-5">
                 <p className="text-white text-sm font-semibold mb-2">生成策略</p>
                 <p className="text-gray-400 text-sm leading-6">
-                  正脸、左右和上下角度会一起提交给 AIGC，用于漫画化脸部特征、头发轮廓和立体角色生成；身体走卡通人物比例，可继续接银泰衣物、pose、表情和社交同框。
+                  五张原图会提交到 4090D：先训练身份几何 NeRF，再把统一动漫风格蒸馏到三维神经场，最后提取连续头部网格并烘焙 GLB 贴图。
                 </p>
               </div>
+              {nerfError && (
+                <div className="mb-4 rounded-lg border border-red-400/30 bg-red-500/10 p-3 text-sm text-red-200">
+                  上次生成失败：{nerfError}
+                </div>
+              )}
               <div className="sticky bottom-4 z-30 flex gap-3 rounded-2xl bg-gray-950/92 py-3 backdrop-blur">
                 <button className="flex-1 py-3 rounded-xl bg-white/5 text-gray-400 text-sm" onClick={startSelfieFlow}>重拍</button>
                 <button className="flex-1 py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold" onClick={submitModeling}>
@@ -693,27 +742,65 @@ export default function TryOnPage() {
 
           {step === 'reconstructing' && (
             <motion.div key="reconstructing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center py-20">
-              <motion.div className="text-7xl mb-6" animate={{ rotate: 360 }} transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}>🧬</motion.div>
-              <h2 className="text-xl font-bold text-white mb-3">AIGC 生成动漫化身中...</h2>
-              {['融合多角度脸部特征...', '生成漫画感立体角色...', '绑定可换装 GLB...'].map((text, index) => (
-                <motion.p key={text} className="text-sm text-gray-400" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.45 }}>
-                  {text}
-                </motion.p>
-              ))}
+              <motion.div
+                className="mb-6 h-16 w-16 rounded-full border-4 border-white/15 border-t-pink-400"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
+              />
+              <h2 className="mb-2 text-xl font-bold text-white">五视角动漫 3D 头部生成中</h2>
+              <p className="mb-5 text-sm text-pink-200">{NERF_STAGE_LABELS[nerfStage]}</p>
+              <div className="h-2 w-full max-w-xs overflow-hidden rounded bg-white/10">
+                <motion.div
+                  className="h-full bg-pink-400"
+                  animate={{ width: `${Math.max(2, Math.round(nerfProgress * 100))}%` }}
+                />
+              </div>
+              <p className="mt-2 text-xs text-gray-500">{Math.round(nerfProgress * 100)}% · 训练期间请保持页面打开</p>
             </motion.div>
           )}
 
           {step === 'result' && manifest && (
             <motion.div key="result" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               <div className="text-center mb-4">
-                <h2 className="text-xl font-bold text-white mb-1">{apiAvailable ? '动漫化身已生成' : '预置化身预览'}</h2>
-                <p className="text-gray-400 text-sm">漫画感角色 · 可接银泰衣物换装和 pose 分享</p>
+                <h2 className="text-xl font-bold text-white mb-1">{apiAvailable ? '动漫 3D 头部已生成' : '预置化身预览'}</h2>
+                <p className="text-gray-400 text-sm">五视角 NeRF · AnimeGANv2 风格蒸馏 · GLB</p>
               </div>
+              {selfieFrames.length === 5 && (
+                <div className="mb-3 grid grid-cols-5 gap-1.5">
+                  {HEAD_SCAN_STEPS.map((scanStep) => {
+                    const frame = selfieFrames.find((item) => item.poseLabel === scanStep.label);
+                    return (
+                      <div key={scanStep.label} className="overflow-hidden rounded border border-white/10 bg-white/5">
+                        {frame && <img src={frame.imageDataUrl} alt={scanStep.title} className="aspect-[3/4] h-full w-full object-cover" />}
+                        <p className="py-1 text-center text-[9px] text-gray-400">{scanStep.label}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
               <div className="mb-5">
-                {apiAvailable && stylizedAvatar ? (
+                {apiAvailable && stylizedAvatar?.stylizedHead?.meshUrl ? (
+                  <StylizedHead3DViewer
+                    modelUrl={stylizedAvatar.stylizedHead.meshUrl}
+                    previewUrl={stylizedAvatar.stylizedHead.previewDataUrl}
+                  />
+                ) : apiAvailable && stylizedAvatar ? (
                   <AnimeAvatarViewer avatar={stylizedAvatar} outfit={selectedOutfit} />
                 ) : null}
               </div>
+              {stylizedAvatar?.stylizedHead?.animeReferenceUrl && (
+                <div className="mb-4 grid grid-cols-[96px_1fr] gap-3 rounded-lg border border-white/10 bg-white/5 p-3">
+                  <img
+                    src={stylizedAvatar.stylizedHead.animeReferenceUrl}
+                    alt="身份保持动漫参考"
+                    className="aspect-square w-24 rounded object-cover"
+                  />
+                  <div className="self-center">
+                    <p className="text-sm font-semibold text-white">身份保持动漫参考</p>
+                    <p className="mt-1 text-xs leading-5 text-gray-400">该参考用于三维风格蒸馏，不是贴在模型正面的照片平面。</p>
+                  </div>
+                </div>
+              )}
               {outfitOptions.length > 0 && (
                 <div className="mb-4">
                   <div className="mb-2 flex items-center justify-between">

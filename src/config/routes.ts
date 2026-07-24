@@ -1,6 +1,8 @@
 // ── Route paths ──
 export const ROUTES = {
   HOME: '/',
+  GAME: '/game',
+  OUTFIT: '/outfit',
   ONBOARDING: '/onboarding',
   DIARY: '/diary',
   CHALLENGES: '/challenges',

@@ -1,4 +1,6 @@
-# AI喵搭 — Codex 接手提示词
+# AI喵搭 — Codex 接手提示词（历史上下文）
+
+> ⚠️ **历史上下文**：以下内容记录 OPC 前期和中期开发状态。当前比赛主入口是 `DailyQuestPage.tsx` / `/#/game` 的每日 AI 穿搭与好友共创玩法。原 TryOn / legacy reconstruction 线为历史兼容或实验入口，不再主导产品路线。[完整更新见 CONTEXT.md](./CONTEXT.md)
 
 ## 项目定位
 
@@ -12,7 +14,7 @@ OPC 2026 商业比赛项目。为银泰百货喵街 APP 4500 万会员设计 AI 
 入口上下文：`CONTEXT.md`（项目结构 + AIGC 连接方式）
 架构设计：`ARCHITECTURE.md`、`next-gen-architecture.md`
 文档：`docs/`（avatar-pipeline-design.md、database-design.md、avatar-platform-design.md 等）
-AIGC 服务器：`jerry@100.114.7.5` / 密码 `0` / 4090D GPU / conda DeepLearning
+AIGC 服务器：Tailscale 私网主机 / 4090D GPU / conda DeepLearning。登录凭据仅存本地密钥链或 secret manager，禁止写入仓库。
 
 ## 当前状态
 
