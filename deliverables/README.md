@@ -20,16 +20,17 @@
 | 材料 | 文件 | 备注 |
 |---|---|---|
 | 在线 H5 | `https://next-gen-avatar.ai-meow-outfit.pages.dev/#/game` | 手机浏览器打开 |
-| **OnePager（评审版）** | `OnePager.html` | 打印/PDF：A4 单页，浏览器打印即可 |
-| **路演 Deck（评审版）** | `路演Deck.html` | 12 页，浏览器打印为 PDF（16:9） |
-| 比赛玩法说明 | `比赛玩法说明-v2.md` | 已更新至当前产品机制 |
-| AIGC 应用说明 | `AIGC应用说明-v2.md` | 含静态+动态视频生成说明 |
-| **动态试穿视频技术路径** | `动态试穿视频技术路径.md` | 数字人商品展示视频工程路线 |
+| **OnePager（评审版）** | [`AI喵搭-OnePager-评审版.pdf`](./AI喵搭-OnePager-评审版.pdf) | 1 页 A4，单页完整版 |
+| **路演 Deck（评审版）** | [`AI喵搭-路演Deck-评审版.pdf`](./AI喵搭-路演Deck-评审版.pdf) | 12 页 16:9 |
+| **AIGC 技术可行性** | [`AI喵搭-AIGC技术可行性.pdf`](./AI喵搭-AIGC技术可行性.pdf) | AIGC 引擎 + 动态视频技术路线 |
+| 比赛玩法说明 | [`比赛玩法说明-v2.md`](./比赛玩法说明-v2.md) | 已更新至当前产品机制 |
+| AIGC 应用说明 | [`AIGC应用说明-v2.md`](./AIGC应用说明-v2.md) | 含静态+动态视频生成说明 |
+| **动态试穿视频技术路径** | [`动态试穿视频技术路径.md`](./动态试穿视频技术路径.md) | 数字人商品展示视频工程路线 |
 | 演示视频（本地） | `video-v3/喵搭.mp4` | 仅限本地，不提交普通 Git |
 | 加分材料 | `bonus/` | 工作流架构、Prompts、真实性证据 |
 | UI 图 | `bonus/screenshots/` | 联系人截图 |
 
-> **旧版 OnePager/Deck PDF（`OnePager.pdf`、`路演Deck.pdf`、`output/pdf/`）包含过期的 A/B 方案和好友投票叙事，不再作为正式评审材料。** 请使用上述 `OnePager.html` 和 `路演Deck.html` 打印生成。
+> **注意**：源文件 `OnePager.html`（可打印为 A4 PDF）和 `路演Deck.html`（可打印为 16:9 PDF）也同时可用。旧版 PDF（`OnePager.pdf`、`路演Deck.pdf`、`output/pdf/`）包含过期的 A/B 方案和好友投票叙事，不再作为正式评审材料。
 
 ## 评委评分点对应
 
