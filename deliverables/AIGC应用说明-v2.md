@@ -1,120 +1,91 @@
-# AIGC 应用说明 v2
+# AIGC 实质应用说明
 
 ## 结论
 
-AI 在“喵街 AI 今日角色”中同时承担**玩法决策引擎**和**内容生产引擎**。它决定用户每天玩到什么、A/B 为什么不同、结果如何解释、分享出去展示什么，以及哪些银泰商品进入购买链路。它不是页面上增加一句“AI 推荐”。
+AIGC 是“AI 喵搭”的内容生产引擎，而不是概念点缀。用户每天打开后获得的个人角色、动作/表情变体、好友多人海报和广场内容都由结构化生成任务驱动。
 
-## 输入、推理与输出
+## 输入与输出
 
-### 输入
+**输入**
 
-- 当日天气、温度、城市与时段。
-- 今日社交场景和每周剧情进度。
-- 用户风格标签、历史选择与好友反馈。
-- 用户本局三轮商品选择。
-- 银泰商品信息、门店、楼层和库存。
-- 可选的用户头像/动漫分身素材。
+- 用户身份参考：脸型、五官比例、发型与授权状态。
+- 完整穿搭：内搭、外套、下装、鞋履、配饰。
+- 每日上下文：日期、天气、商圈、章节剧情。
+- 内容偏好：发型、动作、表情、背景。
+- 社交上下文：2–4 位成员、各自角色与互动模板。
 
-### AI 决策点
+**输出**
 
-1. 生成当日任务叙事和三轮选择提示。
-2. 识别用户三件选择中的“身份锚点”。
-3. 生成 LOOK A：保留用户选择并做场景化精修。
-4. 生成 LOOK B：保留身份锚点，替换两件在售商品。
-5. 计算并解释场景、风格、天气和库存维度。
-6. 生成个人穿搭效果图、标题、标签与分享文案。
-7. 将好友最终选择记录为下一次个性化信号。
+- 保留身份特征的动漫角色内容。
+- 同一身份下的动作、表情和背景版本。
+- 保留每位成员身份与商品的多人互动海报。
+- 广场标题、标签和可回流商品清单。
 
-### 输出
-
-- 两套来源清晰、商品可追溯的完整造型。
-- 每套方案的分数、策略和自然语言理由。
-- 用户个人穿搭效果图或动漫角色封面。
-- 带真实商品映射的可购清单。
-- 好友投票卡和次日任务提示。
-
-## 没有 AI 会损失什么
-
-| 能力 | 移除 AI 后的退化 |
-|---|---|
-| 每日内容 | 固定题库轮播，缺少天气和用户差异 |
-| A/B 冲突 | 两套随机商品，无法解释来源 |
-| 个人内容 | 所有人得到相同海报和文案 |
-| 商业推荐 | 仅展示商品列表，缺少场景决策 |
-| 学习闭环 | 好友投票无法影响后续内容 |
-
-因此，AI 输出变化会直接改变玩法结果、社交内容和购买入口，属于实质应用。
-
-## Provider 架构
+## Agent / Provider 流程
 
 ```text
-H5 DailyQuestPage
-  ↓ DailyQuestAigcProvider
-  ├─ DemoPersonalizedQuestProvider
-  │    确定性规则，用于离线可运行比赛原型
-  └─ GatewayDailyQuestAigcProvider
-       ↓ API Gateway
-       ↓ 私有 AIGC 算力
-       ├─ 场景/搭配推理模型
-       ├─ 商品检索与库存约束
-       └─ 个人穿搭图像生成模型
-       ↓ CDN 返回效果图与结构化结果
+DailyQuestOrchestrator
+├─ IdentityProvider
+├─ ProductResolver
+├─ StoryPlanner
+├─ SocialAvatarImageProvider
+├─ SocialSceneComposer
+└─ ValidationGate
+   ├─ identity score
+   ├─ per-layer product consistency
+   ├─ anatomy / composition
+   ├─ privacy / moderation
+   └─ providerStage / traceId / fallbackReason
 ```
 
-业务页面只依赖 `DailyQuestAigcProvider`，真实模型接入时不需要重写页面状态流。
+## 当前与生产 Provider
 
-## 建议的生产 API
+| 模块 | 当前原型 | 生产替换 |
+|---|---|---|
+| 每日任务 | `DemoPersonalizedQuestProvider` | `GatewayDailyQuestAigcProvider` |
+| 个人角色 | `providerStage=effect-preview` | 身份保持型动漫角色 Provider |
+| 多人场景 | 本地房间 + 效果海报 | Gateway Social Scene Provider |
+| 商品数据 | 项目样例字段 | 银泰 PIM / 库存 / 授权商品图 |
+| 资产回传 | 前端资源 | R2 / CDN URL |
 
-### 创建今日副本
+## 为什么不是普通规则推荐
 
-`POST /api/daily-quest`
+规则可以筛商品，但不能完成以下任务：
 
-输入：用户画像、日期、天气、门店、库存摘要。
+1. 把用户身份统一成漫画视觉并保持可辨识度。
+2. 将 5 层商品合成为一个协调的人物画面。
+3. 保持同一身份，生成不同动作、表情和背景内容。
+4. 在 2–4 人场景中保持每个人的脸与穿搭不串位。
+5. 对生成结果做视觉一致性检查并局部重试。
 
-输出：今日剧情、三轮候选、奖励、次日预告和 `traceId`。
+因此 AIGC 直接决定可消费、可分享的内容产出，是玩法成立的必要条件。
 
-### 生成 A/B 方案
-
-`POST /api/daily-quest/{questId}/look`
-
-输入：三轮选择、用户风格向量、可选头像素材。
-
-输出：
+## 生产请求示例
 
 ```json
 {
-  "candidateLooks": [
-    { "id": "A", "strategy": "preserve-user-choice", "items": ["..."], "imageUrl": "https://cdn/..." },
-    { "id": "B", "strategy": "retain-one-replace-two", "items": ["..."], "imageUrl": "https://cdn/..." }
-  ],
-  "dimensions": [],
-  "generationTrace": [],
-  "providerStage": "gateway-aigc-provider",
-  "traceId": "..."
+  "identityId": "avatar_user_1024",
+  "look": {
+    "inner": "item-001",
+    "outerwear": "item-011",
+    "bottom": "item-029",
+    "shoes": "item-005",
+    "accessory": "item-010"
+  },
+  "episode": "2026-07-20-hangzhou-rooftop",
+  "pose": "confident-main-character",
+  "expression": "smile",
+  "background": "lakeside-neon",
+  "providerStage": "gateway-aigc-provider"
 }
 ```
 
-## 当前真实能力与效果示意
+返回必须包含 `imageUrl`、`traceId`、`providerStage`、身份置信度、商品逐层一致性与 `fallbackReason`。
 
-| 项目 | 当前状态 | 路演表述 |
-|---|---|---|
-| A/B 数据结构与来源 | 已真实实现 | 可现场点击和检查分享参数 |
-| 商品、天气、门店约束 | 已进入确定性 Demo 逻辑 | 原型已验证交互，生产切换模型 Provider |
-| 评分、标题和理由 | 当前为规则生成 | 不声称正在运行大模型 |
-| 个人穿搭效果图 | 当前为前端效果示意 | 明确标记“AIGC 效果示意” |
-| Gateway Provider | 接口已预留 | 生产架构，不冒充已在线调用 |
-| 好友服务端回执 | 当前可模拟 | 生产需账号和投票 API |
+## 真实性与安全
 
-## 最终答辩必须提供的 AI 证据
-
-1. 同一用户改变一件选择后，A/B 商品和理由发生可解释变化。
-2. 两个不同风格用户获得不同 B 方案和效果图。
-3. 展示一条真实 Gateway 请求、响应、`traceId`、模型版本和耗时。
-4. 效果图 URL 来自 CDN，而不是预置静态文件。
-5. 模型失败时显示明确 fallback，不把模板图伪装成个性化结果。
-6. 展示好友选择如何进入下一次推荐输入。
-
-## 本轮 Demo 的诚实边界
-
-当前比赛原型优先验证“每日内容 → AI 双方案 → 社交选择 → 到店转化”是否有吸引力。高算力个人穿搭图暂以效果图占位，待玩法获得认可后再接入真实生成服务。路演中应将它称为“目标输出效果示意”，而不是已经上线的模型结果。
-
+- 当前图片明确标记为效果演示，不包装成生产级个性化输出。
+- 原始身份照片默认不进入公开广场。
+- 浏览器不直连私有 GPU，只访问 API Gateway。
+- 凭据只保存在平台 Secret。
+- Provider 失败必须显式降级并记录原因。
