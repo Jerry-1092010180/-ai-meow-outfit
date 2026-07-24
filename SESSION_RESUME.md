@@ -1,102 +1,56 @@
-# 会话恢复点 — 2026-07-22
+# 会话恢复点 — 2026-07-24
 
-## 项目状态
+本文件只记录交接时的本地事实。完整任务见 `TO_CLAUDE_CODE.md`。
 
-| 项目 | 值 |
-|------|-----|
-| 分支 | `next-gen-avatar` |
-| HEAD | `aac57e6` |
-| 远程 | `origin/next-gen-avatar` |
-| 工作区 | ✅ 干净 |
-| 构建状态 | ✅ 通过 |
-| 默认分支 | 已改为 `next-gen-avatar`（contribution 已计入） |
-| Demo 线上 | `https://c04a54c9.ai-meow-outfit.pages.dev/#/game` |
+## 仓库
 
-## 最近完成的工作
+- 路径：`/Users/jerry/Documents/Codex/ai-meow-outfit`
+- 远端：`https://github.com/Jerry-1092010180/-ai-meow-outfit.git`
+- 分支：`next-gen-avatar`
+- 本地 HEAD：`c707a53 feat(game): refine intuitive outfit selection and public look plaza`
+- 远端跟踪分支：`origin/next-gen-avatar`
+- 交接时本地比远端多 1 个提交；开始工作后必须重新 `git fetch --prune` 核验。
+- 工作区不是干净状态，包含用户修改的比赛文档、视频工程、成片、PDF、截图和生成脚本。
 
-### 1. 产品方向：每日变装副本（Codex 完成）
-- 入口 `/#/game`，根路由跳转到 game
-- 5类商品不限时挑选（内搭/外套/下装/鞋/配饰）
-- AI A/B 双方案生成（保留版/反转版）
-- 好友投票选封面 + 奖励
-- 风格化卡通角色（Canvas 面部特征提取 + 渲染）
-- 穿搭广场（用户公开发布，默认隐私）
-- 多人房间共创（最多4人，4种互动模板）
-- 3件品牌服装 GLB（Burberry/Sandro/Theory）
+## 本地工具
 
-### 2. 架构设计（之前完成）
-- AI Provider 接口层（7个plugable provider）
-- GLB Viewer 路径修复（BASE_URL 兼容）
-- Pipeline 日志系统（28条日志覆盖7文件）
-- Debug Audit 完成
+- Node.js：`v22.22.2`
+- npm：`10.9.7`
+- `.nvmrc`：`22`
+- 根项目：Vite + React；`npm run build` 已通过。
+- `npm run lint` 已通过但仍有非阻塞 warning。
+- 视频项目有独立的 `deliverables/video-v2/package.json` 和 lockfile。
+- 根项目中曾误加的 Remotion 依赖已从 `package.json` / `package-lock.json` 清理，两个根依赖文件在交接时与 HEAD 一致。
 
-### 3. 交付物（已更新）
-- `deliverables/OnePager.html` + `.pdf` — 比赛一页纸
-- `deliverables/路演Deck.html` + `.pdf` — 12页路演Deck
-- `deliverables/比赛玩法说明-v2.md` — 商业玩法
-- `deliverables/AIGC应用说明-v2.md` — AI技术说明
-- `deliverables/短视频Demo硬性清单-v2.md` — 视频清单
-- `deliverables/ui/` — UI截图
-- `deliverables/video/` — 演示视频
-- `deliverables/专项解决方案.md` — 方案文档
-- `deliverables/原创与AI使用承诺书_已填写.docx` — 承诺书
-- `CONTEXT.md` — 更新为最新产品描述
-- `README.md` — 更新为每日副本产品
+## 本地 Git 选项
 
-### 4. AIGC 后端
-- AIGC 服务器运行在 4090D GPU（Tailscale 内网）
-- `server/avatar_server.py` — FastAPI + 参数化人体 + silhouette carving
-- `server/gateway-worker.js` — Cloudflare Worker（待部署）
-- `server/rigged_avatar_provider.py` — 骨骼 Avatar
-- `server/nerf_*.py` — NeRF/Gaussian头部重建管线
+仓库级 `.git/config` 已设置：
 
-## 未完成的待办
+- `core.quotepath=false`
+- `fetch.prune=true`
+- `pull.ff=only`
+- `push.autoSetupRemote=true`
+- `remote.pushDefault=origin`
+- `branch.next-gen-avatar.pushRemote=origin`
+- `rerere.enabled=true`
 
-### P0 — 演示阻塞
-- [ ] **Bug 1**: `captureAnalysis.ts` findBodyByColor THRESH=22 太高 → 卡 0/8
-- [ ] **Bug 2**: Gateway Worker 未部署 → 手机无法触发 AIGC 重建
-- [ ] **Bug 3**: 摄像头在某些手机仍黑屏
+Git 提交身份已存在。Git LFS 在交接时未安装。
 
-### P1 — 产品
-- [ ] 每日副本后端接入（目前为 DemoProvider 模拟）
-- [ ] 好友投票回执服务端
-- [ ] 到店券核销链路
+## 已做的本地整理
 
-### P2 — 比赛提交
-- [ ] 录制正式演示视频
-- [ ] 路演 Deck 导出 PDF（已生成，可用 `Cmd+P` 重新打印）
-- [ ] OPC 官网提交材料
+- `.gitignore` 新增 Cloudflare 缓存、本地环境文件、临时渲染目录、视频虚拟环境/缓存及明确中间产物规则。
+- `.oxlintrc.json` 排除第三方 vendor、视频独立工程和生成输出，避免 vendor 代码导致根项目 lint 失败。
+- 最终视频、字幕、处理后人声、PDF 和可复现源文件没有被删除。
+- 未执行 `git add`、`git commit`、`git push` 或远端部署。
 
-## 关键文件索引
+## Cloudflare 线索
 
-| 文件 | 说明 |
-|------|------|
-| `src/pages/DailyQuestPage.tsx` | 主入口（game） |
-| `src/services/dailyQuestAigcProvider.ts` | 副本AI管线 |
-| `src/services/socialAvatarImageProvider.ts` | 社交角色图生成 |
-| `src/services/socialScenePlatformProvider.ts` | 多人房间 |
-| `src/services/stylizedHeadProvider.ts` | 风格化头像 |
-| `src/components/outfit/AnimeAvatarViewer.tsx` | 动漫角色渲染 |
-| `src/pages/TryOnPage.tsx` | 旧3D试穿入口 |
-| `src/services/captureAnalysis.ts` | 采集算法（Bug 1） |
-| `server/avatar_server.py` | AIGC重建服务 |
-| `server/gateway-worker.js` | API Gateway（待部署） |
-
-## 恢复操作
-
-```bash
-# 进入项目
-cd /Users/jerry/PycharmProjects/ai-meow-outfit
-
-# 切到正确分支
-git checkout next-gen-avatar
-
-# 启动开发服务器
-npm run dev
-
-# 部署到公网
-source .env && npx wrangler pages deploy dist --project-name=ai-meow-outfit
-
-# 启动AIGC服务器（如果关了）
-ssh jerry@100.114.7.5 "source ~/anaconda3/etc/profile.d/conda.sh && conda activate DeepLearning && cd ~/avatar-server && nohup python3 avatar_server.py &>/dev/null &"
-```
+- 失败检查：`Workers Builds: ai-meow-outfit`
+- Build ID：`518f5ab9-15c9-4986-879c-554ecbc2e867`
+- 失败时间：2026-07-22 10:34:38 UTC，开始和结束为同一秒。
+- Dashboard：
+  `https://dash.cloudflare.com/d34547c9fac0c5b36be18d5a83535c62/workers/services/view/ai-meow-outfit/production/builds/518f5ab9-15c9-4986-879c-554ecbc2e867`
+- 根项目本地构建通过，因此要优先核对 Cloudflare 项目类型、Git 集成、根目录、构建命令、输出目录和配置文件发现逻辑。
+- `.github/workflows/deploy.yml` 当前是 Cloudflare Pages 流程，只监听 `main`。
+- `wrangler.avatar.jsonc` 是另一个名为 `avatar-gateway` 的 Worker，不能误当成前端静态站配置。
+- 之前的浏览器会话和本地 Wrangler 都没有有效 Cloudflare 登录，因此没有拿到失败日志。

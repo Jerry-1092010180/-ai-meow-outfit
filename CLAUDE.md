@@ -1,49 +1,29 @@
-# CLAUDE.md — AI喵搭 项目配置
+# Claude Code 项目入口
 
-## 会话初始化（自动执行）
+开始任何操作前，先完整阅读：
 
-每次 Claude Code 启动时，自动执行以下操作：
+1. `TO_CLAUDE_CODE.md`：本次接管任务、真实仓库状态、边界与验收标准。
+2. `SESSION_RESUME.md`：2026-07-24 的本地快照。
+3. `CONTEXT.md`、`TO_CODEX.md`、`README.md`：产品与技术背景；如内容冲突，以代码和当前交付物为准，并在本次整理中修正文档。
 
-1. 确认当前在 `next-gen-avatar` 分支
-2. 检查 `SESSION_RESUME.md` 是否有未完成的任务
-3. 检查 Git 状态是否有未提交修改
+## 固定规则
 
-## 会话关闭（自动执行）
+- 仓库路径：`/Users/jerry/Documents/Codex/ai-meow-outfit`
+- 当前工作分支：`next-gen-avatar`
+- 使用 Node.js 22；根项目使用根目录 `package.json`，视频项目使用 `deliverables/video-v2/package.json`。
+- 不要把 Remotion 依赖重新装到根项目。
+- 保留用户已有的文档、视频、音频、PDF、截图和源文件；先分类，再决定是否提交。
+- 禁止 `git reset --hard`、`git clean -fd`、`git checkout -- <path>`、force push、重写历史和直接推送 `main`。
+- 禁止提交 `.env`、`.dev.vars`、Token、Cookie、Cloudflare/GitHub 凭据或私网服务凭据。
+- 用户已授权你完成整理、修复、逻辑拆分提交、推送 `next-gen-avatar` 并跟进远端检查；生产环境手动部署、删除远端资源或修改密钥不在默认授权内。
+- 不要 amend 当前未推送的 `c707a53`；新增独立提交。
 
-每次对话结束时，追加本次工作摘要到 `docs/session-log.md`：
+## 每次结束前
 
-```
-- 2026-07-22: <本次完成的主要工作>
-- 2026-07-22: <遗留问题和下一步>
-```
+运行 `npm run lint`、`npm run build`、`git diff --check`，检查大文件和敏感信息，并报告：
 
-不自动提交 Git，不自动 Push。
-
-## 项目红线
-
-1. **所有开发在 `next-gen-avatar` 分支，绝不修改 `main`**
-2. **每次提交必须有清晰的 commit message，格式为 `feat|fix|docs|chore(module): description`**
-3. **AI 模型必须通过 Provider 接口调用，不可硬编码**
-4. **所有 fallback 路径必须输出 `[Avatar]` 标签日志**
-5. **绝不把 `.env`、密码、Token、SSH 凭据、内网 IP 提交到 Git**
-
-## 关键文件
-
-| 用途 | 文件 |
-|------|------|
-| 会话恢复 | `SESSION_RESUME.md` |
-| 项目上下文 | `CONTEXT.md` |
-| 架构设计 | `ARCHITECTURE.md`、`next-gen-architecture.md` |
-| 数据库设计 | `docs/database-design.md` |
-| Pipeline 设计 | `docs/avatar-pipeline-design.md` |
-| 平台设计 | `docs/avatar-platform-design.md` |
-| Debug 审计 | `debug-audit.md` |
-| 比赛交付物 | `deliverables/` |
-| AIGC 服务器 | `server/avatar_server.py` |
-| API Gateway | `server/gateway-worker.js` |
-
-## 部署命令
-
-```bash
-npm run build && source .env && npx wrangler pages deploy dist --project-name=ai-meow-outfit
-```
+- 改了什么；
+- 生成了哪些提交；
+- 推送到哪里；
+- 远端检查结果；
+- 未解决问题和原因。
