@@ -1,4 +1,6 @@
-# AI喵搭 — Codex 接手提示词
+# AI喵搭 — Codex 接手提示词（历史上下文）
+
+> ⚠️ **历史上下文**：以下内容记录 OPC 前期和中期开发状态。当前比赛主入口是 `DailyQuestPage.tsx` / `/#/game` 的每日 AI 穿搭与好友共创玩法。原 TryOn / legacy reconstruction 线为历史兼容或实验入口，不再主导产品路线。[完整更新见 CONTEXT.md](./CONTEXT.md)
 
 ## 项目定位
 

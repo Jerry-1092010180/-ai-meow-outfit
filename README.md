@@ -1,6 +1,6 @@
 # AI喵搭 — 每日AI穿搭副本
 
-> OPC 2026 Bounty 03 · 银泰商业 · 为4500万会员设计的AI原生喵街互动玩法
+> OPC 2026 Bounty 03 · 银泰商业 · 为千万级会员设计的AI原生喵街互动玩法
 
 [![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript)](https://www.typescriptlang.org/)
@@ -9,7 +9,7 @@
 
 **每日变装副本 + 好友共创 + AI卡通角色 + 即看即买**
 
-裁判入口：**https://c04a54c9.ai-meow-outfit.pages.dev** → 打开后进入 `/#/game`
+裁判入口：**https://next-gen-avatar.ai-meow-outfit.pages.dev** → 打开后进入 `/#/game`
 
 ---
 

@@ -60,6 +60,38 @@ DailyQuestOrchestrator
 
 因此 AIGC 直接决定可消费、可分享的内容产出，是玩法成立的必要条件。
 
+## 动态视频生成扩展
+
+除静态角色海报外，技术路线支持扩展为 5–15 秒动态商品展示短片。
+
+### 生产能力
+
+- 写实真人商品展示视频（保持用户原貌）。
+- 漫感/2.5D 电子角色商品展示。
+- 指定动作：站姿展示、走秀、转身、打招呼。
+- 2–4 人共同入镜，各自保持角色与商品。
+- 每条内容绑定 SKU、商品详情与门店入口。
+
+### 四层控制（生产目标）
+
+| 控制层 | 说明 | 检查项 |
+|--------|------|--------|
+| Identity Lock | 将用户照片转为可复用角色资产 | identityConsistency ≥ 0.80 |
+| Garment Lock | 逐层锁定商品颜色/轮廓/Logo | garmentConsistency ≥ 0.72/层 |
+| Motion Reference | 接收动作参考视频或姿态序列 | temporalConsistency ≥ 0.85 |
+| Validation Gate | 审核/闪烁/穿模/身份检查 | moderationResult + traceId |
+
+### 技术参考
+
+代表性可接入方案（**非已集成，属于可替换 Provider**）：
+
+- **LibTV / LiblibAI**：节点式多模态视频工作台、角色库与人像质感调节（https://www.liblib.art/）。
+- **Seedream 5.0 Pro**：人物参考图生成、真实肤质、多参考图融合（https://seed.bytedance.com/en/seedream5_0_pro）。
+- **Seedance 2.0**：接收人物图、商品图、动作视频、场景和镜头参考（https://seed.bytedance.com/en/blog/seedance-2-0-official-launch）。
+- **私有 GPU Provider**：基于开源模型自建，用于成本、隐私和品牌定制。
+
+详细技术路径见 [`动态试穿视频技术路径.md`](./动态试穿视频技术路径.md)。
+
 ## 生产请求示例
 
 ```json

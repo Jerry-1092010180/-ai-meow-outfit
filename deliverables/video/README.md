@@ -1,4 +1,6 @@
-# 喵街 AI 今日角色：比赛短视频 Demo
+# 喵街 AI 今日角色：比赛短视频 Demo（历史存档）
+
+> ⚠️ **此目录记录旧版比赛 Demo 视频和描述（含 A/B 方案、三轮选择、好友裁决）。当前版产品已全部替换上述机制。正式演示视频见 `deliverables/video-v3/喵搭.mp4`。**
 
 ## 最终文件
 
@@ -7,30 +9,9 @@
 - `timeline.json`：逐段起止时间与旁白文本。
 - `validation.json`：最终编码、分辨率、音轨和时长验证结果。
 
-最终音轨已进行响度标准化；自动检测未发现超过 1.2 秒的异常静音。
+## 当前版产品差异
 
-## 内容结构
-
-1. 中低频会员缺少每日打开理由。
-2. 七日剧情、次日预告与角色卡形成每日钩子。
-3. 用户用 60 秒完成三轮商品选择。
-4. AI 读取天气、风格、选择与库存。
-5. A 保留三件，B 保留身份单品并由 AI 替换两件。
-6. 好友选择最终封面。
-7. 投票回流解锁到店券与试穿任务。
-8. 说明当前真实能力和生产 AIGC 接入边界。
-
-## 真实性声明
-
-- 视频中的 H5 交互链路和 A/B 商品决策结构已经真实实现。
-- 当前个性穿搭海报属于比赛原型效果示意，不冒充在线扩散模型输出。
-- 生产版本目标是经 API Gateway 调用私有 AIGC 算力，并由 CDN 返回生成资产。
-
-## 重新生成
-
-脚本依赖 macOS 中文语音 `Tingting`、Pillow、ffmpeg 和 ffprobe：
-
-```bash
-/Users/jerry/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 \
-  deliverables/video/build_demo_video.py
-```
+- 当前产品为**不限时的 5 层完整穿搭选择**，无倒计时、无 A/B 方案、无好友投票/裁决。
+- 好友各自创建角色后**共同入镜**，而非代替房主投票。
+- 正式演示视频：`deliverables/video-v3/喵搭.mp4`（仅限本地，不提交普通 Git）。
+- 完整交付物列表见 [`deliverables/README.md`](../README.md)。
