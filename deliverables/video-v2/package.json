@@ -1,0 +1,21 @@
+{
+  "name": "ai-meow-competition-video",
+  "private": true,
+  "version": "2.0.0",
+  "scripts": {
+    "studio": "remotion studio src/index.tsx",
+    "render:visual": "remotion render src/index.tsx AiMeowCompetitionDemo output/visual.mp4 --codec=h264 --crf=18 --concurrency=8",
+    "render:pro": "remotion render src/pro.tsx AiMeowPro build/v3/visual-pro.mp4 --codec=h264 --crf=17 --concurrency=8",
+    "render": "bash render.sh"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.494",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "remotion": "4.0.494"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "typescript": "^6.0.0"
+  }
+}
