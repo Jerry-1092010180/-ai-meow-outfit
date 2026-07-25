@@ -8,52 +8,43 @@
   @page { size: A4 portrait; margin: 0; }
   @media print {
     body, .page { width: 210mm; height: 297mm; }
-    .page { padding: 7mm 7mm 5mm; box-shadow: none; }
-    .top-row { height: 24mm; gap: 6mm; margin-bottom: 2.5mm; }
-    .brand h1 { font-size: 22pt; }
-    .brand p { font-size: 8pt; margin-top: 1mm; }
-    .brand-badge { font-size: 7pt; }
-    .brand-badge .badge { font-size: 8pt; padding: 2px 10px; }
-    .tagline { padding: 2.8mm; margin-bottom: 3mm; font-size: 10pt; border-radius: 2mm; }
-    .body-grid { height: 220mm; gap: 2.5mm; }
-    .col-left, .col-right { gap: 2mm; }
-    .section { padding: 2.5mm 3mm; }
-    .section h2 { font-size: 10pt; margin-bottom: 1.5mm; }
-    .section p, .section li { font-size: 7.5pt; }
-    .section ul { padding-left: 3mm; }
-    .stat-label { font-size: 6.5pt; }
-    table { font-size: 7pt; }
-    .tag { font-size: 5.5pt; padding: 0.5mm 2mm; }
-    .footer { font-size: 6pt; bottom: 4mm; left: 8mm; right: 8mm; padding-top: 2mm; }
+    .page { box-shadow: none; }
     * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #fff; width: 2480px; height: 3508px; overflow: hidden; }
-  .page { width: 2480px; height: 3508px; overflow: hidden; background: #fff; padding: 83px 83px 60px; position: relative; }
-  .top-row { display: flex; gap: 71px; height: 283px; margin-bottom: 30px; }
+  .page { width: 2480px; height: 3508px; overflow: hidden; background: #fff; padding: 70px 70px 50px; position: relative; }
+
+  .top-row { display: flex; gap: 60px; height: 220px; margin-bottom: 24px; }
   .brand { flex: 1; display: flex; flex-direction: column; justify-content: center; }
-  .brand h1 { font-size: 36px; line-height: 1.15; }
-  .brand p { font-size: 14px; color: #888; margin-top: 6px; }
-  .brand-badge { text-align: right; font-size: 12px; color: #999; line-height: 1.6; }
-  .brand-badge .badge { display: inline-block; background: #FF6B8A; color: #fff; padding: 4px 16px; border-radius: 14px; font-size: 14px; font-weight: 700; }
-  .tagline { background: #1A1A2E; color: #fff; text-align: center; padding: 33px; margin-bottom: 35px; font-size: 18px; font-weight: 700; border-radius: 24px; }
-  .body-grid { display: grid; grid-template-columns: 1fr 0.85fr; gap: 30px; height: 2850px; }
-  .col-left, .col-right { display: flex; flex-direction: column; gap: 24px; }
-  .section { padding: 30px 36px; border: 1px solid #e0e0e0; border-radius: 18px; flex: 1; }
-  .section h2 { font-size: 18px; color: #FF6B8A; margin-bottom: 14px; border-bottom: 2px solid #FF6B8A; padding-bottom: 8px; }
-  .section p, .section li { font-size: 15px; line-height: 1.5; color: #444; }
-  .section ul { padding-left: 36px; }
-  .section ul li { margin-bottom: 4px; }
-  .stat-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 12px; }
-  .stat { text-align: center; background: #f8f8f8; border-radius: 16px; padding: 16px 8px; }
-  .stat-num { font-size: 20px; font-weight: 900; color: #FF6B8A; }
-  .stat-label { font-size: 12px; color: #888; margin-top: 4px; }
-  .stat small { display: block; font-size: 10px; color: #bbb; margin-top: 4px; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 8px 0; }
-  th { text-align: left; padding: 8px 10px; background: #f5f5f5; font-weight: 700; }
-  td { padding: 8px 10px; border-bottom: 1px solid #eee; }
-  .tag { display: inline-block; padding: 4px 16px; border-radius: 20px; font-size: 11px; font-weight: 600; margin: 4px 8px 4px 0; background: #FF6B8A15; color: #FF6B8A; }
-  .footer { position: absolute; bottom: 50px; left: 83px; right: 83px; text-align: center; font-size: 11px; color: #bbb; border-top: 1px solid #ddd; padding-top: 18px; }
+  .brand h1 { font-size: 40px; line-height: 1.15; }
+  .brand p { font-size: 17px; color: #888; margin-top: 6px; }
+  .brand-badge { text-align: right; font-size: 14px; color: #999; line-height: 1.7; }
+  .brand-badge .badge { display: inline-block; background: #FF6B8A; color: #fff; padding: 4px 18px; border-radius: 14px; font-size: 15px; font-weight: 700; }
+
+  .tagline { background: #1A1A2E; color: #fff; text-align: center; padding: 26px; margin-bottom: 24px; font-size: 20px; font-weight: 700; border-radius: 20px; }
+
+  .body-grid { display: grid; grid-template-columns: 1fr 0.88fr; gap: 26px; }
+  .col-left, .col-right { display: flex; flex-direction: column; gap: 18px; }
+
+  .section { padding: 22px 26px; border: 1px solid #ddd; border-radius: 14px; }
+  .section h2 { font-size: 20px; color: #FF6B8A; margin-bottom: 12px; border-bottom: 2px solid #FF6B8A; padding-bottom: 6px; }
+  .section p, .section li { font-size: 16px; line-height: 1.5; color: #333; }
+  .section ul { padding-left: 32px; }
+  .section ul li { margin-bottom: 3px; }
+
+  .stat-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 8px; }
+  .stat { text-align: center; background: #f8f8f8; border-radius: 12px; padding: 14px 8px; }
+  .stat-num { font-size: 22px; font-weight: 900; color: #FF6B8A; }
+  .stat-label { font-size: 13px; color: #888; margin-top: 3px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 6px 8px; background: #f5f5f5; font-weight: 700; }
+  td { padding: 6px 8px; border-bottom: 1px solid #eee; }
+
+  .tag { display: inline-block; padding: 3px 14px; border-radius: 18px; font-size: 13px; font-weight: 600; margin: 3px 6px 3px 0; background: #FF6B8A15; color: #FF6B8A; }
+
+  .footer { position: absolute; bottom: 36px; left: 70px; right: 70px; text-align: center; font-size: 12px; color: #bbb; border-top: 1px solid #ddd; padding-top: 14px; }
 </style>
 </head>
 <body>
@@ -80,20 +71,20 @@
 
   <div class="section">
     <h2>🎯 用户与问题</h2>
-    <p><strong>用户</strong>：18—40 岁喵街中低频会员，月均打开不足 5 次<small style="color:#999">（项目调研假设）</small>。</p>
-    <p><strong>痛点</strong>：没有每日打开理由；商城内容同质化；分享缺少关系价值；线上浏览到店消费割裂。</p>
-    <p><strong>机会</strong>：把"今天穿什么"变成每天更新、有个人角色出演、好友共同入镜、可兑换真实权益的内容源。</p>
+    <p><strong>用户</strong>：18—40 岁喵街中低频会员，月均打开不足 5 次<small style="color:#999;font-size:13px">（项目调研假设）</small>。</p>
+    <p><strong>痛点</strong>：没有每日打开理由；商城内容同质化；分享缺少关系价值；线上浏览→到店消费割裂。</p>
+    <p><strong>机会</strong>：把"今天穿什么"变成每天更新、有个人角色出演、好友共同入镜、可兑换权益的内容源。</p>
   </div>
 
   <div class="section">
     <h2>💡 产品机制</h2>
     <ul>
-      <li><strong>每日章节</strong>：天气、场景与商品池每日更新，7 天连续剧情形成回访惯性。</li>
-      <li><strong>五层不限时选搭</strong>：内搭 → 外套 → 下装 → 鞋履 → 配饰，不限时无倒计时。</li>
-      <li><strong>AI 个人角色</strong>：用户照片 → 身份保持型动漫角色，可编辑发型/动作/表情/背景。</li>
-      <li><strong>静态海报 + 动态短片</strong>：从四款动作表情海报扩展为 5—15 秒动态商品展示视频。</li>
-      <li><strong>好友共同出演</strong>：好友不是评委或投票工具；每位独立上传照片、选择穿搭，2—4 人同框。</li>
-      <li><strong>穿搭广场</strong>：用户自愿公开，默认隐私，其他会员可发现同款。</li>
+      <li><strong>每日章节</strong>：天气、场景与商品池每日更新，7 天连续剧情。</li>
+      <li><strong>五层不限时选搭</strong>：内搭→外套→下装→鞋履→配饰，不限时无倒计时。</li>
+      <li><strong>AI 个人角色</strong>：用户照片→身份保持型动漫角色，可编辑发型/动作/表情/背景。</li>
+      <li><strong>静态海报→动态短片</strong>：从四款海报扩展为 5—15 秒商品展示视频。</li>
+      <li><strong>好友共同出演</strong>：好友不是评委或投票工具；2—4 人各自角色同框。</li>
+      <li><strong>穿搭广场</strong>：用户自愿公开，默认隐私，可发现同款。</li>
     </ul>
   </div>
 
@@ -101,10 +92,10 @@
     <h2>🤖 AIGC 实质应用</h2>
     <div class="stat-row">
       <div class="stat"><div class="stat-num">身份角色</div><div class="stat-label">脸型/五官/发型保持<br>漫画动画化</div></div>
-      <div class="stat"><div class="stat-num">5层商品</div><div class="stat-label">颜色/轮廓/Logo<br>逐一致性检查</div></div>
-      <div class="stat"><div class="stat-num">2—4 人</div><div class="stat-label">各自角色与商品<br>同框互动海报</div></div>
+      <div class="stat"><div class="stat-num">5层商品</div><div class="stat-label">颜色/轮廓/Logo<br>逐层一致性检查</div></div>
+      <div class="stat"><div class="stat-num">2—4 人</div><div class="stat-label">各自角色与商品<br>同框互动</div></div>
     </div>
-    <p>移除 AIGC 则个人角色、动态内容、多人同框和每日差异化均无法成立，因此 AI 是玩法引擎而非概念点缀。当前角色图与多人海报为效果演示（providerStage=effect-preview）。动态视频技术路线已文档化，详情见《动态试穿视频技术路径》。</p>
+    <p style="font-size:14px;line-height:1.5">移除 AIGC 则个人角色、动态内容、多人同框和每日差异化均无法成立，因此 AI 是玩法引擎而非点缀。当前角色图为效果演示。动态视频路线已文档化。</p>
   </div>
 
 </div>
@@ -125,25 +116,24 @@
 
   <div class="section">
     <h2>🏗 技术架构</h2>
-    <p><span class="tag">React 18</span><span class="tag">TypeScript</span><span class="tag">Vite 5</span><span class="tag">Three.js</span></p>
-    <p><span class="tag">Cloudflare Pages</span><span class="tag">Tailscale</span><span class="tag">4090D GPU</span></p>
-    <p style="margin-top:1.2mm"><strong>后端</strong>：FastAPI + OpenCV + trimesh（4090D 内网）。<strong>生产路线</strong>：Identity Lock → Garment Lock → Motion Reference → Validation Gate（详见《动态试穿视频技术路径》）。</p>
+    <p style="font-size:14px"><span class="tag">React 18</span><span class="tag">TypeScript</span><span class="tag">Vite 5</span><span class="tag">Three.js</span><span class="tag">Cloudflare Pages</span><span class="tag">4090D GPU</span></p>
+    <p style="margin-top:6px;font-size:14px;line-height:1.5">前端：React + Three.js + Canvas 风格化渲染。后端：FastAPI + OpenCV + trimesh（4090D 内网）。生产路线：Identity Lock → Garment Lock → Motion Reference → Validation Gate。</p>
   </div>
 
   <div class="section">
     <h2>📈 商业价值</h2>
-    <p><strong>日开</strong>：每日新场景 + 商品池 + 角色资产复用。<strong>社交</strong>：好友独立角色入镜，非投票工具。<strong>转化</strong>：每条内容绑定 SKU、门店楼层、详情页和转化埋点。</p>
-    <p style="margin-top:1mm;font-size:6pt;color:#999">试点指标（目标，非实测）：生成完成率 ≥ 85% · 分享率 +20% · 详情点击率 +30% · 单条成本 ≤ ¥0.50。建议样本：2 城 4 店，8 周随机分流。</p>
+    <p style="font-size:14px;line-height:1.5"><strong>日开</strong>：每日新场景 + 商品池 + 角色资产复用。<strong>社交</strong>：好友独立角色入镜。<strong>转化</strong>：每条内容绑定 SKU、门店楼层、详情页和埋点。</p>
+    <p style="margin-top:4px;font-size:12px;color:#888">试点指标（目标，非实测）：生成完成率 ≥ 85% · 分享率 +20% · 详情点击率 +30% · 单条成本 ≤ ¥0.50。建议 2 城 4 店 8 周分流。</p>
   </div>
 
   <div class="section">
-    <h2>📦 交付物索引</h2>
+    <h2>📦 交付物</h2>
     <table>
-      <tr><td>可运行 H5</td><td><code style="font-size:5.5pt">next-gen-avatar.ai-meow-outfit.pages.dev/#/game</code></td></tr>
-      <tr><td>路演 Deck（评审版）</td><td><code>AI喵搭-路演Deck-评审版.pdf</code></td></tr>
-      <tr><td>AIGC 技术可行性</td><td><code>AI喵搭-AIGC技术可行性.pdf</code></td></tr>
-      <tr><td>动态视频技术路线</td><td><code>动态试穿视频技术路径.md</code></td></tr>
-      <tr><td>演示视频（本地）</td><td><code>video-v3/喵搭.mp4</code></td></tr>
+      <tr><td>H5 线上</td><td><code style="font-size:12px">next-gen-avatar.ai-meow-outfit.pages.dev/#/game</code></td></tr>
+      <tr><td>路演 Deck</td><td><code>AI喵搭-路演Deck-评审版.pdf</code></td></tr>
+      <tr><td>AIGC 技术</td><td><code>AI喵搭-AIGC技术可行性.pdf</code></td></tr>
+      <tr><td>动态视频路线</td><td><code>动态试穿视频技术路径.md</code></td></tr>
+      <tr><td>演示视频</td><td><code>video-v3/喵搭.mp4</code>（本地）</td></tr>
     </table>
   </div>
 

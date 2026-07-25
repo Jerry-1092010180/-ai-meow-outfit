@@ -5,11 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI喵搭 · 路演Deck（评审版）</title>
 <style>
-  @page { size: 16in 9in landscape; margin: 0; }
-  @media print { .slide { page-break-after: always; width: 16in; height: 9in; } }
+  @page { size: 1920px 1080px; margin: 0; }
+  @media print {
+    .slide { page-break-after: always; width: 1920px; height: 1080px; margin: 0; padding: 0; break-inside: avoid; }
+    body { background: #111; }
+  }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #111; color: #fff; display: flex; flex-direction: column; align-items: center; }
-  .slide { width: 1280px; height: 720px; position: relative; overflow: hidden; flex-shrink: 0; margin-bottom: 12px; display: flex; flex-direction: column; justify-content: center; padding: 60px 80px; box-shadow: 0 2px 20px rgba(0,0,0,.5); }
+  .slide { width: 1280px; height: 720px; position: relative; overflow: hidden; flex-shrink: 0; margin-bottom: 12px; display: flex; flex-direction: column; justify-content: center; padding: 60px 80px; }
   .slide-cover { background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 50%, #2a0a30 100%); }
   .slide-light { background: #FAFAFA; color: #2D2D2D; }
   .slide-dark { background: #1A1A2E; }
