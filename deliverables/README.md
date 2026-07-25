@@ -20,8 +20,8 @@
 | 材料 | 文件 | 备注 |
 |---|---|---|
 | 在线 H5 | `https://next-gen-avatar.ai-meow-outfit.pages.dev/#/game` | 手机浏览器打开 |
-| **OnePager（评审版）** | [`AI喵搭-OnePager-评审版.pdf`](./AI喵搭-OnePager-评审版.pdf) | 1 页 A4，单页完整版 |
-| **路演 Deck（评审版）** | [`AI喵搭-路演Deck-评审版.pdf`](./AI喵搭-路演Deck-评审版.pdf) | 12 页 16:9 |
+| **OnePager（评审版）** | [`AI喵搭-OnePager-评审版.pdf](./AI喵搭-OnePager-评审版.pdf) | 1 页 A4，源文件 [`OnePager.html`](./OnePager.html) |
+| **路演 Deck（评审版）** | [`AI喵搭-路演Deck-评审版.pdf](./AI喵搭-路演Deck-评审版.pdf) | 12 页 16:9，源文件 [`路演Deck.html`](./路演Deck.html) |
 | **AIGC 技术可行性** | [`AI喵搭-AIGC技术可行性.pdf`](./AI喵搭-AIGC技术可行性.pdf) | AIGC 引擎 + 动态视频技术路线 |
 | 比赛玩法说明 | [`比赛玩法说明-v2.md`](./比赛玩法说明-v2.md) | 已更新至当前产品机制 |
 | AIGC 应用说明 | [`AIGC应用说明-v2.md`](./AIGC应用说明-v2.md) | 含静态+动态视频生成说明 |
