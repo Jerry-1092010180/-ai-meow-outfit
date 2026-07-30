@@ -3,394 +3,566 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI喵搭 · 路演Deck（评审版）</title>
+<title>AI喵搭 · 路演 Deck（评审版）</title>
 <style>
   @page { size: 1920px 1080px; margin: 0; }
   @media print {
-    .slide { page-break-after: always; width: 1920px; height: 1080px; margin: 0; padding: 0; break-inside: avoid; }
-    body { background: #111; }
+    html, body { width: 1920px; margin: 0; background: #0d1018; }
+    .slide { break-after: page; page-break-after: always; margin: 0; }
+    .slide:last-child { break-after: auto; page-break-after: auto; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #111; color: #fff; display: flex; flex-direction: column; align-items: center; }
-  .slide { width: 1280px; height: 720px; position: relative; overflow: hidden; flex-shrink: 0; margin-bottom: 12px; display: flex; flex-direction: column; justify-content: center; padding: 60px 80px; }
-  .slide-cover { background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 50%, #2a0a30 100%); }
-  .slide-light { background: #FAFAFA; color: #2D2D2D; }
-  .slide-dark { background: #1A1A2E; }
-  .slide-accent { background: linear-gradient(135deg, #FF6B8A, #FF416C); }
-  .slide-gradient{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-  h1 { font-size: 52px; line-height: 1.2; }
-  h2 { font-size: 36px; margin-bottom: 24px; }
-  h3 { font-size: 22px; margin-bottom: 12px; color: #888; }
-  p { font-size: 18px; line-height: 1.7; opacity: 0.85; }
-  .big { font-size: 72px; font-weight: 900; }
-  .small { font-size: 14px; opacity: 0.5; }
-  .row { display: flex; gap: 40px; }
-  .col { flex: 1; }
-  .card { background: rgba(255,255,255,.08); border-radius: 16px; padding: 30px; border: 1px solid rgba(255,255,255,.1); }
-  .card-light { background: #FFF; border-radius: 16px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,.06); border: 1px solid #EEE; }
-  .card-number { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 900; margin-bottom: 16px; background: linear-gradient(135deg, #FF6B8A, #FF416C); }
-  .tag { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; }
-  .tag-pink { background: #FF6B8A20; color: #FF6B8A; }
-  .tag-blue { background: #4A90D920; color: #4A90D9; }
-  table { width: 100%; border-collapse: collapse; font-size: 15px; }
-  th { text-align: left; padding: 10px 16px; background: rgba(0,0,0,.05); font-weight: 700; }
-  td { padding: 10px 16px; border-bottom: 1px solid rgba(0,0,0,.06); }
-  .slide-dark th { background: rgba(255,255,255,.05); }
-  .slide-dark td { border-color: rgba(255,255,255,.06); }
-  .footer { position: absolute; bottom: 30px; right: 60px; font-size: 12px; opacity: 0.3; }
-  .page-num { position: absolute; bottom: 30px; left: 60px; font-size: 12px; opacity: 0.3; }
-  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
-  .flow-arrow { text-align: center; font-size: 28px; opacity: 0.4; margin: 6px 0; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 1920px; background: #0d1018; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei", sans-serif;
+    color: #10131d;
+  }
+  :root {
+    --ink: #10131d;
+    --paper: #f4f1e9;
+    --white: #ffffff;
+    --muted: #6a6d75;
+    --blue: #264eff;
+    --lime: #dfff3f;
+    --pink: #ff5b88;
+    --cyan: #9de8ff;
+  }
+  .slide {
+    position: relative;
+    width: 1920px;
+    height: 1080px;
+    padding: 78px 96px 70px;
+    overflow: hidden;
+    background: var(--paper);
+  }
+  .dark { background: var(--ink); color: #fff; }
+  .blue { background: var(--blue); color: #fff; }
+  .top {
+    position: absolute; top: 44px; left: 96px; right: 96px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 17px; font-weight: 780; letter-spacing: .11em;
+  }
+  .top .section { color: var(--blue); }
+  .dark .top .section, .blue .top .section { color: var(--lime); }
+  .top .brand { opacity: .55; }
+  .page {
+    position: absolute; right: 96px; bottom: 38px;
+    font-size: 16px; font-weight: 750; opacity: .42;
+  }
+  .truth {
+    position: absolute; left: 96px; bottom: 36px;
+    max-width: 1380px; font-size: 15px; line-height: 1.45; opacity: .5;
+  }
+  h1, h2, h3, p { margin: 0; }
+  h1 { font-size: 102px; line-height: .98; letter-spacing: -.055em; }
+  h2 { font-size: 62px; line-height: 1.08; letter-spacing: -.035em; }
+  h3 { font-size: 30px; line-height: 1.2; }
+  p { font-size: 26px; line-height: 1.55; }
+  .subtitle { margin-top: 24px; color: var(--muted); font-size: 28px; }
+  .dark .subtitle, .blue .subtitle { color: rgba(255,255,255,.64); }
+  .kicker {
+    display: inline-block; margin-bottom: 26px; padding: 10px 16px;
+    background: var(--lime); color: var(--ink);
+    font-size: 17px; font-weight: 900; letter-spacing: .12em;
+  }
+  .accent { color: var(--blue); }
+  .dark .accent { color: var(--lime); }
+  .stage { margin-top: 105px; }
+  .rule { width: 100%; height: 2px; background: currentColor; opacity: .2; }
+  .cover {
+    background:
+      radial-gradient(circle at 72% 42%, rgba(38,78,255,.68), transparent 34%),
+      radial-gradient(circle at 92% 92%, rgba(255,91,136,.25), transparent 30%),
+      var(--ink);
+    color: #fff;
+  }
+  .cover-grid {
+    display: grid; grid-template-columns: 1.02fr .98fr;
+    height: 100%; align-items: center;
+  }
+  .cover-copy { position: relative; z-index: 3; }
+  .cover-copy h1 { max-width: 830px; }
+  .cover-copy .subtitle { max-width: 760px; font-size: 34px; }
+  .cover-avatar {
+    position: absolute; right: 70px; bottom: -145px;
+    width: 790px; height: 1090px;
+    object-fit: cover; object-position: center top;
+    filter: drop-shadow(0 40px 48px rgba(0,0,0,.45));
+  }
+  .cover-note {
+    margin-top: 54px; color: rgba(255,255,255,.46);
+    font-size: 20px; letter-spacing: .04em;
+  }
+  .split {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 70px;
+    margin-top: 70px; align-items: stretch;
+  }
+  .product-wall {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;
+    padding: 22px; background: #fff; border: 2px solid var(--ink);
+  }
+  .product-wall img { width: 100%; height: 410px; object-fit: cover; }
+  .product-wall span {
+    display: block; margin-top: 12px; font-size: 17px;
+    color: var(--muted); text-align: center;
+  }
+  .question {
+    display: flex; flex-direction: column; justify-content: center;
+    padding-left: 40px; border-left: 10px solid var(--blue);
+  }
+  .question .bigline { font-size: 58px; line-height: 1.18; font-weight: 900; }
+  .question p { margin-top: 30px; color: var(--muted); }
+  .formula {
+    display: grid; grid-template-columns: 300px 56px 500px 56px 1fr;
+    gap: 22px; align-items: center; margin-top: 48px;
+  }
+  .formula-block {
+    height: 610px; padding: 24px;
+    background: #fff; border: 2px solid var(--ink);
+  }
+  .formula-block h3 { margin-bottom: 20px; }
+  .phone-img {
+    display: block; width: 100%; height: 485px;
+    object-fit: cover; object-position: top;
+    border: 2px solid var(--ink); background: #fff;
+  }
+  .inputs {
+    height: 610px; display: flex; flex-direction: column; gap: 16px;
+  }
+  .identity {
+    display: grid; grid-template-columns: 146px 1fr; gap: 18px;
+    min-height: 150px; padding: 18px;
+    background: #fff; border: 2px solid var(--ink);
+  }
+  .identity img {
+    width: 146px; height: 112px; object-fit: cover; object-position: top;
+  }
+  .identity h3 { font-size: 25px; }
+  .identity p { margin-top: 8px; color: var(--muted); font-size: 18px; }
+  .five {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;
+    padding: 14px; background: #fff; border: 2px solid var(--ink);
+  }
+  .five img { width: 100%; height: 128px; object-fit: cover; }
+  .scene-box {
+    flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  }
+  .scene-choice {
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 22px; background: var(--lime); border: 2px solid var(--ink);
+  }
+  .scene-choice small { font-size: 16px; font-weight: 800; letter-spacing: .09em; }
+  .scene-choice b { margin-top: 9px; font-size: 26px; }
+  .formula-arrow { font-size: 50px; font-weight: 900; text-align: center; color: var(--blue); }
+  .output {
+    position: relative; height: 610px;
+    overflow: hidden; background: var(--ink); border: 2px solid var(--ink);
+  }
+  .output img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; }
+  .output-label {
+    position: absolute; left: 22px; top: 22px;
+    padding: 10px 14px; background: var(--lime); color: var(--ink);
+    font-size: 16px; font-weight: 900;
+  }
+  .output-caption {
+    position: absolute; left: 22px; right: 22px; bottom: 22px;
+    padding: 18px 20px; background: rgba(12,14,21,.82);
+    color: #fff; font-size: 23px; font-weight: 760;
+  }
+  .shots {
+    display: grid; grid-template-columns: 1.05fr .95fr .95fr;
+    gap: 24px; margin-top: 48px; height: 690px;
+  }
+  .shot {
+    position: relative; overflow: hidden;
+    background: #0b0e16; border: 2px solid rgba(255,255,255,.3);
+  }
+  .shot img { width: 100%; height: 100%; object-fit: cover; }
+  .shot.full img { object-fit: contain; object-position: center center; }
+  .shot.medium img { object-position: center 20%; transform: scale(1.34); }
+  .shot.close img { object-position: center top; transform: scale(1.38); transform-origin: center top; }
+  .shot span {
+    position: absolute; left: 22px; right: 22px; bottom: 22px;
+    padding: 14px 18px; background: rgba(10,12,18,.82);
+    font-size: 21px; font-weight: 780;
+  }
+  .experience {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 34px; margin-top: 48px;
+  }
+  .experience-step { position: relative; text-align: center; }
+  .experience-step img {
+    width: 100%; height: 620px; object-fit: cover; object-position: top;
+    border: 2px solid var(--ink); background: #fff;
+  }
+  .experience-step b { display: block; margin-top: 16px; font-size: 24px; }
+  .experience-step span { display: block; margin-top: 6px; color: var(--muted); font-size: 18px; }
+  .ai-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 2px;
+    margin-top: 56px; background: rgba(255,255,255,.2);
+  }
+  .ai-point {
+    min-height: 295px; padding: 44px 48px;
+    background: var(--ink);
+  }
+  .ai-point .num { color: var(--lime); font-size: 18px; font-weight: 900; letter-spacing: .12em; }
+  .ai-point h3 { margin-top: 20px; font-size: 42px; }
+  .ai-point p { margin-top: 16px; color: rgba(255,255,255,.58); font-size: 22px; }
+  .daily {
+    display: grid; grid-template-columns: 520px 1fr; gap: 84px;
+    margin-top: 48px; align-items: center;
+  }
+  .daily img {
+    width: 520px; height: 720px; object-fit: cover; object-position: top;
+    border: 2px solid var(--ink);
+  }
+  .timeline { position: relative; padding-left: 54px; }
+  .timeline::before {
+    content: ""; position: absolute; left: 12px; top: 10px; bottom: 10px;
+    width: 4px; background: var(--blue);
+  }
+  .day { position: relative; margin-bottom: 40px; }
+  .day::before {
+    content: ""; position: absolute; left: -51px; top: 8px;
+    width: 22px; height: 22px; background: var(--lime); border: 3px solid var(--ink);
+  }
+  .day b { font-size: 28px; }
+  .day p { margin-top: 6px; color: var(--muted); font-size: 21px; }
+  .friend {
+    display: grid; grid-template-columns: 420px 420px 1fr; gap: 42px;
+    margin-top: 50px; align-items: center;
+  }
+  .friend img {
+    width: 420px; height: 700px; object-fit: cover; object-position: top;
+    border: 2px solid rgba(255,255,255,.35);
+  }
+  .friend-copy { padding-left: 24px; }
+  .friend-copy .huge { color: var(--lime); font-size: 86px; line-height: 1; font-weight: 900; }
+  .friend-copy p { margin-top: 28px; color: rgba(255,255,255,.62); }
+  .friend-copy strong { color: #fff; }
+  .commerce {
+    display: grid; grid-template-columns: 1.1fr 480px; gap: 90px;
+    margin-top: 54px; align-items: center;
+  }
+  .commerce-flow { display: flex; flex-direction: column; gap: 18px; }
+  .commerce-step {
+    display: grid; grid-template-columns: 80px 1fr; gap: 24px; align-items: center;
+    padding: 24px 28px; border-top: 2px solid var(--ink);
+  }
+  .commerce-step:last-child { border-bottom: 2px solid var(--ink); }
+  .commerce-step .n { color: var(--blue); font-size: 24px; font-weight: 900; }
+  .commerce-step b { font-size: 28px; }
+  .commerce-step span { display: block; margin-top: 6px; color: var(--muted); font-size: 20px; }
+  .commerce img {
+    width: 480px; height: 720px; object-fit: cover; object-position: top;
+    border: 2px solid var(--ink);
+  }
+  .yintai {
+    display: grid; grid-template-columns: 1fr 420px 1fr;
+    grid-template-rows: 1fr 1fr; gap: 30px 46px;
+    margin-top: 58px; align-items: stretch;
+  }
+  .asset {
+    min-height: 250px; padding: 40px;
+    border-top: 5px solid var(--blue); background: #fff;
+  }
+  .asset:nth-child(4), .asset:nth-child(5) { border-top-color: var(--pink); }
+  .asset .word { font-size: 49px; font-weight: 900; }
+  .asset p { margin-top: 14px; color: var(--muted); font-size: 21px; }
+  .center-avatar {
+    grid-column: 2; grid-row: 1 / span 2;
+    position: relative; overflow: hidden; background: var(--ink);
+  }
+  .center-avatar img { width: 100%; height: 100%; object-fit: cover; object-position: center 26%; }
+  .center-avatar span {
+    position: absolute; left: 18px; right: 18px; bottom: 18px;
+    padding: 16px; background: var(--lime); color: var(--ink);
+    font-size: 21px; font-weight: 900; text-align: center;
+  }
+  .roadmap {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 70px;
+    margin-top: 52px;
+  }
+  .roadmap-col { min-height: 500px; padding: 42px; border-top: 8px solid var(--lime); background: rgba(255,255,255,.06); }
+  .roadmap-col.next { border-top-color: var(--pink); }
+  .roadmap-col h3 { font-size: 40px; }
+  .roadmap-col ul { margin: 28px 0 0; padding-left: 28px; }
+  .roadmap-col li { margin-bottom: 18px; color: rgba(255,255,255,.68); font-size: 24px; line-height: 1.35; }
+  .pilot {
+    display: grid; grid-template-columns: 260px 1fr 1fr 1fr;
+    gap: 0; margin-top: 30px; border: 2px solid rgba(255,255,255,.25);
+  }
+  .pilot > div { padding: 22px 26px; border-right: 1px solid rgba(255,255,255,.2); }
+  .pilot > div:last-child { border-right: 0; }
+  .pilot b { font-size: 23px; }
+  .pilot span { display: block; margin-top: 8px; color: rgba(255,255,255,.52); font-size: 18px; }
+  .closing-grid {
+    display: grid; grid-template-columns: 1fr 650px; gap: 80px;
+    height: 100%; align-items: center;
+  }
+  .closing-quote { font-size: 62px; line-height: 1.18; font-weight: 900; letter-spacing: -.03em; }
+  .closing-quote .accent { color: var(--lime); }
+  .closing-sub { margin-top: 34px; color: rgba(255,255,255,.56); font-size: 28px; }
+  .closing-cta { display: flex; align-items: center; gap: 26px; margin-top: 54px; }
+  .closing-cta img { width: 150px; height: 150px; padding: 10px; background: #fff; }
+  .closing-cta b { display: block; font-size: 22px; }
+  .closing-cta span { display: block; margin-top: 8px; color: rgba(255,255,255,.5); font-size: 17px; }
+  .closing-avatar {
+    width: 650px; height: 860px; object-fit: cover; object-position: center 28%;
+    border: 2px solid rgba(255,255,255,.35);
+  }
 </style>
 </head>
 <body>
 
-<!-- ═══ Page 1: 封面 ═══ -->
-<div class="slide slide-cover">
-  <div style="position:absolute;top:-100px;right:-100px;width:400px;height:400px;border-radius:50%;background:radial-gradient(#FF6B8A40,transparent 70%)"></div>
-  <div style="position:absolute;bottom:-80px;left:-60px;width:300px;height:300px;border-radius:50%;background:radial-gradient(#4A90D940,transparent 70%)"></div>
-  <div style="position:relative;z-index:1">
-    <p style="font-size:16px;opacity:.5;letter-spacing:4px;margin-bottom:20px">OPC 2026 · BOUNTY 03 · 银泰商业</p>
-    <h1 style="font-size:64px;margin-bottom:16px">AI喵搭</h1>
-    <p style="font-size:28px;opacity:.7;margin-bottom:40px">把一次商品浏览，变成由我主演的每日时尚短片</p>
-    <div style="display:flex;gap:12px">
-      <span class="tag tag-pink" style="font-size:15px;padding:8px 20px">AI个人角色</span>
-      <span class="tag tag-pink" style="font-size:15px;padding:8px 20px">好友共创同框</span>
-      <span class="tag tag-pink" style="font-size:15px;padding:8px 20px">动态商品短片</span>
-      <span class="tag tag-pink" style="font-size:15px;padding:8px 20px">即看即买</span>
+<!-- 01 -->
+<section class="slide cover dark">
+  <div class="top"><span class="section">OPC 2026 · BOUNTY 03</span><span class="brand">AI喵搭 · 银泰商业</span></div>
+  <div class="cover-grid">
+    <div class="cover-copy">
+      <span class="kicker">AI喵搭</span>
+      <h1>把今天想穿的，<br>生成成今天的我。</h1>
+      <p class="subtitle">懂真实商品的个人时尚角色生成器</p>
+      <p class="cover-note">一张照片 × 五件银泰商品 × 一个今日场景</p>
     </div>
   </div>
-  <div class="page-num">1 / 12</div>
-  <div class="footer">AI喵搭 · OPC 2026</div>
-</div>
+  <img class="cover-avatar" src="../public/avatar-demo/stylized-avatar-v1-small.png" alt="AI喵搭个人时尚角色">
+  <div class="page">01 / 12</div>
+</section>
 
-<!-- ═══ Page 2: 痛点 ═══ -->
-<div class="slide slide-light">
-  <h2 style="font-size:40px">千万级会员，月均打开不足 5 次</h2>
-  <p style="color:#666;margin-bottom:40px">喵街 APP 缺少"每天必须打开"的理由</p>
-  <div class="row">
-    <div class="col">
-      <div class="card-light" style="margin-bottom:20px">
-        <p style="font-size:48px;font-weight:900;color:#FF6B8A;margin-bottom:8px">45%</p>
-        <p style="color:#888">会员月均打开 &lt; 5 次</p>
+<!-- 02 -->
+<section class="slide">
+  <div class="top"><span class="section">01 · 用户问题</span><span class="brand">AI喵搭</span></div>
+  <div class="stage">
+    <h2>商城展示的是商品，<br>却没有展示<span class="accent">今天场景里的我</span></h2>
+    <div class="split">
+      <div class="product-wall">
+        <div><img src="../public/product-shots/item-001.jpg" alt=""><span>一件上衣</span></div>
+        <div><img src="../public/product-shots/item-004.jpg" alt=""><span>一件外套</span></div>
+        <div><img src="../public/product-shots/item-002.jpg" alt=""><span>一条下装</span></div>
+        <div><img src="../public/product-shots/item-009.jpg" alt=""><span>一双鞋</span></div>
+        <div><img src="../public/product-shots/item-013.jpg" alt=""><span>一个配饰</span></div>
       </div>
-      <div class="card-light">
-        <p style="font-size:48px;font-weight:900;color:#FF9800;margin-bottom:8px">&lt; 2 分钟</p>
-        <p style="color:#888">平均停留时长，买完即走</p>
+      <div class="question">
+        <div class="bigline">用户真正想回答的是：</div>
+        <div class="bigline accent" style="margin-top:18px">“它们穿在今天的我身上，会是什么故事？”</div>
+        <p>AI喵搭把商品列表变成可生成、可编辑、可分享、可购买的个人内容。</p>
       </div>
     </div>
-    <div class="col">
-      <div style="padding:20px">
-        <p style="font-weight:700;font-size:20px;margin-bottom:16px">四大断层</p>
-        <div style="margin-bottom:16px">
-          <p style="font-weight:700;font-size:18px;margin-bottom:4px">❌ 没有每日理由</p>
-          <p style="color:#888">为什么今天要打开喵街？没有答案</p>
+  </div>
+  <div class="page">02 / 12</div>
+</section>
+
+<!-- 03 -->
+<section class="slide">
+  <div class="top"><span class="section">02 · 产品定义</span><span class="brand">AI喵搭</span></div>
+  <div class="stage">
+    <h2>一张照片 + 五件商品 + 场景/画风<br>= <span class="accent">我的时尚角色</span></h2>
+    <div class="formula">
+      <div class="formula-block">
+        <h3>建立身份</h3>
+        <img class="phone-img" src="bonus/screenshots/01-daily-lobby.png" alt="身份输入界面">
+      </div>
+      <div class="formula-arrow">+</div>
+      <div class="inputs">
+        <div class="identity">
+          <img src="bonus/screenshots/01-daily-lobby.png" alt="">
+          <div><h3>我的照片</h3><p>只用于建立角色身份；原照片默认不公开。</p></div>
         </div>
-        <div style="margin-bottom:16px">
-          <p style="font-weight:700;font-size:18px;margin-bottom:4px">❌ 内容同质化</p>
-          <p style="color:#888">商品列表每家都一样，没有"喵街专属"的感觉</p>
+        <div class="five">
+          <img src="../public/product-shots/item-001.jpg" alt="">
+          <img src="../public/product-shots/item-004.jpg" alt="">
+          <img src="../public/product-shots/item-002.jpg" alt="">
+          <img src="../public/product-shots/item-009.jpg" alt="">
+          <img src="../public/product-shots/item-013.jpg" alt="">
         </div>
-        <div style="margin-bottom:16px">
-          <p style="font-weight:700;font-size:18px;margin-bottom:4px">❌ 分享缺少关系价值</p>
-          <p style="color:#888">优惠券分享是骚扰，不是社交</p>
-        </div>
-        <div>
-          <p style="font-weight:700;font-size:18px;margin-bottom:4px">❌ 线上→线下割裂</p>
-          <p style="color:#888">看到喜欢的，不知道门店有没有、在哪</p>
+        <div class="scene-box">
+          <div class="scene-choice"><small>TODAY'S SCENE</small><b>下班派对</b></div>
+          <div class="scene-choice" style="background:#9de8ff"><small>VISUAL STYLE</small><b>动画角色</b></div>
         </div>
       </div>
-      <p style="font-size:12px;opacity:.4;margin-top:12px">数据来源：项目调研与行业公开数据口径，仅供参考</p>
+      <div class="formula-arrow">→</div>
+      <div class="output">
+        <img src="../public/avatar-demo/stylized-avatar-v1-small.png" alt="角色结果">
+        <span class="output-label">当前效果演示</span>
+        <div class="output-caption">由“我”主演、能找到同款的时尚内容</div>
+      </div>
     </div>
   </div>
-  <div class="page-num">2 / 12</div>
-</div>
+  <div class="truth">当前 H5 已完成输入、选搭、效果预览与编辑流程；生产版接入身份与商品一致性生成服务。</div>
+  <div class="page">03 / 12</div>
+</section>
 
-<!-- ═══ Page 3: 解法 ═══ -->
-<div class="slide slide-dark">
-  <h2>把穿搭决策变成每日时尚短片</h2>
-  <p style="opacity:.5;margin-bottom:40px">AI喵搭 = 每日角色 × AI个人资产 × 好友同框 × 动态短片 × 门店转化</p>
-  <div class="grid-3">
-    <div class="card">
-      <div class="card-number">1</div>
-      <h3 style="color:#fff">每日驱动</h3>
-      <p>七日连续剧章节·每天唯一角色场景·角色卡进度·商品池每日更新·次日预告</p>
-    </div>
-    <div class="card">
-      <div class="card-number">2</div>
-      <h3 style="color:#fff">AI角色资产</h3>
-      <p>用户身份→动漫角色→静态海报→5–15秒动态商品短片→可复用角色资产库</p>
-    </div>
-    <div class="card">
-      <div class="card-number">3</div>
-      <h3 style="color:#fff">O2O 闭环</h3>
-      <p>5类商品选搭→角色展示同款→品牌/价格/楼层→好友加入解锁任务→到店核销</p>
+<!-- 04 -->
+<section class="slide dark">
+  <div class="top"><span class="section">03 · 核心效果</span><span class="brand">AI喵搭</span></div>
+  <div class="stage">
+    <h2>同一个我、同一套 Look，<br>可以成为<span class="accent">多个时尚镜头</span></h2>
+    <div class="shots">
+      <div class="shot full"><img src="../public/avatar-demo/stylized-avatar-v1-small.png" alt=""><span>全身海报 · 看清整套穿搭</span></div>
+      <div class="shot medium"><img src="../public/avatar-demo/stylized-avatar-v1-small.png" alt=""><span>商品聚焦 · 服装与配饰更突出</span></div>
+      <div class="shot close"><img src="../public/avatar-demo/stylized-avatar-v1-small.png" alt=""><span>社交封面 · 人物辨识更强</span></div>
     </div>
   </div>
-  <div style="margin-top:50px;background:rgba(255,255,255,.05);border-radius:16px;padding:24px;text-align:center">
-    <p style="font-size:18px;opacity:.7">核心创新：<span style="color:#FF6B8A;font-weight:700">不是翻翻商品列表</span>，而是把穿搭决策变成<span style="color:#FF6B8A;font-weight:700">有个人角色、有动态内容、有好友同框</span>的轻游戏</p>
-  </div>
-  <div class="page-num">3 / 12</div>
-</div>
+  <div class="truth">目标效果示意：生产版生成同一身份、同一套商品的不同动作与镜头；本页使用同一角色素材展示构图方向。</div>
+  <div class="page">04 / 12</div>
+</section>
 
-<!-- ═══ Page 4: 产品体验 ═══ -->
-<div class="slide slide-light">
-  <h2>从商品浏览到角色主演</h2>
-  <p style="color:#888;margin-bottom:36px">五件商品 → 个人角色 → 静态海报 → 动态短片 → 同款门店</p>
-  <div style="display:flex;gap:0;align-items:center">
-    <div class="col" style="text-align:center;padding:0 8px">
-      <div style="font-size:48px;margin-bottom:8px">👗</div>
-      <p style="font-weight:900;font-size:18px;margin-bottom:4px">5层选搭</p>
-      <p style="color:#888;font-size:13px">内搭·外套·下装·鞋·配饰<br>不限时·点击确认</p>
-    </div>
-    <div style="font-size:24px;color:#CCC;">→</div>
-    <div class="col" style="text-align:center;padding:0 8px">
-      <div style="font-size:48px;margin-bottom:8px">🤖</div>
-      <p style="font-weight:900;font-size:18px;margin-bottom:4px">AI角色</p>
-      <p style="color:#888;font-size:13px">身份保持型动漫角色<br>发型/动作/表情编辑</p>
-    </div>
-    <div style="font-size:24px;color:#CCC;">→</div>
-    <div class="col" style="text-align:center;padding:0 8px">
-      <div style="font-size:48px;margin-bottom:8px">🖼️</div>
-      <p style="font-weight:900;font-size:18px;margin-bottom:4px">静态海报</p>
-      <p style="color:#888;font-size:13px">四款动作表情<br>可分享到社交</p>
-    </div>
-    <div style="font-size:24px;color:#CCC;">→</div>
-    <div class="col" style="text-align:center;padding:0 8px">
-      <div style="font-size:48px;margin-bottom:8px">🎬</div>
-      <p style="font-weight:900;font-size:18px;margin-bottom:4px">动态短片</p>
-      <p style="color:#888;font-size:13px">5–15秒商品展示<br>走秀/转身/打招呼</p>
-    </div>
-    <div style="font-size:24px;color:#CCC;">→</div>
-    <div class="col" style="text-align:center;padding:0 8px">
-      <div style="font-size:48px;margin-bottom:8px">🛍️</div>
-      <p style="font-weight:900;font-size:18px;margin-bottom:4px">门店转化</p>
-      <p style="color:#888;font-size:13px">同款/详情/价格<br>到店任务/核销</p>
+<!-- 05 -->
+<section class="slide">
+  <div class="top"><span class="section">04 · 使用体验</span><span class="brand">AI喵搭</span></div>
+  <div class="stage">
+    <h2>四步完成：<span class="accent">选择、生成、微调、分享</span></h2>
+    <div class="experience">
+      <div class="experience-step"><img src="bonus/screenshots/02-product-selection.png" alt=""><b>01 · 选择</b><span>五层商品组成完整Look</span></div>
+      <div class="experience-step"><img src="bonus/screenshots/05-avatar-result.png" alt=""><b>02 · 生成</b><span>得到本人主演的角色画面</span></div>
+      <div class="experience-step"><img src="bonus/screenshots/06-pose-expression.png" alt=""><b>03 · 微调</b><span>动作、表情、发型、背景</span></div>
+      <div class="experience-step"><img src="bonus/screenshots/07-friend-cocreate.png" alt=""><b>04 · 分享</b><span>保存或邀请好友共同入镜</span></div>
     </div>
   </div>
-  <div class="page-num">4 / 12</div>
-</div>
+  <div class="page">05 / 12</div>
+</section>
 
-<!-- ═══ Page 5: AIGC 引擎（四层控制） ═══ -->
-<div class="slide slide-dark">
-  <h2>AI 内容引擎：可控的四层生成</h2>
-  <p style="opacity:.5;margin-bottom:24px">Identity Lock → Garment Lock → Motion/Camera Reference → Validation Gate</p>
-  <div class="grid-2">
-    <div class="card">
-      <p style="font-weight:900;font-size:18px;margin-bottom:8px">🔐 Identity Lock</p>
-      <p style="opacity:.7;font-size:15px">用户照片 → 面部特征提取 → 多角度角色参考 → 角色库<br>真实人物：需授权 + 身份验证；不公开原照片</p>
-    </div>
-    <div class="card">
-      <p style="font-weight:900;font-size:18px;margin-bottom:8px">👕 Garment Lock</p>
-      <p style="opacity:.7;font-size:15px">5层商品图+SKU信息 → 颜色/轮廓/Logo一致性锁定<br>每层独立一致性检查，低于阈值触发重试</p>
-    </div>
-    <div class="card">
-      <p style="font-weight:900;font-size:18px;margin-bottom:8px">🎬 Motion/Camera Reference</p>
-      <p style="opacity:.7;font-size:15px">站姿/走秀/转身/打招呼动作参考 → 场景/镜头/表情指令<br>2–4人共同入镜时保持各自角色与商品</p>
-    </div>
-    <div class="card">
-      <p style="font-weight:900;font-size:18px;margin-bottom:8px">✅ Validation Gate</p>
-      <p style="opacity:.7;font-size:15px">身份一致性 · 商品一致性 · 时序闪烁 · 穿模 · 解剖 · 审核<br>mediapipe/vlm 检查 → 逐项打分 → 通过才发布</p>
+<!-- 06 -->
+<section class="slide dark">
+  <div class="top"><span class="section">05 · AI为什么不可替代</span><span class="brand">AI喵搭</span></div>
+  <div class="stage">
+    <h2>AI不是贴纸滤镜，它要同时守住<span class="accent">四件事</span></h2>
+    <div class="ai-grid">
+      <div class="ai-point"><div class="num">01 / IDENTITY</div><h3>生成后，还是我</h3><p>锁定脸型、五官、发型等识别特征，跨镜头保持角色身份。</p></div>
+      <div class="ai-point"><div class="num">02 / PRODUCTS</div><h3>穿的，还是这5件</h3><p>核对颜色、轮廓、Logo与层级关系，低一致性结果自动重做。</p></div>
+      <div class="ai-point"><div class="num">03 / CREATION</div><h3>可以自由换场景</h3><p>动作、表情、镜头与背景可变，但身份和整套Look不漂移。</p></div>
+      <div class="ai-point"><div class="num">04 / QUALITY</div><h3>不合格，不发布</h3><p>检查穿模、肢体、闪烁与敏感内容，通过质量门槛才进入分享。</p></div>
     </div>
   </div>
-  <div style="margin-top:30px;background:rgba(255,107,138,.1);border-radius:16px;padding:16px;text-align:center">
-    <p style="font-size:15px;opacity:.8">当前原型为前端效果演示（providerStage=effect-preview）。<span style="color:#FF6B8A;font-weight:700">以上四层控制是一套已存在并可按需接入的生产技术路线</span>（LibTV/Seedream/Seedance/私有GPU），不代表比赛原型已完成商业API联调。</p>
-  </div>
-  <div class="page-num">5 / 12</div>
-</div>
+  <div class="truth">技术对应：Identity Control · Garment Control · Motion/Scene Control · Validation Gate。供应商与模型可替换。</div>
+  <div class="page">06 / 12</div>
+</section>
 
-<!-- ═══ Page 6: 每日钩子 ═══ -->
-<div class="slide slide-light">
-  <h2>5 个回访动机构成每日打开</h2>
-  <div class="grid-3" style="margin-bottom:24px">
-    <div class="card-light" style="text-align:center">
-      <p style="font-size:36px;font-weight:900;color:#FF6B8A;margin-bottom:4px">7</p>
-      <p style="font-weight:700">集连续剧</p>
-      <p style="color:#888;font-size:14px">每天新角色·新场景·新商品池·周末双人封面局</p>
-    </div>
-    <div class="card-light" style="text-align:center">
-      <p style="font-size:36px;font-weight:900;color:#4A90D9;margin-bottom:4px">∞</p>
-      <p style="font-weight:700">角色资产复用</p>
-      <p style="color:#888;font-size:14px">身份不重建，每天更新穿搭与内容版本；连续完成形成周刊封面</p>
-    </div>
-    <div class="card-light" style="text-align:center">
-      <p style="font-size:36px;font-weight:900;color:#4CAF50;margin-bottom:4px">🎁</p>
-      <p style="font-weight:700">到店奖励</p>
-      <p style="color:#888;font-size:14px">好友加入解锁门店任务·角色资产持续成长</p>
+<!-- 07 -->
+<section class="slide">
+  <div class="top"><span class="section">06 · 每日回访</span><span class="brand">AI喵搭</span></div>
+  <div class="stage">
+    <h2>不是一次性生成器，而是<span class="accent">每天更新的角色章节</span></h2>
+    <div class="daily">
+      <img src="bonus/screenshots/01-daily-lobby.png" alt="每日章节界面">
+      <div class="timeline">
+        <div class="day"><b>周一 · 屋顶复工局</b><p>通勤场景与本周新品，建立第一张角色卡。</p></div>
+        <div class="day"><b>周三 · 咖啡快闪局</b><p>新场景、新商品池，继续复用同一个个人角色。</p></div>
+        <div class="day"><b>周五 · 霓虹夜游局</b><p>情绪场景驱动分享，把“今天穿什么”变成内容。</p></div>
+        <div class="day"><b>周日 · 好友封面局</b><p>邀请好友共同出演，生成本周的多人封面。</p></div>
+      </div>
     </div>
   </div>
-  <div style="background:#f8f8f8;border-radius:16px;padding:20px">
-    <table>
-      <tr><th>星期</th><th>角色</th><th>回访理由</th></tr>
-      <tr><td>周一</td><td>屋顶复工局</td><td>通勤到夜间转场</td></tr>
-      <tr><td>周三</td><td>咖啡快闪局</td><td>限定场景封面</td></tr>
-      <tr><td>周五</td><td>霓虹夜游局</td><td>周末情绪高点</td></tr>
-      <tr><td>周日</td><td>好友双人封面局</td><td>汇总本周角色卡</td></tr>
-    </table>
-  </div>
-  <div class="page-num">6 / 12</div>
-</div>
+  <div class="truth">日期、天气、场景与商品池每日变化；用户角色可持续复用。</div>
+  <div class="page">07 / 12</div>
+</section>
 
-<!-- ═══ Page 7: 社交机制 ═══ -->
-<div class="slide slide-dark">
-  <h2>每位好友带着自己的角色和Look共同入镜</h2>
-  <div class="row" style="margin-bottom:30px">
-    <div class="col">
-      <div style="font-size:56px;font-weight:900;color:#FF6B8A;margin-bottom:8px">2人→4人</div>
-      <p style="opacity:.6">房间席位数升级，每位好友独立角色</p>
-    </div>
-    <div class="col">
-      <div style="font-size:56px;font-weight:900;color:#4A90D9;margin-bottom:8px">4种</div>
-      <p style="opacity:.6">互动模板（并肩/击掌/走秀/合照）</p>
-    </div>
-    <div class="col">
-      <div style="font-size:56px;font-weight:900;color:#FFD700;margin-bottom:8px">穿搭广场</div>
-      <p style="opacity:.6">用户主动公开·默认隐私·可发现同款</p>
+<!-- 08 -->
+<section class="slide dark">
+  <div class="top"><span class="section">07 · 好友共创</span><span class="brand">AI喵搭</span></div>
+  <div class="stage">
+    <h2>好友不是评委，<br>而是带着自己的角色和Look<span class="accent">共同出演</span></h2>
+    <div class="friend">
+      <img src="bonus/screenshots/07-friend-cocreate.png" alt="好友共创房间">
+      <img src="bonus/screenshots/08-friend-joined.png" alt="好友加入房间">
+      <div class="friend-copy">
+        <div class="huge">2 → 4人</div>
+        <p><strong>每个人都先建立自己的身份与完整穿搭</strong>，再进入并肩、击掌、走秀或合照场景。</p>
+        <p>分享的不再是优惠券，而是“等你入镜”的内容邀请。</p>
+      </div>
     </div>
   </div>
-  <div class="card" style="text-align:center">
-    <p style="font-size:18px;line-height:2">
-      发起者角色+Look → 生成房间邀请 → 好友上传自己的身份 → 好友选择自己的完整Look<br>
-      → 好友角色加入2–4人场景 → 生成互动海报/动态同框内容 → 海报带商品回链<br>
-      <span style="color:#FF6B8A;font-size:16px">好友不是评委或投票工具，是共同出演者</span>
-    </p>
-  </div>
-  <div class="page-num">7 / 12</div>
-</div>
+  <div class="page">08 / 12</div>
+</section>
 
-<!-- ═══ Page 8: O2O 闭环 ═══ -->
-<div class="slide slide-light">
-  <h2>每条内容都绑定 SKU、门店和详情</h2>
-  <div class="row">
-    <div class="col">
-      <div style="font-size:64px;margin-bottom:16px">🔗</div>
-      <p style="font-weight:900;font-size:22px;margin-bottom:8px">每一张海报或短片 = 一个购物入口</p>
-      <p style="color:#888;font-size:16px;line-height:1.8">
-        5层商品选择（真实SKU）<br>
-        → AI角色海报/短片展示同款<br>
-        → 每件标注"杭州武林银泰 2F 有货 ¥299"<br>
-        → 查看商品详情和门店信息<br>
-        → 到店试穿任务 → 核销 → 购买
-      </p>
-    </div>
-    <div class="col">
-      <div class="card-light" style="margin-bottom:16px">
-        <p style="font-weight:700;margin-bottom:4px">📊 每条内容的转化埋点</p>
-        <p style="color:#888;font-size:15px">短片观看完成率 · 同款点击率 · 详情页到达率 · 门店任务领取率 · 到店核销率</p>
+<!-- 09 -->
+<section class="slide">
+  <div class="top"><span class="section">08 · 商业闭环</span><span class="brand">AI喵搭</span></div>
+  <div class="stage">
+    <h2>生成的每一张角色图，<br>都能回到<span class="accent">真实SKU与门店</span></h2>
+    <div class="commerce">
+      <div class="commerce-flow">
+        <div class="commerce-step"><div class="n">01</div><div><b>内容里看见同款</b><span>角色画面保留五件商品的组合关系。</span></div></div>
+        <div class="commerce-step"><div class="n">02</div><div><b>点开商品详情</b><span>查看品牌、价格、颜色、尺码和商品说明。</span></div></div>
+        <div class="commerce-step"><div class="n">03</div><div><b>确认门店与库存</b><span>展示可购买门店、楼层与库存状态。</span></div></div>
+        <div class="commerce-step"><div class="n">04</div><div><b>领取任务或直接购买</b><span>把内容互动接回到店、核销与成交。</span></div></div>
       </div>
-      <div class="card-light" style="margin-bottom:16px">
-        <p style="font-weight:700;margin-bottom:4px">🛡️ 银泰独有壁垒</p>
-        <p style="color:#888;font-size:15px">真人商品·真实门店·千万级会员·60天无理由退换</p>
-      </div>
-      <div class="card-light">
-        <p style="font-weight:700;margin-bottom:4px">🎯 品牌合作延伸</p>
-        <p style="color:#888;font-size:15px">Burberry/Sandro/Theory等品牌数字样衣已在Demo中使用</p>
-      </div>
+      <img src="bonus/screenshots/03-product-detail.png" alt="商品详情与门店信息">
     </div>
   </div>
-  <div class="page-num">8 / 12</div>
-</div>
+  <div class="truth">当前 Demo 使用样例商品、价格和库存；正式版对接银泰 PIM、库存与会员权益服务。</div>
+  <div class="page">09 / 12</div>
+</section>
 
-<!-- ═══ Page 9: 试点指标 ═══ -->
-<div class="slide slide-dark">
-  <h2>静→动态升级：8周可归因试点指标</h2>
-  <p style="opacity:.5;margin-bottom:20px">对比当前静态海报与动态商品短片的转化效果</p>
-  <div class="row" style="margin-bottom:20px">
-    <div class="col">
-      <div style="font-size:14px;opacity:.6;margin-bottom:12px;text-align:center">尝试指标（目标值，非实测数据）</div>
-      <table>
-        <tr><th>指标</th><th>静态海报</th><th>动态短片（目标）</th></tr>
-        <tr><td>生成完成率</td><td>基线</td><td>≥ 85%</td></tr>
-        <tr><td>3秒完播率</td><td>—</td><td>≥ 60%</td></tr>
-        <tr><td>分享率</td><td>基线</td><td>+20%</td></tr>
-        <tr><td>商品详情点击率</td><td>基线</td><td>+30%</td></tr>
-        <tr><td>角色资产复用率</td><td>基线</td><td>≥ 2次/周</td></tr>
-        <tr><td>单条生成成本</td><td>基线</td><td>≤ ¥0.50</td></tr>
-        <tr><td>端到端时延</td><td>基线</td><td>≤ 30秒</td></tr>
-      </table>
-    </div>
-    <div class="col">
-      <div class="card" style="margin-bottom:16px">
-        <p style="font-weight:900;font-size:18px;margin-bottom:8px">🎬 动态视频生产能力</p>
-        <p style="opacity:.7;font-size:15px;line-height:1.8">
-          · 写实真人商品展示<br>
-          · 漫感/2.5D 电子角色展示<br>
-          · 走秀/转身/打招呼等动作<br>
-          · 2–4 人共同入镜<br>
-          · 每条绑定SKU与门店入口
-        </p>
-      </div>
-      <div style="background:rgba(255,255,255,.05);border-radius:12px;padding:14px;text-align:center">
-        <p style="font-size:13px;opacity:.6">试点方案：2城4店·会员随机分流·8周可归因</p>
-      </div>
+<!-- 10 -->
+<section class="slide">
+  <div class="top"><span class="section">09 · 银泰优势</span><span class="brand">AI喵搭</span></div>
+  <div class="stage">
+    <h2>只有接上银泰的真实经营资产，<br>角色内容才不止是<span class="accent">一张好看的AI图</span></h2>
+    <div class="yintai">
+      <div class="asset"><div class="word">真实商品</div><p>品牌商品图、SKU信息与搭配关系，是内容生成的素材底座。</p></div>
+      <div class="center-avatar"><img src="../public/avatar-demo/stylized-avatar-v1-small.png" alt=""><span>可购买的个人时尚内容</span></div>
+      <div class="asset"><div class="word">会员身份</div><p>个人角色、收藏、权益与历史Look能持续积累，而非一次性生成。</p></div>
+      <div class="asset"><div class="word">门店网络</div><p>角色图可以落到具体城市、商场、楼层和到店体验。</p></div>
+      <div class="asset"><div class="word">库存权益</div><p>把“喜欢”接到有货、优惠、任务、核销与购买。</p></div>
     </div>
   </div>
-  <div class="page-num">9 / 12</div>
-</div>
+  <div class="page">10 / 12</div>
+</section>
 
-<!-- ═══ Page 10: 竞品 ═══ -->
-<div class="slide slide-light">
-  <h2>为什么银泰能做而别人不能</h2>
-  <table style="margin-bottom:16px">
-    <tr><th></th><th>每日内容</th><th>AI角色资产</th><th>好友同框</th><th>门店联动</th><th>动态视频</th></tr>
-    <tr><td>小红书</td><td><span style="color:#F44336;">✗</span></td><td><span style="color:#F44336;">✗</span></td><td><span style="color:#F44336;">✗</span></td><td><span style="color:#F44336;">✗</span></td><td><span style="color:#F44336;">✗</span></td></tr>
-    <tr><td>得物</td><td><span style="color:#4CAF50;">✓</span></td><td><span style="color:#F44336;">✗</span></td><td><span style="color:#F44336;">✗</span></td><td><span style="color:#F44336;">✗</span></td><td><span style="color:#F44336;">✗</span></td></tr>
-    <tr><td>ZEPETO</td><td><span style="color:#4CAF50;">✓</span></td><td><span style="color:#F44336;">✗</span></td><td><span style="color:#4CAF50;">✓</span></td><td><span style="color:#F44336;">✗</span></td><td><span style="color:#F44336;">✗</span></td></tr>
-    <tr style="background:rgba(255,107,138,.08)"><td style="font-weight:900">AI喵搭</td><td><span style="color:#4CAF50;">✓</span></td><td><span style="color:#4CAF50;">✓</span></td><td><span style="color:#4CAF50;">✓</span></td><td><span style="color:#4CAF50;">✓</span></td><td><span style="color:#4CAF50;">✓(可接入)</span></td></tr>
-  </table>
-  <div style="background:#f8f8f8;border-radius:16px;padding:20px;text-align:center">
-    <p style="font-size:16px;color:#666">核心壁垒：<span style="font-weight:700">银泰线下门店网络</span> + <span style="font-weight:700">千万级会员</span> + <span style="font-weight:700">真实库存联动</span> + <span style="font-weight:700">到店券核销链路</span></p>
+<!-- 11 -->
+<section class="slide dark">
+  <div class="top"><span class="section">10 · 可行性与试点</span><span class="brand">AI喵搭</span></div>
+  <div class="stage">
+    <h2>先验证用户与商业闭环，<br>再把效果演示升级为<span class="accent">生产级生成</span></h2>
+    <div class="roadmap">
+      <div class="roadmap-col">
+        <h3>现在 · H5可现场验证</h3>
+        <ul>
+          <li>每日章节、身份输入与五层商品选搭</li>
+          <li>个人角色效果预览与动作/表情/背景编辑</li>
+          <li>2—4人共创房间、广场与SKU回链</li>
+          <li>邀请链接和主要交互状态可现场演示</li>
+        </ul>
+      </div>
+      <div class="roadmap-col next">
+        <h3>下一步 · 生产化接入</h3>
+        <ul>
+          <li>接入身份与商品一致性生成服务</li>
+          <li>增加质量校验、失败重试、审核与降级</li>
+          <li>连接真实PIM、库存、门店和会员权益</li>
+          <li>在静态角色内容稳定后扩展5—15秒动态短片</li>
+        </ul>
+      </div>
+    </div>
+    <div class="pilot">
+      <div><b>8周试点</b><span>建议2城4店随机分流</span></div>
+      <div><b>体验是否成立</b><span>生成完成、等待时长、编辑完成</span></div>
+      <div><b>用户是否愿意回来</b><span>保存、分享、好友加入、次日复访</span></div>
+      <div><b>是否带来转化</b><span>SKU点击、门店任务、到店核销</span></div>
+    </div>
   </div>
-  <div class="page-num">10 / 12</div>
-</div>
+  <div class="page">11 / 12</div>
+</section>
 
-<!-- ═══ Page 11: 路线图 ═══ -->
-<div class="slide slide-dark">
-  <h2>实施路线图</h2>
-  <div class="row">
-    <div class="col">
-      <div class="card" style="margin-bottom:16px;border-left:4px solid #FF6B8A">
-        <p style="font-weight:900;font-size:18px;margin-bottom:4px">当前 · H5 MVP ✅</p>
-        <p style="opacity:.6;font-size:14px">每日章节 · 5层选搭 · AI角色 · 角色编辑 · 邀请链接 · 2–4人房间 · 穿搭广场 · 静态海报分享</p>
-      </div>
-      <div class="card" style="margin-bottom:16px;border-left:4px solid #4A90D9">
-        <p style="font-weight:900;font-size:18px;margin-bottom:4px">Q3 · 动态视频接入</p>
-        <p style="opacity:.6;font-size:14px">Identity/Garment Lock Provider · 动作参考视频接入 · Seedance/LibTV 原型联调 · Validation Gate · 4人动态同框</p>
+<!-- 12 -->
+<section class="slide cover dark">
+  <div class="top"><span class="section">AI喵搭</span><span class="brand">OPC 2026 · BOUNTY 03</span></div>
+  <div class="closing-grid">
+    <div>
+      <div class="closing-quote">生成的不是一张AI图，<br>而是由用户主演、<br><span class="accent">可以买到同款的每日时尚故事。</span></div>
+      <p class="closing-sub">把今天想穿的，生成成今天的我。</p>
+      <div class="closing-cta">
+        <img src="../public/qr/ai-meow-h5.png" alt="在线体验二维码">
+        <div><b>扫码现场体验</b><span>next-gen-avatar.ai-meow-outfit.pages.dev/#/game</span></div>
       </div>
     </div>
-    <div class="col">
-      <div class="card" style="margin-bottom:16px;border-left:4px solid #FFD700">
-        <p style="font-weight:900;font-size:18px;margin-bottom:4px">Q4 · 生产级升级</p>
-        <p style="opacity:.6;font-size:14px">私有GPU Provider部署 · 成本优化 < ¥0.50/条 · 8城试点 · 2–4人动态 · 角色库管理</p>
-      </div>
-      <div class="card" style="border-left:4px solid #4CAF50">
-        <p style="font-weight:900;font-size:18px;margin-bottom:4px">2027 · 全量上线</p>
-        <p style="opacity:.6;font-size:14px">千万级会员 · 品牌数字样衣库 · 尺码推荐 · 跨店穿搭 · AR试穿（进阶入口）</p>
-      </div>
-    </div>
+    <img class="closing-avatar" src="../public/avatar-demo/stylized-avatar-v1-small.png" alt="AI喵搭角色">
   </div>
-  <div class="page-num">11 / 12</div>
-</div>
+  <div class="page">12 / 12</div>
+</section>
 
-<!-- ═══ Page 12: 结尾 ═══ -->
-<div class="slide slide-cover" style="text-align:center">
-  <div style="position:absolute;top:-120px;left:50%;transform:translateX(-50%);width:500px;height:500px;border-radius:50%;background:radial-gradient(#FF6B8A30,transparent 70%)"></div>
-  <div style="position:relative;z-index:1">
-    <p style="font-size:48px;font-weight:900;margin-bottom:16px">谢谢</p>
-    <p style="font-size:22px;opacity:.6;margin-bottom:40px">AI喵搭 · 把一次商品浏览，变成由我主演的每日时尚短片</p>
-    <div class="row" style="justify-content:center;gap:60px;margin-bottom:40px">
-      <div>
-        <p style="font-size:14px;opacity:.4;margin-bottom:8px">在线体验</p>
-        <p style="font-size:16px">next-gen-avatar.ai-meow-outfit.pages.dev/#/game</p>
-      </div>
-      <div>
-        <p style="font-size:14px;opacity:.4;margin-bottom:8px">演示视频</p>
-        <p style="font-size:16px">deliverables/video-v3/喵搭.mp4（本地文件）</p>
-      </div>
-    </div>
-    <p style="margin-top:40px;opacity:.3;font-size:14px">OPC 2026 · Bounty 03 · 银泰商业 · 参赛方向：创想家</p>
-  </div>
-  <div class="page-num">12 / 12</div>
-</div>
 </body>
 </html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>AI喵搭 · AIGC技术可行性（评审版）</title>
+<style>
+  @page { size: A4 portrait; margin: 0; }
+  @media print {
+    html, body { width: 210mm; margin: 0; }
+    .page { break-after: page; page-break-after: always; }
+    .page:last-child { break-after: auto; page-break-after: auto; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 210mm; background: #ece9e1; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; color: #10131d; }
+  .page { position: relative; width: 210mm; height: 297mm; padding: 15mm 16mm 13mm; overflow: hidden; background: #f6f3eb; }
+  .dark { background: #10131d; color: #fff; }
+  .kicker { color: #264eff; font-size: 8pt; font-weight: 900; letter-spacing: .14em; }
+  .dark .kicker { color: #dfff3f; }
+  h1 { margin: 5mm 0 3mm; font-size: 28pt; line-height: 1.08; letter-spacing: -.04em; }
+  h2 { margin: 0 0 3mm; font-size: 17pt; line-height: 1.2; }
+  h3 { margin: 0 0 2mm; font-size: 11pt; }
+  p, li { font-size: 9pt; line-height: 1.6; }
+  .lead { max-width: 165mm; color: #5f626a; font-size: 11pt; }
+  .dark .lead { color: rgba(255,255,255,.62); }
+  .hero { display: grid; grid-template-columns: 1fr 58mm; gap: 8mm; margin-top: 9mm; align-items: center; }
+  .hero img { width: 58mm; height: 100mm; object-fit: cover; object-position: center 25%; border: 1pt solid rgba(255,255,255,.35); }
+  .statement { padding: 7mm; background: #fff; border-top: 4pt solid #dfff3f; color: #10131d; }
+  .statement strong { display: block; margin-bottom: 3mm; font-size: 17pt; }
+  .boundary { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; margin-top: 8mm; }
+  .box { padding: 5mm; background: #fff; border: 1pt solid #c9c8c3; }
+  .dark .box { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.22); }
+  .box ul { margin: 2mm 0 0; padding-left: 5mm; }
+  .box li { margin-bottom: 1.5mm; }
+  .flow { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2mm; margin-top: 9mm; }
+  .flow-item { position: relative; min-height: 31mm; padding: 4mm 3.5mm; background: #fff; border: 1pt solid #10131d; color: #10131d; }
+  .flow-item b { display: block; margin-bottom: 2mm; font-size: 9pt; }
+  .flow-item span { color: #666a72; font-size: 7.5pt; line-height: 1.45; }
+  .flow-item::after { content: "→"; position: absolute; right: -4mm; top: 12mm; z-index: 2; font-size: 11pt; font-weight: 900; color: #264eff; }
+  .flow-item:last-child::after { display: none; }
+  .note { margin-top: 5mm; padding: 4mm 5mm; background: #dfff3f; color: #10131d; font-size: 8.5pt; line-height: 1.55; }
+  .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; margin-top: 8mm; }
+  .control { min-height: 71mm; padding: 6mm; background: #fff; border-top: 5pt solid #264eff; color: #10131d; }
+  .control:nth-child(2) { border-top-color: #ff5b88; }
+  .control:nth-child(3) { border-top-color: #9de8ff; }
+  .control:nth-child(4) { border-top-color: #dfff3f; }
+  .control .num { color: #676a72; font-size: 7pt; font-weight: 900; letter-spacing: .12em; }
+  .control h2 { margin-top: 3mm; }
+  .control p { color: #565960; }
+  .tech { margin-top: 3mm; padding-top: 3mm; border-top: .6pt solid #d7d7d3; color: #777980; font-size: 7.3pt; }
+  .roadmap { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; margin-top: 8mm; }
+  .phase { min-height: 80mm; padding: 5mm; background: #fff; border-top: 5pt solid #264eff; }
+  .phase:nth-child(2) { border-top-color: #ff5b88; }
+  .phase:nth-child(3) { border-top-color: #dfff3f; }
+  .phase .time { font-size: 8pt; font-weight: 900; color: #666a72; letter-spacing: .08em; }
+  .phase h2 { margin-top: 3mm; }
+  .phase ul { margin: 3mm 0 0; padding-left: 5mm; }
+  .governance { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4mm; margin-top: 7mm; }
+  .gov { min-height: 54mm; padding: 5mm; background: #10131d; color: #fff; }
+  .gov p { color: rgba(255,255,255,.65); font-size: 8pt; }
+  .status { margin-top: 7mm; width: 100%; border-collapse: collapse; background: #fff; font-size: 8pt; }
+  .status th, .status td { padding: 3mm; border-bottom: .6pt solid #d8d7d1; text-align: left; }
+  .status th { background: #e8e5dc; }
+  .footer { position: absolute; left: 16mm; right: 16mm; bottom: 5mm; display: flex; justify-content: space-between; color: #777980; font-size: 6.5pt; }
+  .dark .footer { color: rgba(255,255,255,.4); }
+</style>
+</head>
+<body>
+
+<section class="page dark">
+  <div class="kicker">AI喵搭 · AIGC技术可行性 / 01</div>
+  <h1>先把产品说清楚，<br>再说明技术如何实现。</h1>
+  <p class="lead">AI喵搭不是AI试衣镜，而是懂真实商品的个人时尚角色生成器：一张照片、五件真实商品、一个场景/画风，生成可编辑、可分享、可回链购买的角色内容。</p>
+  <div class="hero">
+    <div>
+      <div class="statement"><strong>用户看到的体验</strong>上传身份 → 选择完整Look → 生成角色画面 → 换动作/表情/背景 → 保存分享 → 好友同框 → 查看同款与门店</div>
+      <div class="boundary">
+        <div class="box"><h3>当前原型已完成</h3><ul><li>H5主要交互和可运行状态</li><li>身份输入、五层商品选择</li><li>角色效果预览与编辑</li><li>共创房间、广场和SKU回链</li></ul></div>
+        <div class="box"><h3>生产版需要接入</h3><ul><li>身份一致性生成服务</li><li>五件商品一致性控制</li><li>自动质量校验与失败重试</li><li>PIM、库存、门店与会员权益</li></ul></div>
+      </div>
+    </div>
+    <img src="../public/avatar-demo/stylized-avatar-v1-small.png" alt="角色效果">
+  </div>
+  <div class="flow">
+    <div class="flow-item"><b>身份照片</b><span>授权、裁剪、特征参考</span></div>
+    <div class="flow-item"><b>商品与场景</b><span>5件SKU、场景、画风</span></div>
+    <div class="flow-item"><b>角色生成</b><span>身份与服装受控生成</span></div>
+    <div class="flow-item"><b>质量校验</b><span>身份、商品、肢体、审核</span></div>
+    <div class="flow-item"><b>内容与回链</b><span>保存、分享、好友、购买</span></div>
+  </div>
+  <div class="note"><strong>真实性边界：</strong>当前角色图属于效果演示，不声称比赛原型已经完成商业生成API联调；技术可行性来自可替换的受控生成、视觉校验与业务数据接入路线。</div>
+  <div class="footer"><span>AI喵搭 · OPC 2026 Bounty 03</span><span>评审版 · 2026.07</span></div>
+</section>
+
+<section class="page dark">
+  <div class="kicker">AI喵搭 · AIGC技术可行性 / 02</div>
+  <h1>生产级效果要同时<br>守住四个质量目标。</h1>
+  <p class="lead">模型可以替换，质量目标不能变。生成链路围绕“还是我、还是这5件、可以换场景、不合格不发布”组织。</p>
+  <div class="controls">
+    <div class="control"><div class="num">01 / IDENTITY</div><h2>生成后，还是我</h2><p>提取脸型、五官、发型等参考特征；对候选结果做身份相似度校验，低于门槛自动重试。</p><div class="tech">工程对应：身份参考图、角色参考集、跨镜头一致性评分。</div></div>
+    <div class="control"><div class="num">02 / PRODUCTS</div><h2>穿的，还是这5件</h2><p>把SKU商品图、颜色、轮廓、Logo和穿着层级写入生成约束；逐件校验，不把“风格相似”冒充“商品一致”。</p><div class="tech">工程对应：商品参考图、结构化SKU属性、分层一致性检查。</div></div>
+    <div class="control"><div class="num">03 / CREATION</div><h2>允许换动作和场景</h2><p>动作、表情、镜头、背景可以变化；身份与完整Look作为稳定锚点。多人共创时每位角色分别保持身份与穿搭。</p><div class="tech">工程对应：姿态/镜头参考、场景指令、多人分区生成与合成。</div></div>
+    <div class="control"><div class="num">04 / VALIDATION</div><h2>不合格，不发布</h2><p>检查穿模、肢体异常、文字/Logo变形、敏感内容及动态画面闪烁；失败时重试或降级为静态结果。</p><div class="tech">工程对应：关键点检测、视觉语言模型评分、审核、重试与降级。</div></div>
+  </div>
+  <div class="note">静态角色画面先达到稳定质量，再扩展5—15秒动态视频。这样能先验证用户是否愿意生成、保存、分享和点击同款，降低一次性投入风险。</div>
+  <div class="footer"><span>供应商可替换 · 质量门槛与业务协议保持稳定</span><span>02 / 03</span></div>
+</section>
+
+<section class="page">
+  <div class="kicker">AI喵搭 · AIGC技术可行性 / 03</div>
+  <h1>8周完成一次<br>可归因的生产化试点。</h1>
+  <p class="lead">建议2城4店、小流量随机分流。先验证体验、复访和转化，再决定动态视频与更大规模投入。</p>
+  <div class="roadmap">
+    <div class="phase"><div class="time">第1—2周</div><h2>接入与基线</h2><ul><li>确定生成供应商与降级策略</li><li>接入身份、商品和场景请求协议</li><li>连接样例PIM与门店库存</li><li>记录时延、失败率和人工样本</li></ul></div>
+    <div class="phase"><div class="time">第3—5周</div><h2>质量与安全</h2><ul><li>建立身份/商品一致性样本集</li><li>增加肢体、穿模、审核检查</li><li>完成失败重试和静态降级</li><li>建立肖像授权与删除入口</li></ul></div>
+    <div class="phase"><div class="time">第6—8周</div><h2>小流量试点</h2><ul><li>静态角色内容分流上线</li><li>观察保存、分享、好友加入</li><li>观察SKU点击与门店任务</li><li>评估成本后再开动态视频</li></ul></div>
+  </div>
+  <div class="governance">
+    <div class="gov"><h3>隐私</h3><p>明确肖像授权；原照片默认不公开；支持撤回、删除和角色资产清理。</p></div>
+    <div class="gov"><h3>品牌与商品</h3><p>结果标注为视觉角色内容，不承诺真实上身效果；Logo和商品不一致时禁止发布。</p></div>
+    <div class="gov"><h3>稳定性</h3><p>超时、供应商异常或质量不达标时，降级到已审核静态模板，保证主流程可完成。</p></div>
+  </div>
+  <table class="status">
+    <tr><th>验证问题</th><th>观察指标</th><th>决策用途</th></tr>
+    <tr><td>用户能否顺利完成</td><td>生成完成、等待时长、编辑完成</td><td>决定交互与生成链路是否可用</td></tr>
+    <tr><td>用户是否愿意回来</td><td>保存、分享、好友加入、次日复访</td><td>决定每日章节是否成立</td></tr>
+    <tr><td>内容是否带来商业动作</td><td>SKU点击、门店任务、到店核销</td><td>决定是否扩大商品与门店范围</td></tr>
+  </table>
+  <div class="note"><strong>动态视频扩展：</strong>在静态角色内容稳定后，以同一身份和完整Look为锚点加入动作/镜头参考，生成5—15秒走秀、转身或好友同框短片；动态失败时可安全降级为静态海报。</div>
+  <div class="footer"><span>AI喵搭 · 技术可行性说明</span><span>03 / 03</span></div>
+</section>
+
+</body>
+</html>
