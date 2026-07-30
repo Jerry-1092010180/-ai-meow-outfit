@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
+    "materials:build": "node scripts/generate-pdfs.cjs",
     "preview": "vite preview"
   },
   "dependencies": {
