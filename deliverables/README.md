@@ -6,10 +6,10 @@
 
 | 材料 | 文件 | 备注 |
 |------|------|------|
-| **One Pager（评审版）** | [`AI喵搭-OnePager-评审版.pdf`](./AI喵搭-OnePager-评审版.pdf) | 1 页 A4，本次唯一正式评审文档 |
+| **One Pager（正式版）** | [`AI喵搭-OnePager-正式版.pdf`](./AI喵搭-OnePager-正式版.pdf) | 1 页 A4 |
+| **路演 Deck（评审版）** | [`AI喵搭-路演Deck-评审版.pdf`](./AI喵搭-路演Deck-评审版.pdf) | 12 页 16:9 |
 | 在线 H5 | `https://next-gen-avatar.ai-meow-outfit.pages.dev/#/game` | 手机浏览器打开 |
 | One Pager 源文件 | [`OnePager.html`](./OnePager.html) | 生成源文件，不要求评委阅读 |
-| One Pager 预览 | [`judge-assets/onepager-preview.png`](./judge-assets/onepager-preview.png) | README 预览图 |
 
 ## 产品定义
 
@@ -34,4 +34,4 @@
 - `docs/internal/video-production/` — 视频制作脚本和中间产物
 - `docs/internal/handoffs/` — 内部开发交接文件
 
-非正式材料 ≠ 评审交付物。如有任何疑问，以本页面和 `AI喵搭-OnePager-评审版.pdf` 为准。
+非正式材料 ≠ 评审交付物。如有任何疑问，以本页面和上述两份正式 PDF 为准。
