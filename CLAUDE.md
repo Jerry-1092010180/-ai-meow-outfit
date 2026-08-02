@@ -2,15 +2,15 @@
 
 开始任何操作前，先完整阅读：
 
-1. `TO_CLAUDE_CODE.md`：本次接管任务、真实仓库状态、边界与验收标准。
-2. `SESSION_RESUME.md`：2026-07-24 的本地快照。
-3. `CONTEXT.md`、`TO_CODEX.md`、`README.md`：产品与技术背景；如内容冲突，以代码和当前交付物为准，并在本次整理中修正文档。
+1. `docs/internal/handoffs/CONTEXT.md`：产品上下文与技术边界。
+2. `README.md`：项目说明与评委入口。
+3. `deliverables/README.md`：正式评审材料索引。
 
 ## 固定规则
 
 - 仓库路径：`/Users/jerry/Documents/Codex/ai-meow-outfit`
 - 当前工作分支：`next-gen-avatar`
-- 使用 Node.js 22；根项目使用根目录 `package.json`，视频项目使用 `deliverables/video-v2/package.json`。
+- 使用 Node.js 22；根项目使用根目录 `package.json`。
 - 不要把 Remotion 依赖重新装到根项目。
 - 保留用户已有的文档、视频、音频、PDF、截图和源文件；先分类，再决定是否提交。
 - 禁止 `git reset --hard`、`git clean -fd`、`git checkout -- <path>`、force push、重写历史和直接推送 `main`。
