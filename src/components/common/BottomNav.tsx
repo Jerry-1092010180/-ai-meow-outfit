@@ -22,7 +22,7 @@ export default function BottomNav({ dark = false }: BottomNavProps) {
 
   return (
     <nav
-      className={`fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] backdrop-blur-lg border-t safe-bottom ${
+      className={`fixed bottom-0 left-1/2 z-[70] -translate-x-1/2 w-full max-w-[430px] backdrop-blur-lg border-t safe-bottom ${
         dark
           ? 'bg-gray-900/90 border-white/10'
           : 'bg-white/90 border-gray-100'

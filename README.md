@@ -14,11 +14,13 @@
 
 📱 请使用手机浏览器打开 H5。
 
-### One Pager（评审版）
+### One Pager（半决赛版）
 
-**[AI喵搭-OnePager-评审版.pdf](deliverables/AI喵搭-OnePager-评审版.pdf)**（1 页 A4）
+**[AI喵搭-OnePager-半决赛版.pdf](deliverables/AI喵搭-OnePager-半决赛版.pdf)**（1 页 A4，已提交正式版保留在 `deliverables/`）
 
-[![One Pager 预览](deliverables/judge-assets/onepager-preview.png)](deliverables/AI喵搭-OnePager-评审版.pdf)
+### 半决赛展示
+
+**[半决赛展示与提交手册](deliverables/半决赛展示与提交手册.md)** — 8 分钟讲稿、90 秒 Demo、问答与现场检查清单。
 
 ---
 

@@ -41,6 +41,7 @@ import { dailyQuestAigcProvider } from '@/services/dailyQuestAigcProvider';
 import { socialAvatarImageProvider } from '@/services/socialAvatarImageProvider';
 import { socialScenePlatformProvider } from '@/services/socialScenePlatformProvider';
 import { useDailyQuestStore } from '@/stores/useDailyQuestStore';
+import { useNotificationStore } from '@/stores/useNotificationStore';
 import type {
   DailyQuestOutfitSlot,
   DailyQuestSelection,
@@ -57,6 +58,7 @@ import type {
 } from '@/types/socialAvatar';
 import type { StoreItem } from '@/types/store';
 import { track } from '@/utils/analytics';
+import { copyToClipboard } from '@/utils/deepLink';
 
 const QUEST_CONTEXT = {
   city: '杭州',
@@ -411,6 +413,34 @@ function QuestLobby({
         </div>
       </section>
 
+      <section className="border-b border-black bg-[#dfff3f] px-4 py-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-[10px] font-black tracking-[0.16em] text-[#2455ff]">QUICK START</p>
+            <p className="mt-1 text-sm font-black">完整体验，或 30 秒直达结果</p>
+          </div>
+          <Zap size={24} fill="currentColor" />
+        </div>
+        <div className="mt-3 grid grid-cols-[1.25fr_1fr] gap-2">
+          <button
+            type="button"
+            onClick={onStart}
+            className="flex h-12 items-center justify-between border border-black bg-black px-3 text-sm font-black text-white shadow-[3px_3px_0_#ff386d] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+          >
+            <span>{completedToday ? '再走一遍完整流程' : '开始完整体验'}</span>
+            <ArrowRight size={18} />
+          </button>
+          <button
+            type="button"
+            onClick={onPreview}
+            className="flex h-12 items-center justify-center gap-2 border border-black bg-white px-2 text-xs font-black"
+          >
+            <ImageIcon size={16} /> 30 秒看结果
+          </button>
+        </div>
+        <p className="mt-2 text-[10px] leading-4 text-black/60">照片可在下方加入；跳过时使用演示身份，不阻断评审体验。</p>
+      </section>
+
       <section className="border-b border-black bg-[#2455ff] px-4 py-4 text-white">
         <p className="text-[10px] font-black tracking-[0.16em] text-[#dfff3f]">TODAY'S STORY</p>
         <h2 className="mt-1 text-xl font-black">{quest.title}</h2>
@@ -465,22 +495,6 @@ function QuestLobby({
         </div>
 
         <PublicLookGallery quest={quest} />
-
-        <button
-          type="button"
-          onClick={onStart}
-          className="mt-5 flex h-14 w-full items-center justify-between border border-black bg-black px-4 text-base font-black text-white shadow-[4px_4px_0_#ff386d] active:translate-x-1 active:translate-y-1 active:shadow-none"
-        >
-          <span>{completedToday ? '再生成一张今日角色' : '开始今日 AI 角色副本'}</span>
-          <ArrowRight size={22} />
-        </button>
-        <button
-          type="button"
-          onClick={onPreview}
-          className="mt-3 flex h-11 w-full items-center justify-center gap-2 border border-black bg-white text-xs font-black"
-        >
-          <ImageIcon size={16} /> 直接预览完整生成效果
-        </button>
 
         <div className="mt-5 flex items-center justify-between border-t border-black pt-4">
           <div>
@@ -1656,6 +1670,7 @@ function JoinSceneView({ quest }: { quest: DailyStyleQuest }) {
   const [joinedMemberCount, setJoinedMemberCount] = useState(2);
   const [joinError, setJoinError] = useState<string | null>(null);
   const recordCollaboration = useDailyQuestStore((state) => state.recordCollaboration);
+  const notify = useNotificationStore((state) => state.addNotification);
   const params = new URLSearchParams(location.search);
   const sceneId = params.get('join') ?? 'preview-scene';
   const itemIndex = new Map(quest.rounds.flatMap((round) => round.candidates).map((item) => [item.id, item]));
@@ -1688,13 +1703,15 @@ function JoinSceneView({ quest }: { quest: DailyStyleQuest }) {
           text: '上传你的照片并挑一套银泰穿搭，生成自己的角色后加入这个多人场景。',
           url: window.location.href,
         });
+        notify('邀请已分享', 'success');
       } else {
-        await navigator.clipboard.writeText(window.location.href);
+        const copied = await copyToClipboard(window.location.href);
+        notify(copied ? '邀请链接已复制' : '复制失败，请长按地址栏复制', copied ? 'success' : 'error');
       }
     } catch (shareError) {
-      if ((shareError as DOMException).name !== 'AbortError') {
-        await navigator.clipboard?.writeText(window.location.href).catch(() => undefined);
-      }
+      if ((shareError as DOMException).name === 'AbortError') return;
+      const copied = await copyToClipboard(window.location.href);
+      notify(copied ? '分享未完成，已改为复制链接' : '分享失败，请长按地址栏复制', copied ? 'info' : 'error');
     }
   };
 
@@ -1977,6 +1994,7 @@ export default function DailyQuestPage() {
   const completeQuest = useDailyQuestStore((state) => state.completeQuest);
   const recordShare = useDailyQuestStore((state) => state.recordShare);
   const recordCollaboration = useDailyQuestStore((state) => state.recordCollaboration);
+  const notify = useNotificationStore((state) => state.addNotification);
   const isJoinMode = new URLSearchParams(location.search).has('join');
 
   useEffect(() => {
@@ -2120,24 +2138,43 @@ export default function DailyQuestPage() {
           text: '上传你的照片、挑一套银泰穿搭，生成自己的角色后加入我的互动海报。',
           url: inviteUrl,
         });
-      } else {
-        await navigator.clipboard.writeText(inviteUrl);
-      }
-      markShared();
-    } catch (shareError) {
-      if ((shareError as DOMException).name !== 'AbortError') {
-        await navigator.clipboard.writeText(inviteUrl).catch(() => undefined);
         markShared();
+        notify('好友邀请已分享', 'success');
+      } else {
+        const copied = await copyToClipboard(inviteUrl);
+        if (!copied) {
+          notify('复制失败，请使用浏览器地址栏分享', 'error');
+          return;
+        }
+        markShared();
+        notify('共创链接已复制', 'success');
+      }
+    } catch (shareError) {
+      if ((shareError as DOMException).name === 'AbortError') return;
+      const copied = await copyToClipboard(inviteUrl);
+      if (copied) {
+        markShared();
+        notify('分享未完成，已改为复制共创链接', 'info');
+      } else {
+        notify('共创房间已创建，但链接复制失败', 'error');
       }
     }
   };
 
   const copyInvite = async () => {
-    await ensureSocialInvite().catch((inviteError) => {
+    try {
+      await ensureSocialInvite();
+      const copied = await copyToClipboard(inviteUrl);
+      if (!copied) {
+        notify('复制失败，请使用浏览器地址栏分享', 'error');
+        return;
+      }
+      markShared();
+      notify('共创链接已复制', 'success');
+    } catch (inviteError) {
       console.warn('[DailyQuest] Social invite session was not persisted', inviteError);
-    });
-    markShared();
-    await navigator.clipboard?.writeText(inviteUrl).catch(() => undefined);
+      notify('共创房间创建失败，请稍后再试', 'error');
+    }
   };
 
   const previewFriendJoin = () => {

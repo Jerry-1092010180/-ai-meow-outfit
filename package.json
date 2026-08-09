@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "materials:build": "node scripts/generate-pdfs.cjs",
+    "demo:smoke": "node scripts/smoke-test.mjs",
+    "materials:verify": "node scripts/verify-materials.mjs",
+    "onepager:build": "node scripts/generate-onepager.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

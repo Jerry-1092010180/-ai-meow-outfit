@@ -1,6 +1,6 @@
 # AI 喵搭 — 交付物
 
-> **本次正式评审材料仅以以下文件为准。**
+> 正式提交材料与半决赛工作材料分开维护；已提交 PDF 不被现场操作笔记替代。
 
 ## 正式评审材料
 
@@ -10,6 +10,15 @@
 | **路演 Deck（评审版）** | [`AI喵搭-路演Deck-评审版.pdf`](./AI喵搭-路演Deck-评审版.pdf) | 12 页 16:9 |
 | 在线 H5 | `https://next-gen-avatar.ai-meow-outfit.pages.dev/#/game` | 手机浏览器打开 |
 | One Pager 源文件 | [`OnePager.html`](./OnePager.html) | 生成源文件，不要求评委阅读 |
+
+## 半决赛工作材料
+
+| 材料 | 文件 / 链接 | 用途 |
+|------|-------------|------|
+| **展示与提交手册** | [`半决赛展示与提交手册.md`](./半决赛展示与提交手册.md) | 8 分钟讲稿、90 秒 Demo、问答与现场检查 |
+| **One Pager（半决赛版）** | [`AI喵搭-OnePager-半决赛版.pdf`](./AI喵搭-OnePager-半决赛版.pdf) | 当前产品叙事；保留已提交正式版不覆盖 |
+| **2 分钟演示视频** | [`喵街AI今日角色-比赛Demo-v1.mp4`](../docs/internal/video-production/video/喵街AI今日角色-比赛Demo-v1.mp4) | 网络或设备异常时的离线兜底 |
+| **公开 GitHub** | [next-gen-avatar 分支](https://github.com/Jerry-1092010180/-ai-meow-outfit/tree/next-gen-avatar) | 代码、版本和真实性核验 |
 
 ## 产品定义
 
