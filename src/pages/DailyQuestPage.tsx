@@ -186,7 +186,7 @@ function QuestHeader({ streak, inspiration }: { streak: number; inspiration: num
           <span className="grid h-8 w-8 place-items-center bg-black text-xs font-black text-[#dfff3f]">IN</span>
           <div>
             <p className="text-[10px] font-black leading-none tracking-[0.16em]">MIAOJIE PLAY</p>
-            <p className="mt-1 text-[10px] leading-none text-gray-500">银泰会员每日 AI 角色副本</p>
+            <p className="mt-1 text-[10px] leading-none text-gray-500">生活新美学 · 每日 AI 角色</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -404,7 +404,7 @@ function QuestLobby({
             让 AI 画成你
           </h1>
           <p className="mt-4 max-w-[235px] text-xs leading-5 text-white/70">
-            选完整银泰穿搭，生成保留本人特征的动漫角色，再邀请好友带着自己的角色加入同框。
+            选门店在售的完整银泰穿搭，生成保留本人特征的动漫角色，再邀请好友带着自己的角色加入同框。
           </p>
           <div className="mt-5 inline-flex items-center gap-2 border border-white/30 bg-white/10 px-3 py-2 text-xs font-bold backdrop-blur">
             <Clock3 size={15} className="text-[#dfff3f]" />

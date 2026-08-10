@@ -10,6 +10,7 @@
     "demo:smoke": "node scripts/smoke-test.mjs",
     "materials:verify": "node scripts/verify-materials.mjs",
     "onepager:build": "node scripts/generate-onepager.mjs",
+    "pitchdeck:build": "node scripts/generate-pitch-deck.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
