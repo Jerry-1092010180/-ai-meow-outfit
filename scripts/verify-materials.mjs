@@ -6,6 +6,7 @@ const requiredFiles = [
   { path: 'deliverables/AI喵搭-OnePager-正式版.pdf', kind: 'pdf', minBytes: 100_000 },
   { path: 'deliverables/AI喵搭-OnePager-半决赛版.pdf', kind: 'pdf', minBytes: 100_000 },
   { path: 'deliverables/AI喵搭-路演Deck-评审版.pdf', kind: 'pdf', minBytes: 100_000 },
+  { path: 'deliverables/AI喵搭-路演Deck-5分钟现场版.pdf', kind: 'pdf', minBytes: 100_000 },
   { path: 'deliverables/半决赛展示与提交手册.md', kind: 'text', minBytes: 2_000 },
   { path: 'docs/internal/video-production/video/喵街AI今日角色-比赛Demo-v1.mp4', kind: 'mp4', minBytes: 1_000_000 },
   { path: 'public/qr/ai-meow-h5.png', kind: 'png', minBytes: 500 },

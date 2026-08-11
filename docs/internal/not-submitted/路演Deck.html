@@ -565,5 +565,35 @@
   <div class="page">12 / 12</div>
 </section>
 
+<script>
+  (() => {
+    if (new URLSearchParams(window.location.search).get('mode') !== 'live') return;
+
+    const liveSequence = [1, 2, 3, 5, 8, 9, 10, 11, 12];
+    const liveSections = [
+      'OPC 2026 · BOUNTY 03',
+      '01 · 用户问题',
+      '02 · 产品定义',
+      '03 · 使用体验',
+      '04 · 好友共创',
+      '05 · 商业闭环',
+      '06 · 银泰优势',
+      '07 · 可行性与试点',
+      'AI喵搭',
+    ];
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    slides.forEach((slide, index) => {
+      if (!liveSequence.includes(index + 1)) slide.remove();
+    });
+    Array.from(document.querySelectorAll('.slide')).forEach((slide, index) => {
+      const section = slide.querySelector('.top .section');
+      const page = slide.querySelector('.page');
+      if (section) section.textContent = liveSections[index];
+      if (page) page.textContent = `${String(index + 1).padStart(2, '0')} / 09`;
+    });
+    document.title = 'AI喵搭 · 5分钟现场路演版';
+  })();
+</script>
+
 </body>
 </html>

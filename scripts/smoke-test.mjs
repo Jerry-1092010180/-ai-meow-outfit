@@ -3,7 +3,9 @@ import path from 'node:path';
 import process from 'node:process';
 import puppeteer from 'puppeteer';
 
-const targetUrl = process.argv[2] ?? 'http://127.0.0.1:5173/#/game';
+const cliArgs = process.argv.slice(2);
+const sequential = cliArgs.includes('--sequential');
+const targetUrl = cliArgs.find((argument) => !argument.startsWith('--')) ?? 'http://127.0.0.1:5173/#/game';
 const artifactDir = path.resolve('tmp/smoke');
 const startedAt = Date.now();
 const consoleErrors = [];
@@ -30,6 +32,15 @@ async function clickButton(page, label) {
     if (!(button instanceof HTMLButtonElement)) throw new Error(`Button not found: ${expected}`);
     button.click();
   }, label);
+}
+
+async function clickFirstProduct(page) {
+  await page.waitForSelector('article button', { timeout: 12_000 });
+  await page.evaluate(() => {
+    const button = document.querySelector('article button');
+    if (!(button instanceof HTMLButtonElement)) throw new Error('First product card was not found.');
+    button.click();
+  });
 }
 
 function observePage(page) {
@@ -66,7 +77,19 @@ try {
   await page.screenshot({ path: path.join(artifactDir, 'latest-home.png'), fullPage: false });
 
   const generationStartedAt = Date.now();
-  await clickButton(page, '30 秒看结果');
+  let sequentialSelectionMs = null;
+  if (sequential) {
+    const selectionStartedAt = Date.now();
+    await clickButton(page, '开始完整体验');
+    for (let round = 1; round <= 5; round += 1) {
+      await waitForText(page, `完整穿搭 ${round} / 5`);
+      await clickFirstProduct(page);
+      await clickButton(page, round === 5 ? '确认并生成' : '确认这件');
+    }
+    sequentialSelectionMs = Date.now() - selectionStartedAt;
+  } else {
+    await clickButton(page, '30 秒看结果');
+  }
   await waitForText(page, '你的今日动漫角色已生成');
   const resultGeneratedMs = Date.now() - generationStartedAt;
   await new Promise((resolve) => setTimeout(resolve, 500));
@@ -96,9 +119,11 @@ try {
   console.log(JSON.stringify({
     ok: true,
     targetUrl,
+    mode: sequential ? 'sequential' : 'quick',
     checks: {
       homeLoadedMs,
       quickStartVisible,
+      sequentialSelectionMs,
       resultGeneratedMs,
       copyFeedback: '共创链接已复制',
       friendJoinedMs,

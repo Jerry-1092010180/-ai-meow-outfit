@@ -5,6 +5,8 @@
 > 工作分支：`next-gen-avatar`  
 > 线上地址：<https://next-gen-avatar.ai-meow-outfit.pages.dev/#/game>
 
+> **2026-08-12 现场规则覆盖：**半决赛已确定为 **5 分钟展示 + 3 分钟提问**。现场主用 `deliverables/AI喵搭-路演Deck-5分钟现场版.pdf`，Demo 必须按五层选搭 → 生成 → 微调 → 好友加入 → 商品与门店的顺序完成。本文后续出现的“8 分钟讲稿”“90 秒 Demo”“45 秒压缩路径”均为旧口径，不再执行；最新操作以 `deliverables/半决赛展示与提交手册.md` 为准。
+
 ## 当前状态摘要
 
 ### 已完成，但尚未提交/推送

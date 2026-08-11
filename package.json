@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "demo:smoke": "node scripts/smoke-test.mjs",
+    "demo:smoke:sequential": "node scripts/smoke-test.mjs --sequential",
     "materials:verify": "node scripts/verify-materials.mjs",
     "onepager:build": "node scripts/generate-onepager.mjs",
     "pitchdeck:build": "node scripts/generate-pitch-deck.mjs",

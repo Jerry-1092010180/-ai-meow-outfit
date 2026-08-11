@@ -15,7 +15,8 @@
 
 | 材料 | 文件 / 链接 | 用途 |
 |------|-------------|------|
-| **展示与提交手册** | [`半决赛展示与提交手册.md`](./半决赛展示与提交手册.md) | 8 分钟讲稿、90 秒 Demo、问答与现场检查 |
+| **5 分钟现场 Deck** | [`AI喵搭-路演Deck-5分钟现场版.pdf`](./AI喵搭-路演Deck-5分钟现场版.pdf) | 9 页，按现场节奏精简；半决赛主用 |
+| **展示与提交手册** | [`半决赛展示与提交手册.md`](./半决赛展示与提交手册.md) | 5 分钟顺序 Demo、3 分钟问答与现场检查 |
 | **One Pager（半决赛版）** | [`AI喵搭-OnePager-半决赛版.pdf`](./AI喵搭-OnePager-半决赛版.pdf) | 当前产品叙事；保留已提交正式版不覆盖 |
 | **2 分钟演示视频** | [`喵街AI今日角色-比赛Demo-v1.mp4`](../docs/internal/video-production/video/喵街AI今日角色-比赛Demo-v1.mp4) | 网络或设备异常时的离线兜底 |
 | **公开 GitHub** | [next-gen-avatar 分支](https://github.com/Jerry-1092010180/-ai-meow-outfit/tree/next-gen-avatar) | 代码、版本和真实性核验 |
