@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <marker id="arrow2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#111318"/></marker>
+    <style>
+      text{font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;fill:#111318;letter-spacing:0}.h1{font-size:44px;font-weight:900}.h2{font-size:24px;font-weight:800}.body{font-size:18px}.small{font-size:15px}.white{fill:#fff}.muted{fill:#626872}.box{stroke:#111318;stroke-width:2;rx:6}.arrow{stroke:#111318;stroke-width:3;fill:none;marker-end:url(#arrow2)}.dash{stroke-dasharray:10 8}
+    </style>
+  </defs>
+  <rect width="1600" height="900" fill="#f4f2ec"/><rect x="0" y="0" width="1600" height="82" fill="#0b0d12"/>
+  <text x="62" y="53" class="h1 white">AI 喵搭系统架构</text><text x="1538" y="51" text-anchor="end" class="body white">演示主路径与生产替换路径分离</text>
+
+  <rect class="box" x="62" y="138" width="300" height="154" fill="#d8ff48"/><text x="86" y="181" class="h2">喵街 APP / H5</text><text x="86" y="219" class="body">DailyQuestPage</text><text x="86" y="249" class="body">身份 / 选装 / 角色 / 共创</text><text x="86" y="277" class="small">当前可访问、可操作</text>
+  <path class="arrow" d="M362 215 H468"/>
+  <rect class="box" x="468" y="138" width="300" height="154" fill="#fff"/><text x="492" y="181" class="h2">Cloudflare Pages</text><text x="492" y="219" class="body">静态 H5 / 资源缓存</text><text x="492" y="249" class="body">Hash Router / HTTPS</text><text x="492" y="277" class="small">当前部署目标地址已提供</text>
+
+  <path class="arrow dash" d="M768 215 H874"/>
+  <rect class="box" x="874" y="138" width="300" height="154" fill="#3454ff"/><text x="898" y="181" class="h2 white">API Gateway Worker</text><text x="898" y="219" class="body white">/api/avatar/*</text><text x="898" y="249" class="body white">鉴权 / 限流 / traceId</text><text x="898" y="277" class="small white">代码具备，需生产环境核验</text>
+  <path class="arrow dash" d="M1174 215 H1280"/>
+  <rect class="box" x="1280" y="138" width="258" height="154" fill="#0b0d12"/><text x="1304" y="181" class="h2 white">私有 AIGC GPU</text><text x="1304" y="219" class="body white">身份 / 动漫角色 / 多人场景</text><text x="1304" y="249" class="body white">NeRF 头部实验管线</text><text x="1304" y="277" class="small white">不暴露公网</text>
+
+  <text x="62" y="354" class="h2">当前比赛演示主路径</text>
+  <rect class="box" x="62" y="382" width="350" height="124" fill="#fff"/><text x="86" y="423" class="h2">DemoPersonalizedQuestProvider</text><text x="86" y="458" class="body muted">根据商品与章节稳定生成结果状态</text><text x="86" y="486" class="small">providerStage: demo-personalized-provider</text>
+  <path class="arrow" d="M412 444 H494"/>
+  <rect class="box" x="494" y="382" width="350" height="124" fill="#ff4f7b"/><text x="518" y="423" class="h2">SocialAvatarImageProvider</text><text x="518" y="458" class="body">个人角色与多人海报效果演示</text><text x="518" y="486" class="small">providerStage: effect-preview</text>
+  <path class="arrow" d="M844 444 H926"/>
+  <rect class="box" x="926" y="382" width="350" height="124" fill="#d8ff48"/><text x="950" y="423" class="h2">SocialScenePlatformProvider</text><text x="950" y="458" class="body">邀请 / 加入 / 2–4 人场景状态</text><text x="950" y="486" class="small">localStorage 演示 + Gateway 接口</text>
+  <path class="arrow" d="M1276 444 H1360"/>
+  <rect class="box" x="1360" y="382" width="178" height="124" fill="#fff"/><text x="1449" y="423" text-anchor="middle" class="h2">H5 输出</text><text x="1449" y="458" text-anchor="middle" class="body">角色 / 房间</text><text x="1449" y="486" text-anchor="middle" class="body">广场 / 商品回流</text>
+
+  <text x="62" y="570" class="h2">生产数据与资产</text>
+  <rect class="box" x="62" y="598" width="290" height="116" fill="#fff"/><text x="86" y="638" class="h2">银泰 PIM / 库存</text><text x="86" y="674" class="body muted">授权图片、SKU、尺码、门店</text><text x="86" y="701" class="small">当前为样例字段</text>
+  <rect class="box" x="380" y="598" width="290" height="116" fill="#fff"/><text x="404" y="638" class="h2">Identity Vault</text><text x="404" y="674" class="body muted">授权、加密、生命周期</text><text x="404" y="701" class="small">原图默认不公开</text>
+  <rect class="box" x="698" y="598" width="290" height="116" fill="#fff"/><text x="722" y="638" class="h2">R2 / CDN</text><text x="722" y="674" class="body muted">角色图、多人海报、缓存</text><text x="722" y="701" class="small">Gateway 回传公开资产 URL</text>
+  <rect class="box" x="1016" y="598" width="290" height="116" fill="#fff"/><text x="1040" y="638" class="h2">Analytics</text><text x="1040" y="674" class="body muted">打开、生成、邀请、回流</text><text x="1040" y="701" class="small">只记录业务事件</text>
+  <rect class="box" x="1334" y="598" width="204" height="116" fill="#fff"/><text x="1358" y="638" class="h2">Moderation</text><text x="1358" y="674" class="body muted">隐私 / 内容安全</text><text x="1358" y="701" class="small">生成前后双检</text>
+
+  <path class="arrow dash" d="M207 598 V548 H1010 V292"/><path class="arrow dash" d="M525 598 V548 H1280 V292"/><path class="arrow dash" d="M843 598 V548 H1170 V292"/>
+
+  <rect x="62" y="770" width="1476" height="78" fill="#111318" rx="6"/>
+  <circle cx="92" cy="809" r="8" fill="#d8ff48"/><text x="112" y="816" class="body white">实线：当前演示可运行路径</text>
+  <line x1="420" y1="809" x2="478" y2="809" class="arrow dash"/><text x="500" y="816" class="body white">虚线：生产替换与数据接入路径</text>
+  <text x="1496" y="816" text-anchor="end" class="body white">原则：浏览器永远不直连私有 GPU</text>
+</svg>

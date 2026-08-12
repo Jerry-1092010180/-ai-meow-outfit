@@ -188,10 +188,15 @@ export interface VrmReadyMetadata {
 
 export interface StylizedHead {
   id: string;
-  providerStage: 'enhanced-local' | 'local-experimental' | 'mock-placeholder' | 'future-aigc-provider';
-  representation: 'stylized-face-texture+head-fit-params' | 'stylized-head-mesh' | 'head-parameters-only';
+  providerStage: 'enhanced-local' | 'local-experimental' | 'mock-placeholder' | 'future-aigc-provider' | 'nerf-aigc-provider' | 'gaussian-splat-aigc-provider';
+  representation: 'stylized-face-texture+head-fit-params' | 'stylized-head-mesh' | 'head-parameters-only' | 'neural-field+mesh+texture';
   textureDataUrl?: string;
   previewDataUrl?: string;
+  meshUrl?: string;
+  neuralFieldUrl?: string;
+  canonicalTextureUrl?: string;
+  reportUrl?: string;
+  animeReferenceUrl?: string;
   sourceFrameCount: number;
   confidence: number;
   identityFeatures: FaceIdentityFeatures;
@@ -227,7 +232,7 @@ export interface StylizedAvatar {
   cdnUrl?: string;
   method?: string;
   status: 'local-preview' | 'processing' | 'ready' | 'failed';
-  providerStage: 'procedural-mock' | 'aigc-gateway' | 'future-vrm-provider';
+  providerStage: 'procedural-mock' | 'future-vrm-provider';
   runtimeMetadata?: VrmReadyMetadata;
 }
 

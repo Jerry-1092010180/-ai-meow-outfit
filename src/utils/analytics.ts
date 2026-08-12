@@ -15,7 +15,16 @@ type EventName =
   | 'purchase_click'
   | 'coupon_redeem'
   | 'onboarding_complete'
-  | 'streak_milestone';
+  | 'streak_milestone'
+  | 'daily_quest_view'
+  | 'daily_quest_start'
+  | 'daily_quest_identity_upload'
+  | 'daily_quest_select'
+  | 'daily_quest_complete'
+  | 'daily_quest_share'
+  | 'daily_quest_friend_join'
+  | 'daily_quest_publication_toggle'
+  | 'daily_quest_store_unlock';
 
 interface EventParams {
   [key: string]: string | number | boolean;

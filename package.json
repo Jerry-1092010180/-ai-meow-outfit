@@ -7,6 +7,11 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
+    "demo:smoke": "node scripts/smoke-test.mjs",
+    "demo:smoke:sequential": "node scripts/smoke-test.mjs --sequential",
+    "materials:verify": "node scripts/verify-materials.mjs",
+    "onepager:build": "node scripts/generate-onepager.mjs",
+    "pitchdeck:build": "node scripts/generate-pitch-deck.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -14,6 +19,8 @@
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.6.1",
     "framer-motion": "^12.42.2",
+    "lucide-react": "^1.24.0",
+    "puppeteer": "^25.3.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-router-dom": "^7.18.1",

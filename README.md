@@ -1,149 +1,128 @@
-# AI喵搭 — 每日AI穿搭灵感
+# AI喵搭
 
-> OPC 2026 Bounty 03 · 银泰商业 · 为4500万会员设计的AI原生喵街互动玩法
+> 把今天想穿的，生成成今天的我。
 
-[![Tech Stack](https://img.shields.io/badge/React-18-61DAFB?logo=react)](https://react.dev)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript)](https://www.typescriptlang.org/)
-[![Three.js](https://img.shields.io/badge/Three.js-WebGL-000000?logo=threedotjs)](https://threejs.org/)
-[![Vite](https://img.shields.io/badge/Vite-5-646CFF?logo=vite)](https://vite.dev)
-[![License](https://img.shields.io/badge/license-MIT-blue)](./LICENSE)
+**AI喵搭——懂真实商品的个人时尚角色生成器。**
 
-**AI天气穿搭 + 3D虚拟试穿 + 好友PK同框 + 即看即买**
+一张本人照片、五件真实商品和一个今日场景，生成由用户本人主演、并且能够找到同款商品的时尚角色内容。
 
 ---
 
-## 🚀 在线体验
+### 在线体验
 
-> **主链接**：[https://b2efe305.ai-meow-outfit.pages.dev](https://b2efe305.ai-meow-outfit.pages.dev) **← 评委扫码入口**
+**[next-gen-avatar.ai-meow-outfit.pages.dev/#/game](https://next-gen-avatar.ai-meow-outfit.pages.dev/#/game)**
 
-| 备用平台 | 链接 |
-|----------|------|
-| Vercel | [ai-meow-outfit.vercel.app](https://ai-meow-outfit.vercel.app) |
-| GitHub Pages | [jerry1092010180.github.io/-ai-meow-outfit](https://jerry1092010180.github.io/-ai-meow-outfit) |
+📱 请使用手机浏览器打开 H5。
 
-> 建议使用手机模式浏览（Chrome DevTools → iPhone 14 Pro）。
+### One Pager（半决赛版）
 
----
+**[AI喵搭-OnePager-半决赛版.pdf](deliverables/AI喵搭-OnePager-半决赛版.pdf)**（1 页 A4，已提交正式版保留在 `deliverables/`）
 
-## 💡 产品简介
+### 半决赛展示
 
-**AI喵搭**为银泰百货喵街APP的4500万会员打造。AI根据用户所在地**实时天气**（温度/湿度/天气状况）、个人**身材偏好**（5种身型 × 5种肤色）和银泰**门店新品库存**，每日生成专属穿搭。用户可**360°旋转**查看3D试穿效果，与好友**同框PK**穿搭，一键分享朋友圈，**即看即买**门店在售单品。
+**[半决赛展示与提交手册](deliverables/半决赛展示与提交手册.md)** — 5 分钟顺序 Demo、3 分钟问答与现场检查清单。
 
 ---
 
-## 🎯 核心功能
+## 30 秒看懂 AI喵搭
 
-| 功能 | 说明 |
-|------|------|
-| 🔮 **每日AI穿搭** | 真实天气API驱动，位置→温湿度→场景化推荐，变量奖励钩子 |
-| 👗 **3D虚拟试穿** | 根据用户身材参数实时生成个性化3D数字人，5套穿搭切换 |
-| ⚡ **PK挑战** | 发起挑战→6位邀请码→好友加入→双人3D同框→投票对决 |
-| 📖 **穿搭日记** | 日历热力图+时间线，连续打卡，积累风格资产 |
-| 🛍️ **即看即买** | 穿搭中每件单品标注门店/楼层/库存/价格，一键购买 |
-| 📤 **AI海报分享** | Canvas合成时尚海报，分享微信/朋友圈/小红书 |
+用户上传本人照片，建立可重复使用的个人角色身份；从真实商品池选择一套完整穿搭，再选择场景和视觉风格，生成"同一个我、同一套 Look"的时尚角色内容。结果可以继续调整动作、表情和背景，也可以与好友角色共同入镜。每张内容都能回到对应商品、价格、库存和门店入口。
 
 ---
 
-## 🏗️ 技术架构
+## 用户体验流程
 
-```
-React 18 + TypeScript + Vite 5          ← 前端框架
-Three.js (React Three Fiber + Drei)     ← 3D引擎
-TailwindCSS 4 + Framer Motion           ← UI & 动画
-Zustand + localStorage                  ← 状态持久化
-Open-Meteo API                          ← 免费实时天气
-Canvas API                              ← 海报合成
-Web Share API                           ← 社交分享
-```
-
-### AI 管线
-
-```
-实时天气 + 用户风格 + 门店库存
-        ↓
-  LLM 风格策划（Claude/通义千问）
-        ↓
-  Text-to-Image 穿搭生成（SD/Midjourney）
-        ↓
-  3D WebGL 实时渲染（Three.js）
-        ↓
-  每日推送钩子 → 查看 → 分享 → 购买
-```
+| 步骤 | 做什么 |
+|------|--------|
+| **1. 建立身份** | 上传本人照片，建立可复用的个人角色 |
+| **2. 选择穿搭** | 从五类真实商品（内搭/外套/下装/鞋/配饰）各选一件 |
+| **3. 生成与微调** | 调整动作、表情、发型、背景和镜头 |
+| **4. 分享与购买** | 好友共同入镜、查看同款商品详情、查询门店 |
 
 ---
 
-## 📂 项目结构
+## 为什么 AI 是必要能力
 
-```
-src/
-├── components/
-│   ├── common/          # BottomNav, Button, Modal, Toast, StreakBadge
-│   ├── outfit/          # ProceduralAvatar, Model3DViewer, OutfitCard
-│   ├── challenge/       # DualAvatar3D (双人3D同框)
-│   ├── diary/           # OutfitCalendar, DiaryTimeline
-│   └── onboarding/      # StyleQuiz (身型/风格/门店引导)
-├── pages/               # 11 个路由页面
-├── stores/              # 5 个 Zustand stores
-├── services/            # API 服务层 (mock-first, 接口兼容真实API)
-├── hooks/               # 6 个自定义 hooks
-├── types/               # 6 个 TypeScript 类型模块
-└── utils/               # 海报合成, 深度链接, 日期计算, 埋点
-```
+普通搭配工具只能陈列商品，AI喵搭让**用户本人进入内容**：
+
+- **身份保持**——个人角色可以跨场景、跨日期连续使用，而不是每次生成一个陌生人
+- **商品保持**——生成内容中的服装能够回到真实 SKU，不是凭空想象的衣服
+- **生成式内容**——每天新场景、新商品、新角色画面，形成回访和分享理由
+- **AI 不是装饰**——AI 是核心内容生产能力，不是页面上的聊天框或推荐栏
 
 ---
 
-## 🚀 本地运行
+## 当前可以验证什么
+
+### ✅ 已经可运行（H5 现场体验）
+
+- 手机 H5 完整交互流程
+- 照片上传与角色身份建立
+- 五层商品选择（内搭/外套/下装/鞋/配饰）
+- 个人角色效果预览
+- 三组离线 AIGC 动作 × 真实场景联动（城市天台、艺术画廊、银泰橱窗）
+- 表情、发型等本地编辑
+- 2—4 人共创房间
+- 穿搭广场与商品回链
+
+### 🔧 生产化接入（规划中，当前未接入）
+
+- 更稳定的身份一致性
+- 更严格的服装与商品一致性
+- 真实银泰 PIM、价格、库存和门店接口
+- 动态时尚短片生成（非当前版本功能）
+
+---
+
+## 真实性边界
+
+- 当前 H5 交互、选装、角色编辑、邀请链接、多人房间和穿搭广场**均可运行**
+- 角色生成图片和多人海报属于**效果演示**；三组动作 × 场景素材由隔离的本地 AIGC 环境生成后作为静态素材进入 H5
+- 当前商品图和价格/库存是**项目样例数据**，正式版接入银泰 PIM 与库存服务
+- **动态视频尚未接入**，属于下一阶段扩展方向
+- 当前公开 H5 不连接 Avatar API、Worker 或 AIGC 公网隧道；身份照片只在当前浏览器会话内处理，AIGC 机器保持本地/私有
+
+---
+
+## 评委快速体验路径
+
+1. 📱 用手机浏览器打开 **[next-gen-avatar.ai-meow-outfit.pages.dev/#/game](https://next-gen-avatar.ai-meow-outfit.pages.dev/#/game)**
+2. 👤 上传一张照片，体验角色身份建立
+3. 👗 完成五层穿搭选择
+4. 🎨 依次切换“自信主角 / 城市天台”“街头漫游 / 艺术画廊”“好友招呼 / 银泰橱窗”
+5. 📖 打开 **[One Pager](deliverables/AI喵搭-OnePager-半决赛版.pdf)** 对照产品定义与边界
+
+---
+
+## 信息
+
+- **赛题**：OPC 2026 · Bounty 03 · 银泰商业——为千万级会员设计 AI 原生喵街互动玩法
+- **参赛方向**：创想家
+- **阶段**：MVP / 原型（可运行 H5）
+- **团队**：单人参赛 · AI 辅助开发
+- **许可证**：MIT
+
+---
+
+<details>
+<summary>🔧 技术栈与本地运行</summary>
+
+### 技术架构
+
+React 19 + TypeScript + Vite 8 · Three.js (React Three Fiber) · Zustand · Canvas API · Cloudflare Pages（仅静态 H5）· 隔离本地 AIGC 素材生产
+
+### 本地运行
 
 ```bash
 npm install
 npm run dev
-# 打开 http://localhost:5173
 ```
 
-**生产构建**：
+生产构建：
+
 ```bash
-npm run build     # 输出到 dist/
-npm run preview   # 预览构建产物
+npm run build
+npx wrangler pages deploy dist --project-name=ai-meow-outfit
 ```
 
----
-
-## 📋 OPC 比赛信息
-
-- **赛题**：Bounty 03 — 为4500万会员设计一款AI原生的喵街互动玩法
-- **命题方**：银泰商业
-- **参赛方向**：创想家
-- **项目阶段**：MVP / 原型
-
-### 交付物
-
-| 文件 | 位置 |
-|------|------|
-| 专项解决方案（10章） | [`deliverables/`](deliverables/) |
-| 路演Deck大纲（12页） | [`deliverables/`](deliverables/) |
-| 演示视频脚本（3分钟） | [`deliverables/`](deliverables/) |
-
----
-
-## 🔮 路线图
-
-```
-Q2 原型验证（当前）     Q3 真实AI接入           Q4 3D升级
-├─ H5可运行原型         ├─ 公网部署              ├─ 照片拍照→AI真实3D建模
-├─ 程序化3D建模         ├─ 真实AI图像API         ├─ 真实GLB服装模型库
-├─ 天气驱动推荐          ├─ 喵街会员对接           ├─ 骨骼动画+AR门店试穿
-├─ PK邀请码系统         ├─ 门店库存实时同步        └─ 灰度测试→全量上线
-└─ 本地全流程跑通        └─ 武林店小规模灰度
-```
-
----
-
-## 👤 团队
-
-单人参赛 · AI 辅助开发（Claude Code）· 全栈独立完成
-
----
-
-## 📄 许可证
-
-MIT License
+</details>

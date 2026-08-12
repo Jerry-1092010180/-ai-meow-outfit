@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#111318"/></marker>
+    <style>
+      text{font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;fill:#111318;letter-spacing:0}
+      .h1{font-size:44px;font-weight:900}.h2{font-size:24px;font-weight:800}.body{font-size:18px}.small{font-size:15px}.white{fill:#fff}.muted{fill:#626872}
+      .box{stroke:#111318;stroke-width:2;rx:6}.arrow{stroke:#111318;stroke-width:3;fill:none;marker-end:url(#arrow)}
+    </style>
+  </defs>
+  <rect width="1600" height="900" fill="#f4f2ec"/>
+  <rect x="0" y="0" width="1600" height="82" fill="#0b0d12"/>
+  <text x="62" y="53" class="h1 white">AI 喵搭 Agent 工作流</text>
+  <text x="1538" y="51" text-anchor="end" class="body white">输入可追踪 · Provider 可替换 · 结果可验证</text>
+
+  <text x="62" y="127" class="h2">01 结构化输入</text>
+  <g>
+    <rect class="box" x="62" y="150" width="250" height="112" fill="#fff"/><text x="82" y="188" class="h2">用户身份</text><text x="82" y="222" class="body muted">正面照 / 特征 / 隐私授权</text>
+    <rect class="box" x="332" y="150" width="250" height="112" fill="#fff"/><text x="352" y="188" class="h2">完整 Look</text><text x="352" y="222" class="body muted">内搭 / 外套 / 下装 / 鞋 / 配饰</text>
+    <rect class="box" x="602" y="150" width="250" height="112" fill="#fff"/><text x="622" y="188" class="h2">每日上下文</text><text x="622" y="222" class="body muted">日期 / 天气 / 商圈 / 章节</text>
+    <rect class="box" x="872" y="150" width="250" height="112" fill="#fff"/><text x="892" y="188" class="h2">内容偏好</text><text x="892" y="222" class="body muted">发型 / 动作 / 表情 / 背景</text>
+    <rect class="box" x="1142" y="150" width="250" height="112" fill="#fff"/><text x="1162" y="188" class="h2">社交房间</text><text x="1162" y="222" class="body muted">2–4 人 / 席位 / 互动模板</text>
+  </g>
+
+  <path class="arrow" d="M187 262 V316 H727"/><path class="arrow" d="M457 262 V316 H727"/><path class="arrow" d="M727 262 V316"/><path class="arrow" d="M997 262 V316 H727"/><path class="arrow" d="M1267 262 V316 H727"/>
+  <rect class="box" x="430" y="316" width="594" height="108" fill="#3454ff"/>
+  <text x="727" y="357" text-anchor="middle" class="h2 white">DailyQuestOrchestrator</text>
+  <text x="727" y="390" text-anchor="middle" class="body white">编排任务 · 固定 schema · traceId · providerStage · fallbackReason</text>
+
+  <text x="62" y="478" class="h2">02 Provider 执行</text>
+  <g>
+    <rect class="box" x="62" y="500" width="268" height="104" fill="#d8ff48"/><text x="82" y="538" class="h2">IdentityProvider</text><text x="82" y="570" class="small">身份聚合与漫画化约束</text>
+    <rect class="box" x="350" y="500" width="268" height="104" fill="#ff4f7b"/><text x="370" y="538" class="h2">ProductResolver</text><text x="370" y="570" class="small">5 层商品与一致性字段</text>
+    <rect class="box" x="638" y="500" width="268" height="104" fill="#fff"/><text x="658" y="538" class="h2">StoryPlanner</text><text x="658" y="570" class="small">每日剧情、动作与场景</text>
+    <rect class="box" x="926" y="500" width="268" height="104" fill="#3454ff"/><text x="946" y="538" class="h2 white">AvatarGenerator</text><text x="946" y="570" class="small white">角色、变体与效果资产</text>
+    <rect class="box" x="1214" y="500" width="268" height="104" fill="#0b0d12"/><text x="1234" y="538" class="h2 white">SceneComposer</text><text x="1234" y="570" class="small white">2–4 人构图与分享海报</text>
+  </g>
+  <path class="arrow" d="M727 424 V466 H196 V500"/><path class="arrow" d="M727 466 H484 V500"/><path class="arrow" d="M727 466 H772 V500"/><path class="arrow" d="M727 466 H1060 V500"/><path class="arrow" d="M727 466 H1348 V500"/>
+
+  <rect class="box" x="62" y="654" width="1420" height="82" fill="#fff"/>
+  <text x="86" y="687" class="h2">03 质量闸门</text>
+  <text x="276" y="687" class="body">身份可辨识</text><text x="442" y="687" class="body">商品分层一致</text><text x="624" y="687" class="body">肢体/构图检查</text><text x="820" y="687" class="body">隐私与内容安全</text><text x="1040" y="687" class="body">失败明确降级</text><text x="1234" y="687" class="body">记录 traceId</text>
+  <text x="86" y="718" class="small muted">低于阈值 → 只重跑失败阶段；Provider 失败 → 返回 fallbackReason，不把模板图冒充个性化结果。</text>
+
+  <path class="arrow" d="M772 604 V654"/>
+  <text x="62" y="790" class="h2">04 内容与经营闭环</text>
+  <rect class="box" x="62" y="812" width="300" height="60" fill="#d8ff48"/><text x="212" y="850" text-anchor="middle" class="h2">个人角色资产</text>
+  <rect class="box" x="382" y="812" width="300" height="60" fill="#fff"/><text x="532" y="850" text-anchor="middle" class="h2">动作 / 表情变体</text>
+  <rect class="box" x="702" y="812" width="300" height="60" fill="#3454ff"/><text x="852" y="850" text-anchor="middle" class="h2 white">好友多人海报</text>
+  <rect class="box" x="1022" y="812" width="460" height="60" fill="#ff4f7b"/><text x="1252" y="850" text-anchor="middle" class="h2">广场 → 同款详情 → 门店任务 → 次日章节</text>
+</svg>

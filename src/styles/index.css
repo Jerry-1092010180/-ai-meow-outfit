@@ -133,3 +133,268 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Daily quest graphic language: print dots, hard cuts, and stable poster geometry. */
+.quest-halftone-blue {
+  background-color: #2455ff;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.18) 1px, transparent 1px);
+  background-size: 8px 8px;
+}
+
+.quest-halftone-dark {
+  background-color: #090909;
+  background-image: radial-gradient(rgba(223, 255, 63, 0.12) 1px, transparent 1px);
+  background-size: 9px 9px;
+}
+
+.quest-poster-grid {
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.2) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.2) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.quest-qr {
+  background-color: #fff;
+  background-image:
+    linear-gradient(90deg, #111 50%, transparent 50%),
+    linear-gradient(#111 50%, transparent 50%);
+  background-size: 8px 8px;
+}
+
+.quest-product-art {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background-color: var(--product-backdrop);
+  background-image: radial-gradient(rgba(0, 0, 0, 0.16) 1px, transparent 1px);
+  background-size: 7px 7px;
+}
+
+.quest-product-art::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  left: 12%;
+  right: 12%;
+  bottom: 8%;
+  height: 9%;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.22);
+  filter: blur(4px);
+}
+
+.quest-product-edition,
+.quest-product-color {
+  position: absolute;
+  z-index: 5;
+  border: 1px solid #111;
+  background: #fff;
+  color: #111;
+  font-size: 7px;
+  font-style: normal;
+  font-weight: 900;
+  line-height: 1;
+  padding: 3px 4px;
+}
+
+.quest-product-edition {
+  top: 7px;
+  right: 7px;
+}
+
+.quest-product-color {
+  bottom: 6px;
+  left: 6px;
+}
+
+.quest-garment-coat {
+  position: absolute;
+  left: 30%;
+  top: 20%;
+  width: 40%;
+  height: 65%;
+  border: 2px solid #111;
+  background: var(--product-main);
+  clip-path: polygon(15% 0, 85% 0, 100% 100%, 0 100%);
+  filter: drop-shadow(4px 5px 0 rgba(0, 0, 0, 0.28));
+}
+
+.quest-garment-coat::before,
+.quest-garment-coat::after {
+  content: '';
+  position: absolute;
+  top: 4%;
+  width: 42%;
+  height: 72%;
+  border: 2px solid #111;
+  background: var(--product-main);
+}
+
+.quest-garment-coat::before {
+  left: -30%;
+  transform: rotate(13deg);
+}
+
+.quest-garment-coat::after {
+  right: -30%;
+  transform: rotate(-13deg);
+}
+
+.quest-garment-coat > span {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--product-detail);
+}
+
+.quest-garment-coat > i,
+.quest-garment-coat > b {
+  position: absolute;
+  z-index: 3;
+  left: 37%;
+  width: 8px;
+  height: 8px;
+  border: 1px solid #111;
+  border-radius: 50%;
+  background: var(--product-detail);
+}
+
+.quest-garment-coat > i { top: 28%; }
+.quest-garment-coat > b { top: 46%; }
+.quest-garment-cropped { height: 48%; }
+
+.quest-garment-dress {
+  position: absolute;
+  left: 30%;
+  top: 18%;
+  width: 40%;
+  height: 28%;
+  border: 2px solid #111;
+  border-radius: 35% 35% 0 0;
+  background: var(--product-main);
+  filter: drop-shadow(4px 5px 0 rgba(0, 0, 0, 0.25));
+}
+
+.quest-garment-dress::before {
+  content: '';
+  position: absolute;
+  left: -44%;
+  top: 78%;
+  width: 188%;
+  height: 190%;
+  border: 2px solid #111;
+  background: var(--product-main);
+  clip-path: polygon(26% 0, 74% 0, 100% 100%, 0 100%);
+}
+
+.quest-garment-dress > span,
+.quest-garment-dress > i,
+.quest-garment-dress > b {
+  position: absolute;
+  z-index: 3;
+  width: 7px;
+  height: 7px;
+  border: 1px solid #111;
+  border-radius: 50%;
+  background: var(--product-detail);
+}
+
+.quest-garment-dress > span { left: 12%; top: 128%; }
+.quest-garment-dress > i { left: 48%; top: 174%; }
+.quest-garment-dress > b { right: 8%; top: 118%; }
+
+.quest-garment-pants {
+  position: absolute;
+  left: 29%;
+  top: 22%;
+  width: 42%;
+  height: 13%;
+  border: 2px solid #111;
+  background: var(--product-main);
+  filter: drop-shadow(4px 5px 0 rgba(0, 0, 0, 0.25));
+}
+
+.quest-garment-pants::before,
+.quest-garment-pants::after {
+  content: '';
+  position: absolute;
+  top: 90%;
+  width: 48%;
+  height: 390%;
+  border: 2px solid #111;
+  background: var(--product-main);
+  clip-path: polygon(4% 0, 96% 0, 82% 100%, 0 100%);
+}
+
+.quest-garment-pants::before { left: 0; }
+.quest-garment-pants::after { right: 0; transform: scaleX(-1); }
+
+.quest-garment-necklace {
+  position: absolute;
+  left: 22%;
+  top: 22%;
+  width: 56%;
+  height: 54%;
+  border: 5px solid var(--product-detail);
+  border-top-color: transparent;
+  border-radius: 0 0 50% 50%;
+  filter: drop-shadow(3px 4px 0 rgba(0, 0, 0, 0.25));
+}
+
+.quest-garment-necklace::before,
+.quest-garment-necklace::after,
+.quest-garment-necklace > span {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 2px solid #b79a5e;
+  border-radius: 50%;
+  background: var(--product-main);
+}
+
+.quest-garment-necklace::before { left: -7px; top: 31%; }
+.quest-garment-necklace::after { right: -7px; top: 31%; }
+.quest-garment-necklace > span { left: calc(50% - 6px); bottom: -8px; }
+.quest-garment-necklace > i { position: absolute; left: calc(50% - 1px); bottom: -20px; width: 2px; height: 14px; background: #b79a5e; }
+
+.quest-garment-shoe {
+  position: absolute;
+  left: 17%;
+  top: 38%;
+  width: 67%;
+  height: 31%;
+  border: 2px solid #111;
+  background: var(--product-main);
+  clip-path: polygon(2% 30%, 48% 40%, 76% 63%, 100% 68%, 96% 92%, 19% 92%, 2% 73%);
+  filter: drop-shadow(5px 6px 0 rgba(0, 0, 0, 0.28));
+}
+
+.quest-garment-shoe::after {
+  content: '';
+  position: absolute;
+  right: 13%;
+  bottom: -22%;
+  width: 7%;
+  height: 45%;
+  border: 2px solid #111;
+  background: var(--product-detail);
+}
+
+.quest-garment-shoe > span {
+  position: absolute;
+  left: 34%;
+  top: 38%;
+  width: 28%;
+  height: 6px;
+  border: 1px solid #111;
+  background: var(--product-detail);
+  transform: rotate(11deg);
+}
+
+.quest-garment-flat::after { height: 20%; bottom: -7%; width: 12%; }
+.quest-garment-flat > span { height: 15px; border-radius: 50%; background: transparent; }

@@ -1,4 +1,3 @@
-import { submitReconstruction, getReconstructionModelUrl } from './avatarApi';
 import { stylizedHeadProvider } from './stylizedHeadProvider';
 import type { BodyMeasurements, SelfieFrame } from '@/types/bodyModel';
 import type {
@@ -65,7 +64,7 @@ export const DEFAULT_DEMO_OUTFIT: AvatarOutfit = {
   name: 'Fallback 漫画感上衣',
   brand: 'AI Meow',
   category: 'top',
-  previewImage: 'https://picsum.photos/seed/fallback-proxy-top/400/500',
+  previewImage: `${import.meta.env.BASE_URL}product-shots/item-001.jpg`,
   assetFormat: 'procedural-proxy',
   compatibleAvatarType: 'stylized-humanoid-lite',
   fittingMode: 'skinned-compatible',
@@ -134,50 +133,38 @@ export class BrowserFaceIdentityProvider implements FaceIdentityProvider {
   }
 }
 
-export class AigcStylizedAvatarProvider implements StylizedAvatarProvider {
+export class BrowserLocalStylizedAvatarProvider implements StylizedAvatarProvider {
   async build(request: StylizedAvatarBuildRequest): Promise<StylizedAvatarBuildResult> {
     const stylizedHead = request.stylizedHead ?? await stylizedHeadProvider.generate(
       request.identity,
       request.appearance.style
     );
-    const result = await submitReconstruction(
-      request.measurements,
-      [],
-      request.identity.face.primaryFrame,
-      request.identity.face.sourceFrames,
-      {
-        pipeline: 'identity-driven-stylized-avatar',
-        renderStyle: request.appearance.style,
-        stylizedHead,
-        outfit: request.outfit,
-        rigTarget: 'vrm-ready',
-      }
-    );
+    const localModelUrl = `${import.meta.env.BASE_URL}models/runtime-demo-rigged.glb`;
 
     const avatar: StylizedAvatar = {
-      id: result.job_id,
+      id: `browser-local-avatar-${Date.now().toString(36)}`,
       pipeline: 'identity-driven-stylized-avatar',
       identity: request.identity,
       appearance: request.appearance,
       stylizedHead,
       outfit: request.outfit,
       rig: {
-        format: result.rig_format === 'vrm-ready' ? 'vrm-ready' : result.rig_ready ? 'glb-rig-ready' : 'glb-static',
-        skeleton: result.rig_ready ? 'humanoid-lite' : 'none',
-        expressionBlendshapes: result.expression_blendshapes ?? ['smile', 'blink'],
-        posePresets: result.animation_clips ?? result.pose_presets ?? ['idle', 'confident-pose'],
+        format: 'glb-rig-ready',
+        skeleton: 'humanoid-lite',
+        expressionBlendshapes: ['neutral', 'smile', 'cool', 'surprised'],
+        posePresets: ['idle', 'confident-pose'],
       },
-      modelUrl: result.model_url,
-      cdnUrl: getReconstructionModelUrl(result),
-      method: result.method,
+      modelUrl: localModelUrl,
+      cdnUrl: localModelUrl,
+      method: 'browser-local-stylized-head',
       status: 'ready',
-      providerStage: 'aigc-gateway',
-      runtimeMetadata: result.vrm_ready_metadata ?? result.avatar_runtime_metadata ?? DEFAULT_VRM_READY_METADATA,
+      providerStage: 'procedural-mock',
+      runtimeMetadata: DEFAULT_VRM_READY_METADATA,
     };
 
-    return { avatar, rawProviderResult: { result, stylizedHead } };
+    return { avatar, rawProviderResult: { provider: 'browser-local', stylizedHead } };
   }
 }
 
 export const faceIdentityProvider = new BrowserFaceIdentityProvider();
-export const stylizedAvatarProvider = new AigcStylizedAvatarProvider();
+export const stylizedAvatarProvider = new BrowserLocalStylizedAvatarProvider();

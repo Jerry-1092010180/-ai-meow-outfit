@@ -1,0 +1,113 @@
+AI喵搭｜比赛路演视频专业后期重构记录
+生成日期：2026-07-24
+
+一、原片审计
+
+原片：
+deliverables/video-v2/output/AI喵搭-比赛演示-v2.mp4
+
+技术与内容问题：
+- 时长 144.000 秒，1920×1080、30fps、H.264。
+- 原音频为 AAC、22.05kHz、单声道、约 58kbps。
+- 原片没有独立字幕轨，也没有完整动态字幕系统。
+- 原音轨综合响度约 -26.1 LUFS，LRA 19.7 LU；10 段 AIFF 被分别延迟到固定时点，造成多处 1–2.55 秒空洞与明显断句。
+- 主要画面由 10 个约 13–19 秒的长场景构成，接近静态 PPT + 手机截图，开场钩子与结尾收束不足。
+
+二、本次人声重制
+
+1. 连续旁白
+- 将文案重写为 10 个语义连续段落，648 个汉字。
+- 使用 Microsoft Edge-TTS 的 zh-CN-YunyangNeural 专业中文男声。
+- 速度 +12%，音高 -2Hz；成品旁白约 124.30 秒，约 313 字/分钟。
+- 整份讲稿一次提交、一次连续生成，不使用多个短音频拼接。
+- 根据成片听感重新设计标点呼吸：把正文内部由句号触发的固定停顿改为连续语流，只在问句和十个章节边界保留自然换气。
+- 0.45 秒以上硬静音由 28 处降至 11 处；其中 10 处对应问句/章节换气，1 处为音轨结尾余量。
+- 旁白文本：deliverables/video-v2/public/voiceover_edge_smooth.txt
+- 原始连续语音：deliverables/video-v2/build/v3/voiceover-edge-smooth-final.mp3
+
+2. 人声处理
+- 68Hz 二阶高通与 11.5kHz 低通。
+- 145Hz 温暖度轻度增强。
+- 320Hz 浑浊控制。
+- 2.8kHz 清晰度增强。
+- 7.2kHz 轻度空气感增强。
+- 轻度 De-esser 控制齿音。
+- 2.2:1 RMS 压缩，14ms attack / 150ms release。
+- 响度归一化与 48kHz 重采样。
+- 输出 processed_voice.wav：48kHz、24-bit、单声道 PCM，单一连续音轨。
+- processed_voice.wav 实测：约 -18.2 LUFS、LRA 2.1 LU、True Peak -1.5 dBFS；最终混音再统一到网络成片响度。
+
+三、词级动态字幕
+
+- Edge-TTS 返回 368 个 WordBoundary 词级时间戳，直接与生成语音同源。
+- 相比对最终配音再做 ASR，这种方式不会产生识别错字或二次时点漂移。
+- 重组为 70 个短字幕事件；每个词按真实发音时点弹出。
+- 画面内字幕位于下方偏中，使用深色半透明底板、淡入、弹出、进度线和关键词放大高亮。
+- AI、AIGC、连续七天、五层商品、完整造型、二到四人、角色资产、银泰穿搭广场、经营闭环、现场验证等词独立强调。
+- subtitles.ass 为可独立加载的 ASS Karaoke 字幕，保留同源词级节奏。
+- 时间线：deliverables/video-v2/src/timeline-v3.json
+- 生成脚本：deliverables/video-v2/scripts/build_edge_timeline.py
+
+四、视觉与结构重构
+
+- 总时长压缩为 132 秒，重建为 10 个主题章节：
+  00 开场钩子
+  01 每日打开机制
+  02 商品选择与详情
+  03 AIGC 内容引擎
+  04 身份一致性
+  05 动作/表情变体
+  06 好友共创
+  07 被邀请者旅程
+  08 银泰穿搭广场
+  09 经营闭环与收尾
+- 开头 3 秒内出现比赛属性、项目名与“把逛商品变成角色故事”的核心钩子。
+- 使用 Camera Push、手机漂浮、扫描光、粒子、数据流、网络节点、进度条、步骤激活、数字卡片和模糊位移转场。
+- 每个章节内部约 2–4 秒出现一次局部视觉变化；结尾增加扫码光带、标题呼吸和二维码悬浮。
+- 项目未提供独立 Logo 素材，因此使用“AI 喵搭”动态字标。
+- 结尾包含项目名、AI喵搭项目组、感谢观看、体验地址与二维码。
+- 视觉工程：deliverables/video-v2/src/pro.tsx
+
+五、背景音乐与最终混音
+
+- 使用程序化原创科技氛围底乐，避免外部版权风险。
+- 底乐原始综合响度约 -29 LUFS，混音中再降低约 2.9dB。
+- 开头渐强、结尾 7 秒渐弱；人声出现时使用侧链压缩自动压低 BGM。
+- 人声前留 1.5 秒标题呼吸空间。
+- 最终综合响度：-14.4 LUFS。
+- 最终 LRA：2.2 LU。
+- 最终 True Peak：-0.9 dBFS。
+
+六、最终交付实测
+
+final_video.mp4：
+- 时长：132.000 秒
+- 分辨率：1920×1080
+- 帧率：30fps 恒定帧率，共 3960 帧
+- 视频：H.264 High Profile，YUV 4:2:0，BT.709 TV Range
+- 音频：AAC LC，48kHz，双声道，约 243kbps
+- 文件大小：89,921,382 bytes（约 85.8MiB）
+- Fast Start：已启用
+
+自动质检：
+- 未检测到黑帧段。
+- 未检测到超过 5 秒的冻结画面。
+- 未检测到超过 0.8 秒且低于 -48dB 的最终混音静音段。
+- TypeScript 编译检查通过。
+- 12 个关键时点已生成接触表并完成视觉抽检。
+
+七、交付文件
+
+- final_video.mp4：最终成片，画面内已烧录词级动态字幕
+- subtitles.ass：可独立加载的动态 ASS 字幕
+- processed_voice.wav：处理后连续旁白母带
+- project_edit_notes.txt：本制作记录
+
+八、可复现命令
+
+- 生成连续旁白：
+  deliverables/video-v2/build/v3/edge-venv/bin/python deliverables/video-v2/scripts/generate_edge_voice.py ...
+- 生成时间线和 ASS：
+  deliverables/video-v2/build/v3/edge-venv/bin/python deliverables/video-v2/scripts/build_edge_timeline.py
+- 渲染视觉：
+  在 deliverables/video-v2 目录运行 npm run render:pro

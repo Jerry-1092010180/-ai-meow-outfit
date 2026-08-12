@@ -1,0 +1,99 @@
+{
+  "recordedAt": "2026-07-20T22:09:09+08:00",
+  "project": {
+    "name": "AI 喵搭",
+    "repository": "https://github.com/Jerry-1092010180/-ai-meow-outfit.git",
+    "branch": "next-gen-avatar",
+    "headCommit": "c707a53ee34fb662bc8b1ad31c57caf1d82fb2de",
+    "workspaceDirtyAtValidation": true,
+    "liveH5": "https://next-gen-avatar.ai-meow-outfit.pages.dev/#/game"
+  },
+  "frontendBuild": {
+    "command": "npx vite build",
+    "workspace": "/private/tmp/ai-meow-build-20260720 (materialized copy of the restored iCloud workspace)",
+    "exitCode": 0,
+    "modulesTransformed": 2551,
+    "elapsedSeconds": 3.25,
+    "errors": 0,
+    "warnings": [
+      "Vite reported a large JavaScript chunk warning for the Three.js viewer; it did not fail the build.",
+      "A later npm run build attempt in the restored iCloud directory stalled while reading dataless files and was interrupted without a compiler error."
+    ]
+  },
+  "lint": {
+    "command": "npx oxlint src --format json",
+    "exitCode": 0,
+    "filesChecked": 86,
+    "errors": 0,
+    "warnings": 22,
+    "note": "Warnings are existing unused-symbol and React fast-refresh diagnostics; no lint error was reported."
+  },
+  "backendSyntax": {
+    "command": "python3 -m py_compile",
+    "exitCode": 0,
+    "files": [
+      "server/avatar_server.py",
+      "server/nerf_stylized_head_provider.py",
+      "server/nerf_head_pipeline_impl.py",
+      "server/nerf_head_job_service.py"
+    ]
+  },
+  "gitDiffCheck": {
+    "command": "git diff --check",
+    "exitCode": 0
+  },
+  "browserValidation": {
+    "viewport": "430x932",
+    "consoleErrors": 0,
+    "consoleWarnings": 0,
+    "verifiedFlows": [
+      "7-day daily episode lobby with no countdown",
+      "five-layer product-image-first outfit selection",
+      "pressed selection feedback and separate product detail action",
+      "avatar result with pose, expression, hair and background controls",
+      "friend invitation into an independent identity and outfit flow",
+      "2-to-4-person co-creation room",
+      "opt-in public Yintai outfit plaza"
+    ],
+    "evidenceDirectory": "deliverables/bonus/screenshots"
+  },
+  "demoVideo": {
+    "file": "deliverables/video-v2/output/AI喵搭-比赛演示-v2.mp4",
+    "durationSeconds": 144.0,
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "videoCodec": "h264",
+    "audioCodec": "aac",
+    "audioSampleRate": 22050,
+    "audioChannels": 1,
+    "sizeBytes": 33627760,
+    "withinThreeMinuteLimit": true,
+    "audioCheck": "Narration is present. Only short chapter pauses and a final 4-second QR hold were detected."
+  },
+  "workflowPdf": {
+    "file": "deliverables/bonus/加分材料-工作流与架构.pdf",
+    "pages": 3,
+    "pageSize": "A4 landscape",
+    "renderedAndVisuallyChecked": true
+  },
+  "truthBoundaries": {
+    "runningNow": [
+      "H5 interaction flow",
+      "daily episode and complete-look selection",
+      "friend invitation flow",
+      "co-creation room UI",
+      "public outfit plaza UI"
+    ],
+    "effectPreview": [
+      "personalized stylized character result",
+      "pose and expression output",
+      "multi-person co-created poster"
+    ],
+    "productionIntegrationTarget": [
+      "Yintai PIM, inventory and store systems",
+      "private GPU generation through API Gateway and CDN",
+      "production identity-preserving generation provider"
+    ]
+  }
+}

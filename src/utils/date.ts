@@ -2,22 +2,33 @@
  * 日期工具函数
  */
 
+function toLocalDateString(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function parseLocalDate(date: string): Date {
+  return new Date(`${date}T12:00:00`);
+}
+
 /** 获取今日日期字符串 YYYY-MM-DD */
 export function getToday(): string {
-  return new Date().toISOString().split('T')[0];
+  return toLocalDateString(new Date());
 }
 
 /** 获取昨日日期 */
 export function getYesterday(date?: string): string {
-  const d = date ? new Date(date) : new Date();
+  const d = date ? parseLocalDate(date) : new Date();
   d.setDate(d.getDate() - 1);
-  return d.toISOString().split('T')[0];
+  return toLocalDateString(d);
 }
 
 /** 判断两个日期是否为连续天 */
 export function isConsecutiveDay(date1: string, date2: string): boolean {
-  const d1 = new Date(date1);
-  const d2 = new Date(date2);
+  const d1 = parseLocalDate(date1);
+  const d2 = parseLocalDate(date2);
   const diff = d2.getTime() - d1.getTime();
   const oneDay = 24 * 60 * 60 * 1000;
   return Math.abs(diff - oneDay) < 1000; // 容忍 1s 误差
@@ -25,7 +36,7 @@ export function isConsecutiveDay(date1: string, date2: string): boolean {
 
 /** 格式化日期为中文 */
 export function formatDateCN(date: string): string {
-  const d = new Date(date);
+  const d = parseLocalDate(date);
   const month = d.getMonth() + 1;
   const day = d.getDate();
   const weekdays = ['日', '一', '二', '三', '四', '五', '六'];

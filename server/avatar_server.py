@@ -8,11 +8,13 @@ import os, io, json, base64, time, tempfile, math
 from pathlib import Path
 import numpy as np
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 import uvicorn
 import trimesh
 import open3d as o3d
 from rigged_avatar_provider import LocalHumanoidLiteRigProvider
+from nerf_head_job_service import NerfHeadJobService
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -26,6 +28,7 @@ app.add_middleware(
 
 OUTPUT_DIR = Path.home() / "avatar-output"
 OUTPUT_DIR.mkdir(exist_ok=True)
+NERF_HEAD_JOBS = NerfHeadJobService()
 
 
 # ── Parametric body generator ──
@@ -123,6 +126,24 @@ class SelfieFrame(BaseModel):
     skinToneHex: str | None = None
     source: str | None = None
     poseLabel: str | None = None
+
+
+class NerfHeadFrameRequest(BaseModel):
+    id: str
+    poseLabel: str
+    imageDataUrl: str
+    width: int | None = None
+    height: int | None = None
+    mirrored: bool = False
+    qualityScore: float
+    faceBox: dict | None = None
+
+
+class NerfHeadJobRequest(BaseModel):
+    identityId: str
+    renderStyle: dict
+    frames: list[NerfHeadFrameRequest]
+    training: dict
 
 class BodyMeasurements(BaseModel):
     heightCm: float
@@ -558,6 +579,50 @@ def apply_measurements_scale(mesh: trimesh.Trimesh, height_cm: float, weight_kg:
 @app.get("/health")
 def health():
     return {"status": "ok", "gpu": "NVIDIA GeForce RTX 4090 D", "vram_free_gb": 19}
+
+
+@app.post("/stylized-head/jobs")
+def create_stylized_head_job(request: NerfHeadJobRequest):
+    payload = request.model_dump() if hasattr(request, "model_dump") else request.dict()
+    labels = [frame.get("poseLabel") for frame in payload.get("frames", [])]
+    required = {"front", "left", "right", "up", "down"}
+    if len(labels) != 5 or set(labels) != required or len(set(labels)) != 5:
+        raise HTTPException(422, {
+            "error": "invalid_five_view_capture",
+            "requiredPoses": sorted(required),
+            "receivedPoses": labels,
+        })
+    try:
+        return JSONResponse(NERF_HEAD_JOBS.create_job(payload), status_code=202)
+    except Exception as error:
+        print(f"[NeRFHead] Job Create FAILED error={error}")
+        raise HTTPException(500, "stylized head job creation failed") from error
+
+
+@app.get("/stylized-head/jobs/{job_id}")
+def get_stylized_head_job(job_id: str):
+    try:
+        return NERF_HEAD_JOBS.get_job(job_id)
+    except (ValueError, FileNotFoundError) as error:
+        raise HTTPException(404, "stylized head job not found") from error
+
+
+@app.get("/head-assets/{job_id}/{filename}")
+def get_stylized_head_asset(job_id: str, filename: str):
+    try:
+        path = NERF_HEAD_JOBS.get_asset(job_id, filename)
+    except (ValueError, FileNotFoundError) as error:
+        raise HTTPException(404, "stylized head asset not found") from error
+    media_types = {
+        ".glb": "model/gltf-binary",
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".mp4": "video/mp4",
+        ".json": "application/json",
+        ".zip": "application/zip",
+        ".zst": "application/zstd",
+    }
+    return FileResponse(path, media_type=media_types.get(path.suffix.lower(), "application/octet-stream"))
 
 
 @app.post("/reconstruct")
