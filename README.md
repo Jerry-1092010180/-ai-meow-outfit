@@ -20,7 +20,7 @@
 
 ### 半决赛展示
 
-**[半决赛展示与提交手册](deliverables/半决赛展示与提交手册.md)** — 8 分钟讲稿、90 秒 Demo、问答与现场检查清单。
+**[半决赛展示与提交手册](deliverables/半决赛展示与提交手册.md)** — 5 分钟顺序 Demo、3 分钟问答与现场检查清单。
 
 ---
 
@@ -60,7 +60,8 @@
 - 照片上传与角色身份建立
 - 五层商品选择（内搭/外套/下装/鞋/配饰）
 - 个人角色效果预览
-- 动作、表情、背景等编辑
+- 三组离线 AIGC 动作 × 真实场景联动（城市天台、艺术画廊、银泰橱窗）
+- 表情、发型等本地编辑
 - 2—4 人共创房间
 - 穿搭广场与商品回链
 
@@ -76,10 +77,10 @@
 ## 真实性边界
 
 - 当前 H5 交互、选装、角色编辑、邀请链接、多人房间和穿搭广场**均可运行**
-- 角色生成图片和多人海报属于**效果演示**，生产版由 Gateway AIGC Provider 替换
+- 角色生成图片和多人海报属于**效果演示**；三组动作 × 场景素材由隔离的本地 AIGC 环境生成后作为静态素材进入 H5
 - 当前商品图和价格/库存是**项目样例数据**，正式版接入银泰 PIM 与库存服务
 - **动态视频尚未接入**，属于下一阶段扩展方向
-- 私有 GPU 不向浏览器暴露，生产请求只经 API Gateway
+- 当前公开 H5 不连接 Avatar API、Worker 或 AIGC 公网隧道；身份照片只在当前浏览器会话内处理，AIGC 机器保持本地/私有
 
 ---
 
@@ -88,8 +89,8 @@
 1. 📱 用手机浏览器打开 **[next-gen-avatar.ai-meow-outfit.pages.dev/#/game](https://next-gen-avatar.ai-meow-outfit.pages.dev/#/game)**
 2. 👤 上传一张照片，体验角色身份建立
 3. 👗 完成五层穿搭选择
-4. 🎨 调整动作、表情和背景
-5. 📖 打开 **[One Pager](deliverables/AI喵搭-OnePager-评审版.pdf)** 对照产品定义与边界
+4. 🎨 依次切换“自信主角 / 城市天台”“街头漫游 / 艺术画廊”“好友招呼 / 银泰橱窗”
+5. 📖 打开 **[One Pager](deliverables/AI喵搭-OnePager-半决赛版.pdf)** 对照产品定义与边界
 
 ---
 
@@ -108,7 +109,7 @@
 
 ### 技术架构
 
-React 18 + TypeScript + Vite 6 · Three.js (React Three Fiber) · Zustand · Canvas API · Cloudflare Pages · Tailscale + 4090D GPU (AIGC 私有算力)
+React 19 + TypeScript + Vite 8 · Three.js (React Three Fiber) · Zustand · Canvas API · Cloudflare Pages（仅静态 H5）· 隔离本地 AIGC 素材生产
 
 ### 本地运行
 

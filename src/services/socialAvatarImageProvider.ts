@@ -36,33 +36,4 @@ export class DemoSocialAvatarImageProvider implements SocialAvatarImageProvider 
   }
 }
 
-export class GatewaySocialAvatarImageProvider implements SocialAvatarImageProvider {
-  constructor(private readonly endpoint: string) {}
-
-  async generateAvatar(request: StylizedAvatarImageRequest): Promise<StylizedAvatarImageAsset> {
-    const response = await fetch(`${this.endpoint}/stylized-avatar/image`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(request),
-    });
-    if (!response.ok) throw new Error(`Stylized avatar image provider failed: ${response.status}`);
-    return response.json() as Promise<StylizedAvatarImageAsset>;
-  }
-
-  async composeSocialScene(request: SocialSceneRequest): Promise<SocialSceneAsset> {
-    const response = await fetch(`${this.endpoint}/stylized-avatar/social-scene`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(request),
-    });
-    if (!response.ok) throw new Error(`Social scene provider failed: ${response.status}`);
-    return response.json() as Promise<SocialSceneAsset>;
-  }
-}
-
-const gatewayBase = import.meta.env.VITE_AVATAR_API_BASE_URL as string | undefined;
-
-export const socialAvatarImageProvider: SocialAvatarImageProvider = gatewayBase
-  ? new GatewaySocialAvatarImageProvider(gatewayBase)
-  : new DemoSocialAvatarImageProvider();
-
+export const socialAvatarImageProvider: SocialAvatarImageProvider = new DemoSocialAvatarImageProvider();

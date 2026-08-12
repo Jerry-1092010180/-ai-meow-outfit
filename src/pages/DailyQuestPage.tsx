@@ -69,6 +69,11 @@ const QUEST_CONTEXT = {
 };
 
 const AVATAR_PREVIEW_URL = `${import.meta.env.BASE_URL}avatar-demo/stylized-avatar-v1-small.png`;
+const SCENE_PREVIEW_URLS = {
+  rooftop: `${import.meta.env.BASE_URL}avatar-demo/scenes/confident-rooftop-v1.png`,
+  gallery: `${import.meta.env.BASE_URL}avatar-demo/scenes/street-gallery-v1.png`,
+  storefront: `${import.meta.env.BASE_URL}avatar-demo/scenes/wave-storefront-v1.png`,
+} as const;
 
 const GENERATION_STEPS = [
   '提取照片中的身份特征',
@@ -90,21 +95,29 @@ const STUDIO_BACKGROUNDS = {
     label: '湖滨霓虹',
     style: 'linear-gradient(145deg, #090c16 0%, #142c8f 54%, #0a0c15 100%)',
     accent: '#5dff73',
+    sceneImageUrl: null,
+    linkedPoseId: 'editorial',
   },
   gallery: {
     label: '新展画廊',
     style: 'linear-gradient(145deg, #f1eee5 0%, #c9d7ff 52%, #ffffff 100%)',
     accent: '#2455ff',
+    sceneImageUrl: SCENE_PREVIEW_URLS.gallery,
+    linkedPoseId: 'street',
   },
   rooftop: {
     label: '城市天台',
     style: 'linear-gradient(145deg, #13152b 0%, #e65380 56%, #ffca70 100%)',
     accent: '#dfff3f',
+    sceneImageUrl: SCENE_PREVIEW_URLS.rooftop,
+    linkedPoseId: 'confident',
   },
   mint: {
-    label: '春日橱窗',
+    label: '银泰橱窗',
     style: 'linear-gradient(145deg, #ccffd6 0%, #d8ebff 48%, #fff5b8 100%)',
     accent: '#ff386d',
+    sceneImageUrl: SCENE_PREVIEW_URLS.storefront,
+    linkedPoseId: 'wave',
   },
 } as const;
 
@@ -138,11 +151,11 @@ const SOCIAL_INTERACTIONS: {
   { id: 'group-selfie', label: '合照自拍', hint: '适合 3—4 人分享' },
 ];
 
-const POSES: { id: PoseId; label: string; hint: string; transform: string }[] = [
-  { id: 'editorial', label: '杂志站姿', hint: '默认', transform: 'translate3d(0,0,0) scale(1)' },
-  { id: 'confident', label: '自信主角', hint: '封面', transform: 'translate3d(6px,-2px,0) rotate(0.8deg) scale(1.025)' },
-  { id: 'street', label: '街头漫游', hint: '动态', transform: 'translate3d(-5px,-5px,0) rotate(-0.8deg) scale(1.035)' },
-  { id: 'wave', label: '好友招呼', hint: '社交', transform: 'translate3d(3px,-3px,0) rotate(0.4deg) scale(1.02)' },
+const POSES: { id: PoseId; label: string; hint: string; backgroundId: StudioBackgroundId }[] = [
+  { id: 'editorial', label: '杂志站姿', hint: '湖滨霓虹', backgroundId: 'neon' },
+  { id: 'confident', label: '自信主角', hint: '城市天台', backgroundId: 'rooftop' },
+  { id: 'street', label: '街头漫游', hint: '新展画廊', backgroundId: 'gallery' },
+  { id: 'wave', label: '好友招呼', hint: '银泰橱窗', backgroundId: 'mint' },
 ];
 
 function ProductImage({
@@ -244,7 +257,7 @@ function IdentityPicker({
           <p className="text-[10px] font-black tracking-[0.16em] text-[#2455ff]">IDENTITY INPUT</p>
           <h3 className="mt-1 text-base font-black">{identityImage ? '身份照片已加入' : '先用一张正面照建立身份'}</h3>
           <p className="mt-1 text-[11px] leading-4 text-gray-500">
-            AI 提取脸型、五官和发型特征，再统一成漫画角色。照片只用于本次 Demo 预览。
+            浏览器本地提取脸型、五官和发型特征，再统一成漫画角色。照片只用于本次 Demo 预览，不上传 AIGC 服务器。
           </p>
           <button
             type="button"
@@ -267,8 +280,7 @@ function PublicLookGallery({ quest }: { quest: DailyStyleQuest }) {
       title: '雨夜画廊漫游',
       tag: '法式复古',
       likes: 328,
-      background: STUDIO_BACKGROUNDS.neon.style,
-      filter: 'hue-rotate(12deg) saturate(1.05)',
+      imageUrl: SCENE_PREVIEW_URLS.gallery,
       itemOffset: 0,
     },
     {
@@ -276,8 +288,7 @@ function PublicLookGallery({ quest }: { quest: DailyStyleQuest }) {
       title: '武林夜游搭子装',
       tag: '城市机能',
       likes: 216,
-      background: STUDIO_BACKGROUNDS.rooftop.style,
-      filter: 'hue-rotate(185deg) saturate(.82) brightness(1.03)',
+      imageUrl: SCENE_PREVIEW_URLS.rooftop,
       itemOffset: 3,
     },
     {
@@ -285,8 +296,7 @@ function PublicLookGallery({ quest }: { quest: DailyStyleQuest }) {
       title: '周末新品开箱',
       tag: '轻甜漫画',
       likes: 451,
-      background: STUDIO_BACKGROUNDS.mint.style,
-      filter: 'hue-rotate(295deg) saturate(.88)',
+      imageUrl: SCENE_PREVIEW_URLS.storefront,
       itemOffset: 6,
     },
   ];
@@ -310,22 +320,14 @@ function PublicLookGallery({ quest }: { quest: DailyStyleQuest }) {
               key={entry.user}
               className="min-w-[72%] snap-center overflow-hidden border border-white/40 bg-white text-black"
             >
-              <div className="relative aspect-[4/5] overflow-hidden" style={{ background: entry.background }}>
-                <div
-                  className="absolute inset-0 opacity-20"
-                  style={{
-                    backgroundImage: 'radial-gradient(circle, rgba(255,255,255,.9) 1px, transparent 1px)',
-                    backgroundSize: '9px 9px',
-                  }}
-                />
+              <div className="relative aspect-[2/3] overflow-hidden bg-black">
                 <span className="absolute left-2 top-2 z-20 border border-black bg-white px-2 py-1 text-[9px] font-black">
                   用户公开作品
                 </span>
                 <img
-                  src={AVATAR_PREVIEW_URL}
+                  src={entry.imageUrl}
                   alt={`${entry.user} 公开的穿搭海报效果示意`}
-                  className="absolute inset-x-0 bottom-0 mx-auto h-[92%] w-auto max-w-none object-contain"
-                  style={{ filter: entry.filter }}
+                  className="absolute inset-0 h-full w-full object-cover"
                 />
                 <div className="absolute bottom-2 left-2 right-2 z-20 grid grid-cols-3 gap-1 bg-black/70 p-1.5 backdrop-blur">
                   {outfitItems.map((item) => (
@@ -839,6 +841,7 @@ function AvatarCanvas({
   const backgroundConfig = STUDIO_BACKGROUNDS[background];
   const hairLabel = HAIR_STYLES.find((entry) => entry.id === hairStyle)?.label ?? '高马尾';
   const expressionLabel = EXPRESSIONS.find((entry) => entry.id === expression)?.label ?? '自然';
+  const sceneImageUrl = pose === backgroundConfig.linkedPoseId ? backgroundConfig.sceneImageUrl : null;
   const avatarFilter = hairStyle === 'short-bob'
     ? 'saturate(.88) contrast(1.04)'
     : hairStyle === 'soft-wave'
@@ -850,18 +853,34 @@ function AvatarCanvas({
   return (
     <div
       id="daily-avatar-poster"
-      className="relative aspect-[4/5] overflow-hidden border-2 border-black shadow-[6px_6px_0_#111]"
+      className="relative aspect-[2/3] overflow-hidden border-2 border-black shadow-[6px_6px_0_#111]"
       style={{ background: backgroundConfig.style }}
     >
-      <div
-        className="absolute inset-0 opacity-20"
-        style={{
-          backgroundImage: 'radial-gradient(circle, rgba(255,255,255,.8) 1px, transparent 1px)',
-          backgroundSize: '9px 9px',
-        }}
-      />
+      {sceneImageUrl ? (
+        <img
+          src={sceneImageUrl}
+          alt={`${poseConfig.label}与${backgroundConfig.label}的离线 AIGC 效果预览`}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      ) : (
+        <>
+          <div
+            className="absolute inset-0 opacity-20"
+            style={{
+              backgroundImage: 'radial-gradient(circle, rgba(255,255,255,.8) 1px, transparent 1px)',
+              backgroundSize: '9px 9px',
+            }}
+          />
+          <img
+            src={look.avatar.imageUrl}
+            alt="完整动漫角色效果预览"
+            className="absolute inset-x-0 bottom-0 z-10 mx-auto h-[96%] w-auto max-w-none object-contain"
+            style={{ filter: avatarFilter }}
+          />
+        </>
+      )}
       <div className="absolute left-3 top-3 z-20 border border-black bg-[#dfff3f] px-2 py-1 text-[9px] font-black">
-        AIGC 漫画角色效果预览
+        {sceneImageUrl ? '离线 AIGC 动作 × 场景预览' : 'AIGC 漫画角色效果预览'}
       </div>
       <div className="absolute right-3 top-3 z-20 border border-white/50 bg-black/65 px-2 py-1 text-[9px] font-black text-white backdrop-blur">
         IDENTITY LOOK · {look.score}
@@ -877,13 +896,6 @@ function AvatarCanvas({
           <UserRound size={22} />
         </div>
       )}
-
-      <img
-        src={look.avatar.imageUrl}
-        alt="完整动漫角色效果预览"
-        className="absolute inset-x-0 bottom-0 z-10 mx-auto h-[96%] w-auto max-w-none object-contain transition-transform duration-500"
-        style={{ transform: poseConfig.transform, transformOrigin: '50% 86%', filter: avatarFilter }}
-      />
 
       <div className="absolute bottom-3 left-3 right-3 z-20 flex items-end justify-between gap-3">
         <div className="min-w-0 bg-black/78 px-2 py-1.5 text-white backdrop-blur">
@@ -1372,6 +1384,15 @@ function QuestResult({
       });
     }, 0);
   };
+  const selectPose = (nextPose: PoseId) => {
+    const preset = POSES.find((entry) => entry.id === nextPose) ?? POSES[0];
+    setPose(nextPose);
+    setBackground(preset.backgroundId);
+  };
+  const selectBackground = (nextBackground: StudioBackgroundId) => {
+    setBackground(nextBackground);
+    setPose(STUDIO_BACKGROUNDS[nextBackground].linkedPoseId);
+  };
 
   return (
     <>
@@ -1454,11 +1475,16 @@ function QuestResult({
                   <button
                     key={poseOption.id}
                     type="button"
-                    onClick={() => setPose(poseOption.id)}
-                    className={`min-h-16 border border-black p-3 text-left ${pose === poseOption.id ? 'bg-black text-white shadow-[3px_3px_0_#ff386d]' : 'bg-white'}`}
+                    onClick={() => selectPose(poseOption.id)}
+                    className={`overflow-hidden border border-black text-left ${pose === poseOption.id ? 'bg-black text-white shadow-[3px_3px_0_#ff386d]' : 'bg-white'}`}
                   >
-                    <span className="block text-sm font-black">{poseOption.label}</span>
-                    <span className={`mt-1 block text-[10px] ${pose === poseOption.id ? 'text-[#dfff3f]' : 'text-gray-400'}`}>{poseOption.hint} · 重新生成动作画面</span>
+                    <img
+                      src={STUDIO_BACKGROUNDS[poseOption.backgroundId].sceneImageUrl ?? AVATAR_PREVIEW_URL}
+                      alt={`${poseOption.label}动作预览`}
+                      className="h-24 w-full object-cover object-top"
+                    />
+                    <span className="block px-2 pt-2 text-sm font-black">{poseOption.label}</span>
+                    <span className={`block px-2 pb-2 pt-1 text-[10px] ${pose === poseOption.id ? 'text-[#dfff3f]' : 'text-gray-400'}`}>{poseOption.hint} · 动作与场景联动</span>
                   </button>
                 ))}
                 <div className="col-span-2 mt-1 border-t border-black pt-3">
@@ -1485,10 +1511,14 @@ function QuestResult({
                   <button
                     key={id}
                     type="button"
-                    onClick={() => setBackground(id)}
+                    onClick={() => selectBackground(id)}
                     className={`overflow-hidden border border-black bg-white text-left ${background === id ? 'shadow-[3px_3px_0_#2455ff]' : ''}`}
                   >
-                    <span className="block h-16" style={{ background: entry.style }} />
+                    {entry.sceneImageUrl ? (
+                      <img src={entry.sceneImageUrl} alt={`${entry.label}场景预览`} className="h-24 w-full object-cover" />
+                    ) : (
+                      <span className="block h-24" style={{ background: entry.style }} />
+                    )}
                     <span className="block px-2 py-2 text-xs font-black">{entry.label}</span>
                   </button>
                 ))}

@@ -171,7 +171,7 @@
     color: #fff; font-size: 23px; font-weight: 760;
   }
   .shots {
-    display: grid; grid-template-columns: 1.05fr .95fr .95fr;
+    display: grid; grid-template-columns: repeat(3, 1fr);
     gap: 24px; margin-top: 42px; height: 640px;
   }
   .shot {
@@ -179,9 +179,7 @@
     background: #0b0e16; border: 2px solid rgba(255,255,255,.3);
   }
   .shot img { width: 100%; height: 100%; object-fit: cover; }
-  .shot.full img { object-fit: contain; object-position: center center; }
-  .shot.medium img { object-position: center 20%; transform: scale(1.34); }
-  .shot.close img { object-position: center top; transform: scale(1.38); transform-origin: center top; }
+  .shot img { object-position: center center; }
   .shot span {
     position: absolute; left: 22px; right: 22px; bottom: 22px;
     padding: 14px 18px; background: rgba(10,12,18,.82);
@@ -327,7 +325,7 @@
       <p class="cover-note">一张照片 × 五件银泰商品 × 一个今日场景</p>
     </div>
   </div>
-  <img class="cover-avatar" src="../../../public/avatar-demo/stylized-avatar-v1-small.png" alt="AI喵搭个人时尚角色">
+  <img class="cover-avatar" src="../../../public/avatar-demo/scenes/confident-rooftop-v1.png" alt="AI喵搭城市天台自信主角镜头">
   <div class="page">01 / 12</div>
 </section>
 
@@ -384,13 +382,13 @@
       </div>
       <div class="formula-arrow">→</div>
       <div class="output">
-        <img src="../../../public/avatar-demo/stylized-avatar-v1-small.png" alt="角色结果">
-        <span class="output-label">当前效果演示</span>
+        <img src="../../../public/avatar-demo/scenes/wave-storefront-v1.png" alt="银泰橱窗好友招呼角色结果">
+        <span class="output-label">离线 AIGC 效果预览</span>
         <div class="output-caption">由“我”主演、能找到同款的时尚内容</div>
       </div>
     </div>
   </div>
-  <div class="truth">当前 H5 已完成输入、选搭、效果预览与编辑流程；生产版接入身份与商品一致性生成服务。</div>
+  <div class="truth">当前 H5 已完成输入、选搭、效果预览与编辑流程；身份输入在浏览器本地处理，静态站不连接公网 Avatar API。</div>
   <div class="page">03 / 12</div>
 </section>
 
@@ -400,12 +398,12 @@
   <div class="stage">
     <h2>同一个我、同一套 Look，<br>可以成为<span class="accent">多个时尚镜头</span></h2>
     <div class="shots">
-      <div class="shot full"><img src="../../../public/avatar-demo/stylized-avatar-v1-small.png" alt=""><span>全身海报 · 看清整套穿搭</span></div>
-      <div class="shot medium"><img src="../../../public/avatar-demo/stylized-avatar-v1-small.png" alt=""><span>商品聚焦 · 服装与配饰更突出</span></div>
-      <div class="shot close"><img src="../../../public/avatar-demo/stylized-avatar-v1-small.png" alt=""><span>社交封面 · 人物辨识更强</span></div>
+      <div class="shot"><img src="../../../public/avatar-demo/scenes/confident-rooftop-v1.png" alt="城市天台自信主角"><span>自信主角 · 城市天台</span></div>
+      <div class="shot"><img src="../../../public/avatar-demo/scenes/street-gallery-v1.png" alt="艺术画廊街头漫游"><span>街头漫游 · 艺术画廊</span></div>
+      <div class="shot"><img src="../../../public/avatar-demo/scenes/wave-storefront-v1.png" alt="银泰橱窗好友招呼"><span>好友招呼 · 银泰橱窗</span></div>
     </div>
   </div>
-  <div class="truth">目标效果示意：生产版生成同一身份、同一套商品的不同动作与镜头；本页使用同一角色素材展示构图方向。</div>
+  <div class="truth">本页三张为同一角色参考图在隔离 AIGC 环境中生成的动作 × 场景效果预览；当前 H5 直接读取静态素材，不向公网 Avatar API 上传身份数据。</div>
   <div class="page">04 / 12</div>
 </section>
 
@@ -416,8 +414,8 @@
     <h2>四步完成：<span class="accent">选择、生成、微调、分享</span></h2>
     <div class="experience">
       <div class="experience-step"><img src="bonus/screenshots/02-product-selection.png" alt=""><b>01 · 选择</b><span>五层商品组成完整Look</span></div>
-      <div class="experience-step"><img src="bonus/screenshots/05-avatar-result.png" alt=""><b>02 · 生成</b><span>得到本人主演的角色画面</span></div>
-      <div class="experience-step"><img src="bonus/screenshots/06-pose-expression.png" alt=""><b>03 · 微调</b><span>动作、表情、发型、背景</span></div>
+      <div class="experience-step"><img src="../../../public/avatar-demo/scenes/confident-rooftop-v1.png" alt=""><b>02 · 生成</b><span>得到本人主演的角色画面</span></div>
+      <div class="experience-step"><img src="../../../public/avatar-demo/scenes/street-gallery-v1.png" alt=""><b>03 · 微调</b><span>动作与真实场景联动</span></div>
       <div class="experience-step"><img src="bonus/screenshots/07-friend-cocreate.png" alt=""><b>04 · 分享</b><span>保存或邀请好友共同入镜</span></div>
     </div>
   </div>
@@ -504,7 +502,7 @@
     <h2>银泰「生活新美学」，<br>要由用户<span class="accent">出演、分享并到店实现</span></h2>
     <div class="yintai">
       <div class="asset"><div class="word">真实商品</div><p>品牌商品图、SKU信息与搭配关系，是内容生成的素材底座。</p></div>
-      <div class="center-avatar"><img src="../../../public/avatar-demo/stylized-avatar-v1-small.png" alt=""><span>可购买、可到店实现的个人时尚内容</span></div>
+      <div class="center-avatar"><img src="../../../public/avatar-demo/scenes/street-gallery-v1.png" alt="画廊漫游场景"><span>可购买、可到店实现的个人时尚内容</span></div>
       <div class="asset"><div class="word">会员身份</div><p>个人角色、收藏、权益与历史Look能持续积累，而非一次性生成。</p></div>
       <div class="asset"><div class="word">门店网络</div><p>角色图可以落到具体城市、商场、楼层和到店体验。</p></div>
       <div class="asset"><div class="word">库存权益</div><p>把“喜欢”接到有货、优惠、任务、核销与购买。</p></div>
@@ -523,15 +521,16 @@
         <h3>现在 · H5可现场验证</h3>
         <ul>
           <li>每日章节、身份输入与五层商品选搭</li>
-          <li>个人角色效果预览与动作/表情/背景编辑</li>
+          <li>个人角色预览与3组真实动作 × 场景联动</li>
           <li>2-4人共创房间、广场与SKU回链</li>
           <li>邀请链接和主要交互状态可现场演示</li>
+          <li>静态 H5 不连接公网 Avatar API，身份输入在浏览器本地处理</li>
         </ul>
       </div>
       <div class="roadmap-col next">
         <h3>下一步 · 生产化接入</h3>
         <ul>
-          <li>接入身份与商品一致性生成服务</li>
+          <li>隔离 AIGC 环境批量生成身份与商品一致性素材</li>
           <li>增加质量校验、失败重试、审核与降级</li>
           <li>连接真实PIM、库存、门店和会员权益</li>
           <li>扩展朋友圈/小红书版式与5-15秒动态短片</li>
@@ -560,7 +559,7 @@
         <div><b>扫码现场体验</b><span>next-gen-avatar.ai-meow-outfit.pages.dev/#/game</span></div>
       </div>
     </div>
-    <img class="closing-avatar" src="../../../public/avatar-demo/stylized-avatar-v1-small.png" alt="AI喵搭角色">
+    <img class="closing-avatar" src="../../../public/avatar-demo/scenes/wave-storefront-v1.png" alt="AI喵搭银泰橱窗角色">
   </div>
   <div class="page">12 / 12</div>
 </section>

@@ -232,7 +232,7 @@ export interface StylizedAvatar {
   cdnUrl?: string;
   method?: string;
   status: 'local-preview' | 'processing' | 'ready' | 'failed';
-  providerStage: 'procedural-mock' | 'aigc-gateway' | 'future-vrm-provider';
+  providerStage: 'procedural-mock' | 'future-vrm-provider';
   runtimeMetadata?: VrmReadyMetadata;
 }
 

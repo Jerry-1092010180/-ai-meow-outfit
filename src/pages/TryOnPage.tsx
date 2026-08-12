@@ -12,10 +12,7 @@ import {
   DEFAULT_COMIC_RENDER_STYLE,
   faceIdentityProvider,
 } from '@/services/avatarPipeline';
-import {
-  NerfStylizedHeadProvider,
-  type NerfStylizedHeadJobStage,
-} from '@/services/nerfStylizedHeadProvider';
+import { stylizedHeadProvider } from '@/services/stylizedHeadProvider';
 import { analyzeSelfieFrame, type SelfieAnalysis } from '@/services/selfieAnalysis';
 import type { BodyMeasurements, BodyModelManifest, SelfieFrame } from '@/types/bodyModel';
 import type { BodyType } from '@/types';
@@ -42,19 +39,12 @@ const HEAD_SCAN_STEPS: { label: NonNullable<SelfieFrame['poseLabel']>; title: st
   { label: 'down', title: '微微低头', hint: '眼睛看屏幕，下巴轻轻收一点' },
 ];
 
-const NERF_STAGE_LABELS: Record<NerfStylizedHeadJobStage, string> = {
-  queued: '等待 4090D 任务',
-  preprocessing: '校正五图方向与头部抠图',
-  'camera-solving': '求解五视角相机位姿',
-  'face-prior-fitting': '建立人脸几何先验',
-  'identity-encoding': '校验身份特征保留',
-  'geometry-training': '训练原始身份 NeRF',
-  'anime-reference-generation': '生成动漫身份参考',
-  'style-distillation': '向 3D 神经场蒸馏动漫风格',
-  'mesh-extraction': '提取连续三维头部网格',
-  'texture-baking': '烘焙动漫 UV 贴图',
-  validation: '验证身份、方向和立体几何',
-  publishing: '发布 GLB 与 360°预览',
+type LocalStylizationStage = 'queued' | 'preprocessing' | 'identity-encoding' | 'succeeded' | 'failed';
+
+const LOCAL_STAGE_LABELS: Record<LocalStylizationStage, string> = {
+  queued: '准备浏览器本地任务',
+  preprocessing: '在本机校正五图方向与头部区域',
+  'identity-encoding': '在本机提取并漫画化身份特征',
   succeeded: '生成完成',
   failed: '生成失败',
 };
@@ -97,8 +87,8 @@ export default function TryOnPage() {
   const [stylizedAvatar, setStylizedAvatar] = useState<StylizedAvatar | null>(null);
   const [outfitOptions, setOutfitOptions] = useState<AvatarOutfit[]>([]);
   const [selectedOutfitId, setSelectedOutfitId] = useState<string>('');
-  const [apiAvailable, setApiAvailable] = useState(false);
-  const [nerfStage, setNerfStage] = useState<NerfStylizedHeadJobStage>('queued');
+  const [resultAvailable, setResultAvailable] = useState(false);
+  const [nerfStage, setNerfStage] = useState<LocalStylizationStage>('queued');
   const [nerfProgress, setNerfProgress] = useState(0);
   const [nerfError, setNerfError] = useState<string | null>(null);
 
@@ -190,7 +180,7 @@ export default function TryOnPage() {
       providerStage: 'procedural-mock',
       runtimeMetadata: DEFAULT_VRM_READY_METADATA,
     });
-    setApiAvailable(true);
+    setResultAvailable(true);
     setStep('result');
   }, []);
 
@@ -437,21 +427,15 @@ export default function TryOnPage() {
         selfieFrames.length > 0 ? selfieFrames : [primarySelfie],
         navigator.userAgent.slice(0, 80)
       );
-      const provider = new NerfStylizedHeadProvider({
-        endpoint: import.meta.env.VITE_AVATAR_API_BASE_URL || '/api/avatar',
-        backend: 'nerfacto-face-prior',
-        pollIntervalMs: 2_000,
-        timeoutMs: 45 * 60 * 1_000,
-        minCaptureQuality: 0.18,
-        minIdentityScore: 0.28,
-        minStyleScore: 0.65,
-        minGeometryScore: 0.5,
-        onProgress: (job) => {
-          setNerfStage(job.stage);
-          setNerfProgress(job.progress);
-        },
-      });
-      const stylizedHead = await provider.generate(identity, appearance.style);
+      setNerfStage('preprocessing');
+      setNerfProgress(0.35);
+      await new Promise((resolve) => window.setTimeout(resolve, 180));
+      setNerfStage('identity-encoding');
+      setNerfProgress(0.68);
+      const stylizedHead = await stylizedHeadProvider.generate(identity, appearance.style);
+      setNerfStage('succeeded');
+      setNerfProgress(1);
+      const localModelUrl = `${import.meta.env.BASE_URL}models/runtime-demo-rigged.glb`;
       const avatar: StylizedAvatar = {
         id: stylizedHead.id,
         pipeline: 'identity-driven-stylized-avatar',
@@ -465,20 +449,22 @@ export default function TryOnPage() {
           expressionBlendshapes: [],
           posePresets: [],
         },
-        modelUrl: stylizedHead.meshUrl,
-        cdnUrl: stylizedHead.meshUrl,
-        method: 'five-view-nerfacto-anime-head',
+        modelUrl: localModelUrl,
+        cdnUrl: localModelUrl,
+        method: 'browser-local-stylized-head',
         status: 'ready',
-        providerStage: 'aigc-gateway',
+        providerStage: 'procedural-mock',
+        runtimeMetadata: DEFAULT_VRM_READY_METADATA,
       };
-      console.log('[NeRFHead] Submit Success model=' + stylizedHead.meshUrl);
+      console.log('[LocalAvatar] Generate Success');
       setStylizedAvatar(avatar);
-      setApiAvailable(true);
+      setResultAvailable(true);
     } catch (err: any) {
-      const message = err?.message || 'NeRF 动漫头部生成失败';
-      console.error('[NeRFHead] Submit FAILED', message);
+      const message = err?.message || '浏览器本地动漫头部生成失败';
+      console.error('[LocalAvatar] Generate FAILED', message);
       setStylizedAvatar(null);
-      setApiAvailable(false);
+      setResultAvailable(false);
+      setNerfStage('failed');
       setNerfError(message);
       setStep('review');
       return;
@@ -723,7 +709,7 @@ export default function TryOnPage() {
               <div className="rounded-2xl bg-white/5 border border-white/10 p-4 mb-5">
                 <p className="text-white text-sm font-semibold mb-2">生成策略</p>
                 <p className="text-gray-400 text-sm leading-6">
-                  五张原图会提交到 4090D：先训练身份几何 NeRF，再把统一动漫风格蒸馏到三维神经场，最后提取连续头部网格并烘焙 GLB 贴图。
+                  五张原图只在当前浏览器内处理：校正角度、提取脸型与发色等特征，再生成漫画化头部贴图；不会提交到公网 Avatar API 或 AIGC 服务器。
                 </p>
               </div>
               {nerfError && (
@@ -747,23 +733,23 @@ export default function TryOnPage() {
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
               />
-              <h2 className="mb-2 text-xl font-bold text-white">五视角动漫 3D 头部生成中</h2>
-              <p className="mb-5 text-sm text-pink-200">{NERF_STAGE_LABELS[nerfStage]}</p>
+              <h2 className="mb-2 text-xl font-bold text-white">五视角动漫角色本地生成中</h2>
+              <p className="mb-5 text-sm text-pink-200">{LOCAL_STAGE_LABELS[nerfStage]}</p>
               <div className="h-2 w-full max-w-xs overflow-hidden rounded bg-white/10">
                 <motion.div
                   className="h-full bg-pink-400"
                   animate={{ width: `${Math.max(2, Math.round(nerfProgress * 100))}%` }}
                 />
               </div>
-              <p className="mt-2 text-xs text-gray-500">{Math.round(nerfProgress * 100)}% · 训练期间请保持页面打开</p>
+              <p className="mt-2 text-xs text-gray-500">{Math.round(nerfProgress * 100)}% · 数据只在当前页面内处理</p>
             </motion.div>
           )}
 
           {step === 'result' && manifest && (
             <motion.div key="result" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               <div className="text-center mb-4">
-                <h2 className="text-xl font-bold text-white mb-1">{apiAvailable ? '动漫 3D 头部已生成' : '预置化身预览'}</h2>
-                <p className="text-gray-400 text-sm">五视角 NeRF · AnimeGANv2 风格蒸馏 · GLB</p>
+                <h2 className="text-xl font-bold text-white mb-1">{resultAvailable ? '本地动漫角色已生成' : '预置化身预览'}</h2>
+                <p className="text-gray-400 text-sm">浏览器本地身份特征 · 漫画化贴图 · 静态演示模型</p>
               </div>
               {selfieFrames.length === 5 && (
                 <div className="mb-3 grid grid-cols-5 gap-1.5">
@@ -779,12 +765,12 @@ export default function TryOnPage() {
                 </div>
               )}
               <div className="mb-5">
-                {apiAvailable && stylizedAvatar?.stylizedHead?.meshUrl ? (
+                {resultAvailable && stylizedAvatar?.stylizedHead?.meshUrl ? (
                   <StylizedHead3DViewer
                     modelUrl={stylizedAvatar.stylizedHead.meshUrl}
                     previewUrl={stylizedAvatar.stylizedHead.previewDataUrl}
                   />
-                ) : apiAvailable && stylizedAvatar ? (
+                ) : resultAvailable && stylizedAvatar ? (
                   <AnimeAvatarViewer avatar={stylizedAvatar} outfit={selectedOutfit} />
                 ) : null}
               </div>
